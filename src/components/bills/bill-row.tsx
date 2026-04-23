@@ -6,6 +6,7 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, markBillPaidAction, markBillPendingAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
+import { RecurringSeriesForm } from "./recurring-series-form";
 import type { Bill, Category, Group } from "@/types/database";
 
 const AVATAR_COLORS = [
@@ -44,9 +45,11 @@ interface BillRowProps {
 
 export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [isPending, startTransition] = useTransition();
-  const [menuOpen, setMenuOpen]   = useState(false);
-  const [menuPos, setMenuPos]     = useState<{ top: number; right: number } | null>(null);
-  const [editOpen, setEditOpen]   = useState(false);
+  const [menuOpen, setMenuOpen]         = useState(false);
+  const [menuPos, setMenuPos]           = useState<{ top: number; right: number } | null>(null);
+  const [editOpen, setEditOpen]         = useState(false);
+  const [choiceOpen, setChoiceOpen]     = useState(false);
+  const [seriesEditOpen, setSeriesEditOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef   = useRef<HTMLDivElement>(null);
 
@@ -169,7 +172,11 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         >
           <button
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-            onClick={() => { setMenuOpen(false); setEditOpen(true); }}
+            onClick={() => {
+              setMenuOpen(false);
+              if (bill.recurring_template_id) setChoiceOpen(true);
+              else setEditOpen(true);
+            }}
           >
             <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
             Edit
@@ -193,6 +200,56 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         open={editOpen}
         onOpenChange={setEditOpen}
       />
+
+      {/* Recurring choice dialog */}
+      {choiceOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40"
+          onClick={() => setChoiceOpen(false)}
+        >
+          <div
+            className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-5 mx-4 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">Edit recurring bill</p>
+            <p className="text-xs text-[var(--color-muted-foreground)] mb-4">
+              This bill is part of a recurring series. What would you like to edit?
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => { setChoiceOpen(false); setEditOpen(true); }}
+                className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+              >
+                Just this bill
+                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">
+                  Only edit this specific occurrence
+                </span>
+              </button>
+              <button
+                onClick={() => { setChoiceOpen(false); setSeriesEditOpen(true); }}
+                className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+              >
+                Entire series
+                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">
+                  Update all pending bills in this series
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Recurring series edit dialog */}
+      {bill.recurring_template_id && (
+        <RecurringSeriesForm
+          bill={bill}
+          categories={categories}
+          groups={groups}
+          open={seriesEditOpen}
+          onOpenChange={setSeriesEditOpen}
+        />
+      )}
     </div>
   );
 }

@@ -133,6 +133,40 @@ export async function createRecurringBillAction(formData: FormData) {
   return { success: true };
 }
 
+export async function updateRecurringSeriesAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const templateId = formData.get("template_id") as string;
+  const name       = formData.get("name") as string;
+  const amount     = parseFloat(formData.get("amount") as string);
+  const categoryId = (formData.get("category_id") as string) || null;
+  const groupId    = (formData.get("group_id") as string) || null;
+
+  const { error: tplError } = await supabase
+    .from("recurring_templates")
+    .update({ name, amount, category_id: categoryId, group_id: groupId })
+    .eq("id", templateId)
+    .eq("user_id", user.id);
+
+  if (tplError) return { error: tplError.message };
+
+  const { error: billsError } = await supabase
+    .from("bills")
+    .update({ name, amount, category_id: categoryId, group_id: groupId })
+    .eq("recurring_template_id", templateId)
+    .eq("status", "pending")
+    .eq("user_id", user.id);
+
+  if (billsError) return { error: billsError.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/bills");
+  revalidatePath("/recurring");
+  return { success: true };
+}
+
 export async function deleteBillAction(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
