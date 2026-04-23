@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
-import { BillRow } from "@/components/bills/bill-row";
+import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import { BillsHeader } from "@/components/bills/bills-header";
 import type { Bill, Category, Group } from "@/types/database";
 import type { ViewMode, StatusFilter } from "@/components/bills/bills-header";
@@ -84,36 +84,11 @@ export default async function BillsPage({
 
         {/* Bills list */}
         <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
-          {filtered.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-[var(--color-muted-foreground)] text-sm">No bills found.</p>
-              <p className="text-[var(--color-muted-foreground)] text-xs mt-1">
-                Try a different period or add a new bill.
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-[var(--color-border)]">
-              {filtered.map((bill) => (
-                <BillRow
-                  key={bill.id}
-                  bill={bill}
-                  categories={(categories ?? []) as Category[]}
-                  groups={(groups ?? []) as Group[]}
-                />
-              ))}
-            </div>
-          )}
-
-          {filtered.length > 0 && (
-            <div className="px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-muted)] flex items-center justify-between text-sm">
-              <span className="text-[var(--color-muted-foreground)]">
-                {filtered.length} {filtered.length === 1 ? "bill" : "bills"}
-              </span>
-              <span className="font-semibold text-[var(--color-foreground)]">
-                ${filtered.reduce((s, b) => s + b.amount, 0).toFixed(2)}
-              </span>
-            </div>
-          )}
+          <BillsGroupedList
+            bills={filtered}
+            categories={(categories ?? []) as Category[]}
+            groups={(groups ?? []) as Group[]}
+          />
         </div>
       </main>
 

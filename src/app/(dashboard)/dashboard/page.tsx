@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
 import { BillsHeader } from "@/components/bills/bills-header";
-import { BillRow } from "@/components/bills/bill-row";
+import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import { GenerateButton } from "@/components/recurring/generate-button";
 import { formatCurrency } from "@/lib/utils";
 import type { Bill, Category, Group, RecurringTemplate } from "@/types/database";
@@ -134,36 +134,11 @@ export default async function DashboardPage({
         <BillsHeader view={view} date={date} status={status} search={q} basePath="/dashboard" />
 
         <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
-          {filteredBills.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-[var(--color-muted-foreground)] text-sm">No bills found.</p>
-              <p className="text-[var(--color-muted-foreground)] text-xs mt-1">
-                Try a different period or add a new bill.
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-[var(--color-border)]">
-              {filteredBills.map((bill) => (
-                <BillRow
-                  key={bill.id}
-                  bill={bill}
-                  categories={(categories ?? []) as Category[]}
-                  groups={(groups ?? []) as Group[]}
-                />
-              ))}
-            </div>
-          )}
-
-          {filteredBills.length > 0 && (
-            <div className="px-5 py-3 border-t border-[var(--color-border)] bg-[var(--color-muted)] flex items-center justify-between text-sm">
-              <span className="text-[var(--color-muted-foreground)]">
-                {filteredBills.length} {filteredBills.length === 1 ? "bill" : "bills"}
-              </span>
-              <span className="font-semibold text-[var(--color-foreground)]">
-                ${filteredBills.reduce((s, b) => s + b.amount, 0).toFixed(2)}
-              </span>
-            </div>
-          )}
+          <BillsGroupedList
+            bills={filteredBills}
+            categories={(categories ?? []) as Category[]}
+            groups={(groups ?? []) as Group[]}
+          />
         </div>
       </main>
 

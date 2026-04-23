@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, LayoutGrid, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { SummaryCards } from "./summary-cards";
 import type { Bill } from "@/types/database";
@@ -18,8 +18,7 @@ interface Summary {
 export function CollapsibleSummary({ summary }: { summary: Summary }) {
   const [expanded, setExpanded] = useState(false);
 
-  const todayTotal   = summary.dueToday.reduce((s, b) => s + b.amount, 0);
-  const overdueTotal = summary.overdue.reduce((s, b) => s + b.amount, 0);
+  const todayTotal = summary.dueToday.reduce((s, b) => s + b.amount, 0);
 
   return (
     <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
@@ -39,13 +38,6 @@ export function CollapsibleSummary({ summary }: { summary: Summary }) {
             {formatCurrency(todayTotal)}
           </span>
         </span>
-
-        {overdueTotal > 0 && (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950 text-[var(--color-danger)]">
-            <AlertTriangle className="w-3 h-3" />
-            {formatCurrency(overdueTotal)} overdue
-          </span>
-        )}
 
         {expanded
           ? <ChevronUp className="w-4 h-4 text-[var(--color-muted-foreground)] ml-auto shrink-0" />
