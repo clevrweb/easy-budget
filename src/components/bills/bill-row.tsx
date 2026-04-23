@@ -43,6 +43,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [isPending, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -183,20 +184,13 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
           style={{ position: "fixed", top: menuPos.top, right: menuPos.right, zIndex: 9999 }}
           className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl shadow-xl py-1 min-w-[130px]"
         >
-          <BillForm
-            bill={bill}
-            categories={categories}
-            groups={groups}
-            trigger={
-              <button
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-                onClick={() => setMenuOpen(false)}
-              >
-                <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
-                Edit
-              </button>
-            }
-          />
+          <button
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+            onClick={() => { setMenuOpen(false); setEditOpen(true); }}
+          >
+            <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
+            Edit
+          </button>
           <button
             onClick={handleDelete}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
@@ -207,6 +201,15 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         </div>,
         document.body
       )}
+
+      {/* Edit dialog — outside the portal so it isn't unmounted when menu closes */}
+      <BillForm
+        bill={bill}
+        categories={categories}
+        groups={groups}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
     </div>
   );
 }

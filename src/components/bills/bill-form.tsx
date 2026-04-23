@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,15 +22,18 @@ interface BillFormProps {
   categories: Category[];
   groups: Group[];
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
-export function BillForm({ bill, categories, groups, trigger }: BillFormProps) {
-  const [open, setOpen] = useState(false);
+export function BillForm({ bill, categories, groups, trigger, open: externalOpen, onOpenChange }: BillFormProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open    = externalOpen  !== undefined ? externalOpen  : internalOpen;
+  const setOpen = onOpenChange  !== undefined ? onOpenChange  : setInternalOpen;
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const closeRef = useRef<HTMLButtonElement>(null);
 
   const isEdit = !!bill;
   const today = new Date().toISOString().split("T")[0];
@@ -134,7 +137,7 @@ export function BillForm({ bill, categories, groups, trigger }: BillFormProps) {
               {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Bill"}
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="outline" ref={closeRef}>Cancel</Button>
+              <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
           </div>
         </form>
