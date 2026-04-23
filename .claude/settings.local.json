@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:israelthieme.com)",
+      "Bash(git clone *)",
+      "Read(//d/OneDrive/Data/WebDev/Work/CLEVRWEB/Projects/EasyBudget-src/**)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --turbopack --import-alias \"@/*\" --yes)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)"
+    ]
+  }
+}
