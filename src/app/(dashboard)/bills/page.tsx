@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { BillForm } from "@/components/bills/bill-form";
 import { BillRow } from "@/components/bills/bill-row";
+import { MonthPicker } from "@/components/ui/month-picker";
 import type { Bill, Category, Group } from "@/types/database";
 
 type FilterStatus = "all" | "pending" | "paid" | "overdue";
@@ -61,19 +62,7 @@ export default async function BillsPage({
 
       <main className="flex-1 p-6 space-y-5">
         {/* Month picker */}
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-[var(--color-muted-foreground)] font-medium">Month</label>
-          <form method="get">
-            <input
-              type="month"
-              name="month"
-              defaultValue={selectedMonth}
-              onChange={(e) => (e.target.form as HTMLFormElement).submit()}
-              className="h-9 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
-            />
-          </form>
-          <span className="text-sm text-[var(--color-muted-foreground)]">{monthLabel}</span>
-        </div>
+        <MonthPicker value={selectedMonth} label={monthLabel} />
 
         {/* Filter tabs */}
         <div className="flex gap-1 bg-[var(--color-muted)] p-1 rounded-xl w-fit">

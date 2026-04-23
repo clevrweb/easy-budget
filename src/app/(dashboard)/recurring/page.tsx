@@ -3,6 +3,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { TemplateForm } from "@/components/recurring/template-form";
 import { TemplateRow } from "@/components/recurring/template-row";
 import { GenerateButton } from "@/components/recurring/generate-button";
+import { MonthPicker } from "@/components/ui/month-picker";
 import { formatCurrency } from "@/lib/utils";
 import type { RecurringTemplate, Category, Group } from "@/types/database";
 
@@ -47,19 +48,7 @@ export default async function RecurringPage({
       <main className="flex-1 p-4 md:p-6 space-y-5">
         {/* Month picker + generate */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-[var(--color-muted-foreground)] font-medium">Month</label>
-            <form method="get">
-              <input
-                type="month"
-                name="month"
-                defaultValue={selectedMonth}
-                onChange={(e) => (e.target.form as HTMLFormElement).submit()}
-                className="h-9 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
-              />
-            </form>
-            <span className="text-sm text-[var(--color-muted-foreground)]">{monthLabel}</span>
-          </div>
+          <MonthPicker value={selectedMonth} label={monthLabel} />
           <GenerateButton month={selectedMonth} />
         </div>
 
