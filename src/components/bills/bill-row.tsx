@@ -1,18 +1,36 @@
 "use client";
 
-import { useTransition } from "react";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { useTransition, useState, useRef, useEffect } from "react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, markBillPaidAction, markBillPendingAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
 import type { Bill, Category, Group } from "@/types/database";
-import { CheckCircle2, Clock, AlertCircle, Pencil, Trash2, CheckCheck, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
-const statusConfig = {
-  paid: { label: "Paid", icon: CheckCircle2, pill: "text-[var(--color-success)] bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800" },
-  pending: { label: "Pending", icon: Clock, pill: "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800" },
-  overdue: { label: "Overdue", icon: AlertCircle, pill: "text-[var(--color-danger)] bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800" },
-};
+const AVATAR_COLORS = [
+  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
+  "#ea580c", "#d97706", "#16a34a", "#0891b2",
+  "#0284c7", "#6d28d9", "#be185d", "#0f766e",
+];
+
+function avatarColor(name: string) {
+  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+}
+
+function StatusBadge({ status, isOverdue }: { status: string; isOverdue: boolean }) {
+  const effective = isOverdue ? "overdue" : status;
+  const cfg = {
+    paid:    { label: "Paid",    cls: "text-[var(--color-success)] bg-green-50 dark:bg-green-950" },
+    pending: { label: "Pending", cls: "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950" },
+    overdue: { label: "Overdue", cls: "text-[var(--color-danger)] bg-red-50 dark:bg-red-950" },
+  }[effective] ?? { label: status, cls: "" };
+
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md whitespace-nowrap ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  );
+}
 
 interface BillRowProps {
   bill: Bill;
@@ -22,15 +40,37 @@ interface BillRowProps {
 
 export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [isPending, startTransition] = useTransition();
-  const status = statusConfig[bill.status] ?? statusConfig.pending;
-  const StatusIcon = status.icon;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const today = new Date().toISOString().split("T")[0];
-  const isActuallyOverdue = bill.status === "pending" && bill.due_date < today;
-  const displayStatus = isActuallyOverdue ? statusConfig.overdue : status;
-  const DisplayIcon = displayStatus.icon;
+  const today    = new Date().toISOString().split("T")[0];
+  const isOverdue = bill.status === "pending" && bill.due_date < today;
+  const isPaid    = bill.status === "paid";
+
+  const category = categories.find((c) => c.id === bill.category_id);
+  const group    = groups.find((g) => g.id === bill.group_id);
+  const meta     = category?.name ?? group?.name ?? null;
+
+  const dateStr = new Date(bill.due_date + "T00:00:00").toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  const color = avatarColor(bill.name);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   function handleDelete() {
+    setMenuOpen(false);
     if (!confirm(`Delete "${bill.name}"?`)) return;
     startTransition(async () => { await deleteBillAction(bill.id); });
   }
@@ -44,52 +84,95 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   }
 
   return (
-    <div className={`flex items-center gap-4 px-5 py-4 hover:bg-[var(--color-muted)] transition-colors duration-150 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
-      {/* Status icon */}
-      <div className={`p-1.5 rounded-lg border ${displayStatus.pill} shrink-0`}>
-        <DisplayIcon className="w-3.5 h-3.5" />
+    <div
+      className={`flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--color-muted)] transition-colors ${
+        isPending ? "opacity-50 pointer-events-none" : ""
+      }`}
+    >
+      {/* Avatar */}
+      <div
+        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
+        style={{ backgroundColor: color }}
+      >
+        {bill.name[0].toUpperCase()}
       </div>
 
-      {/* Name + date */}
+      {/* Name + meta row */}
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm text-[var(--color-foreground)] truncate">{bill.name}</p>
-        <p className="text-xs text-[var(--color-muted-foreground)]">Due {formatDate(bill.due_date)}</p>
+        <p className="font-semibold text-sm text-[var(--color-foreground)] truncate leading-tight">
+          {bill.name}
+        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          <span className="text-xs text-[var(--color-muted-foreground)]">{dateStr}</span>
+          <StatusBadge status={bill.status} isOverdue={isOverdue} />
+          {meta && (
+            <>
+              <span className="text-xs text-[var(--color-border)]">·</span>
+              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[120px]">
+                {meta}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Amount */}
-      <span className="font-semibold text-sm text-[var(--color-foreground)] shrink-0">
+      <span className="font-bold text-sm text-[var(--color-foreground)] shrink-0 tabular-nums">
         {formatCurrency(bill.amount)}
       </span>
 
-      {/* Status pill */}
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${displayStatus.pill} shrink-0 hidden sm:inline-flex`}>
-        {isActuallyOverdue ? "Overdue" : displayStatus.label}
-      </span>
+      {/* PAY / PAID button */}
+      {!isPaid ? (
+        <button
+          onClick={handleMarkPaid}
+          className="shrink-0 h-8 px-3 rounded-lg border-2 border-[var(--color-border)] text-xs font-bold text-[var(--color-muted-foreground)] hover:border-[var(--color-success)] hover:text-[var(--color-success)] transition-colors"
+        >
+          PAY
+        </button>
+      ) : (
+        <button
+          onClick={handleMarkPending}
+          className="shrink-0 h-8 px-3 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-80"
+          style={{ backgroundColor: "var(--color-success)" }}
+        >
+          PAID
+        </button>
+      )}
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 shrink-0">
-        {bill.status !== "paid" ? (
-          <Button variant="ghost" size="icon" onClick={handleMarkPaid} title="Mark as paid">
-            <CheckCheck className="w-4 h-4 text-[var(--color-success)]" />
-          </Button>
-        ) : (
-          <Button variant="ghost" size="icon" onClick={handleMarkPending} title="Mark as pending">
-            <RotateCcw className="w-4 h-4 text-[var(--color-muted-foreground)]" />
-          </Button>
+      {/* Three-dot menu */}
+      <div className="relative shrink-0" ref={menuRef}>
+        <button
+          onClick={() => setMenuOpen((o) => !o)}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
+        >
+          <MoreHorizontal className="w-4 h-4" />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute right-0 top-full mt-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl shadow-xl py-1 z-20 min-w-[130px]">
+            <BillForm
+              bill={bill}
+              categories={categories}
+              groups={groups}
+              trigger={
+                <button
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
+                  Edit
+                </button>
+              }
+            />
+            <button
+              onClick={handleDelete}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          </div>
         )}
-        <BillForm
-          bill={bill}
-          categories={categories}
-          groups={groups}
-          trigger={
-            <Button variant="ghost" size="icon" title="Edit bill">
-              <Pencil className="w-4 h-4 text-[var(--color-muted-foreground)]" />
-            </Button>
-          }
-        />
-        <Button variant="ghost" size="icon" onClick={handleDelete} title="Delete bill">
-          <Trash2 className="w-4 h-4 text-[var(--color-danger)]" />
-        </Button>
       </div>
     </div>
   );
