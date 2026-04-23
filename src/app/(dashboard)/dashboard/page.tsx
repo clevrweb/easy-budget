@@ -1,13 +1,11 @@
 import Link from "next/link";
-import { RefreshCcw, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
 import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
-import { GenerateButton } from "@/components/recurring/generate-button";
-import { formatCurrency } from "@/lib/utils";
-import type { Bill, Category, Group, RecurringTemplate } from "@/types/database";
+import type { Bill, Category, Group } from "@/types/database";
 import type { ViewMode, StatusFilter } from "@/components/bills/bills-header";
 
 function getDateRange(view: ViewMode, date: string): { start: string; end: string } | null {
@@ -58,13 +56,11 @@ export default async function DashboardPage({
     { data: overdueBills },
     { data: categories },
     { data: groups },
-    { data: templates },
   ] = await Promise.all([
     supabase.from("bills").select("*").gte("due_date", monthStart).lte("due_date", monthEnd).order("due_date"),
     supabase.from("bills").select("*").lt("due_date", monthStart).eq("status", "pending"),
     supabase.from("categories").select("*").order("name"),
     supabase.from("groups").select("*").order("name"),
-    supabase.from("recurring_templates").select("*").eq("is_active", true),
   ]);
 
   const allCurrentBills = [...(monthBills ?? []), ...(overdueBills ?? [])] as Bill[];
@@ -92,11 +88,6 @@ export default async function DashboardPage({
     return effective === status;
   });
 
-  // Recurring quick bar
-  const activeTemplates = (templates ?? []) as RecurringTemplate[];
-  const monthlyTotal    = activeTemplates.reduce((s, t) => s + t.amount, 0);
-  const selectedMonth   = view === "month" ? date : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-
   return (
     <>
       <Topbar title="Dashboard" />
@@ -105,30 +96,7 @@ export default async function DashboardPage({
         {/* Collapsible summary */}
         <CollapsibleSummary summary={summary} />
 
-        {/* Recurring quick bar */}
-        {activeTemplates.length > 0 && (
-          <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] px-4 py-3 flex items-center gap-3 flex-wrap">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "#4caf5018" }}>
-              <RefreshCcw className="w-4 h-4 text-[var(--color-success)]" />
-            </div>
-            <span className="text-sm font-semibold text-[var(--color-foreground)]">Recurring</span>
-            <span className="text-sm text-[var(--color-muted-foreground)]">
-              {activeTemplates.length} active ·{" "}
-              <span className="font-semibold text-[var(--color-foreground)]">
-                {formatCurrency(monthlyTotal)}/mo
-              </span>
-            </span>
-            <div className="ml-auto flex items-center gap-2">
-              <GenerateButton month={selectedMonth} />
-              <Link
-                href="/recurring"
-                className="text-xs font-medium text-[var(--color-primary)] hover:underline"
-              >
-                Manage
-              </Link>
-            </div>
-          </div>
-        )}
+
 
         {/* Bills filter + list */}
         <BillsHeader view={view} date={date} status={status} search={q} basePath="/dashboard" />
