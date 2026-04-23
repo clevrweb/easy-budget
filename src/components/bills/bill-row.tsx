@@ -41,28 +41,24 @@ interface BillRowProps {
 
 export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [isPending, startTransition] = useTransition();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [menuPos, setMenuPos]     = useState<{ top: number; right: number } | null>(null);
+  const [editOpen, setEditOpen]   = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef   = useRef<HTMLDivElement>(null);
 
-  const today    = new Date().toISOString().split("T")[0];
+  const today     = new Date().toISOString().split("T")[0];
   const isOverdue = bill.status === "pending" && bill.due_date < today;
   const isPaid    = bill.status === "paid";
 
   const category      = categories.find((c) => c.id === bill.category_id);
   const group         = groups.find((g) => g.id === bill.group_id);
-  const groupLabel    = group?.name ?? null;
-  const categoryLabel = category?.name ?? null;
   const paymentMethod = bill.payment_method ?? null;
+  const metaLabel     = paymentMethod ?? group?.name ?? category?.name ?? null;
 
   const dateStr = new Date(bill.due_date + "T00:00:00").toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
+    month: "short", day: "numeric",
   });
-
-  const color = avatarColor(bill.name);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -70,9 +66,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
       if (
         menuRef.current && !menuRef.current.contains(e.target as Node) &&
         buttonRef.current && !buttonRef.current.contains(e.target as Node)
-      ) {
-        setMenuOpen(false);
-      }
+      ) setMenuOpen(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -93,91 +87,68 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
     startTransition(async () => { await deleteBillAction(bill.id); });
   }
 
-  function handleMarkPaid() {
-    startTransition(async () => { await markBillPaidAction(bill.id); });
-  }
-
-  function handleMarkPending() {
-    startTransition(async () => { await markBillPendingAction(bill.id); });
-  }
+  const color = avatarColor(bill.name);
 
   return (
-    <div
-      className={`flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--color-muted)] transition-colors ${
-        isPending ? "opacity-50 pointer-events-none" : ""
-      }`}
-    >
+    <div className={`flex items-center gap-2.5 px-3 sm:px-4 py-3 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+
       {/* Avatar */}
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
+        className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
         style={{ backgroundColor: color }}
       >
         {bill.name[0].toUpperCase()}
       </div>
 
-      {/* Name + meta row */}
+      {/* Name + meta — takes all remaining space */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm text-[var(--color-foreground)] truncate leading-tight">
           {bill.name}
         </p>
-        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          <span className="text-xs text-[var(--color-muted-foreground)]">{dateStr}</span>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="text-xs text-[var(--color-muted-foreground)] shrink-0">{dateStr}</span>
           <StatusBadge status={bill.status} isOverdue={isOverdue} />
-          {paymentMethod && (
-            <>
-              <span className="text-xs text-[var(--color-border)]">·</span>
-              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[100px]">{paymentMethod}</span>
-            </>
-          )}
-          {groupLabel && (
-            <>
-              <span className="text-xs text-[var(--color-border)]">·</span>
-              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[80px]">{groupLabel}</span>
-            </>
-          )}
-          {categoryLabel && (
-            <>
-              <span className="text-xs text-[var(--color-border)]">·</span>
-              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[80px]">{categoryLabel}</span>
-            </>
+          {metaLabel && (
+            <span className="text-xs text-[var(--color-muted-foreground)] truncate hidden sm:inline">
+              · {metaLabel}
+            </span>
           )}
         </div>
       </div>
 
-      {/* Amount */}
-      <span className="font-bold text-sm text-[var(--color-foreground)] shrink-0 tabular-nums">
-        {formatCurrency(bill.amount)}
-      </span>
+      {/* Right-side group: amount + pay + menu */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className="font-bold text-sm text-[var(--color-foreground)] tabular-nums">
+          {formatCurrency(bill.amount)}
+        </span>
 
-      {/* PAY / PAID button */}
-      {!isPaid ? (
-        <button
-          onClick={handleMarkPaid}
-          className="shrink-0 h-8 px-3 rounded-lg border-2 border-[var(--color-border)] text-xs font-bold text-[var(--color-muted-foreground)] hover:border-[var(--color-success)] hover:text-[var(--color-success)] transition-colors"
-        >
-          PAY
-        </button>
-      ) : (
-        <button
-          onClick={handleMarkPending}
-          className="shrink-0 h-8 px-3 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-80"
-          style={{ backgroundColor: "var(--color-success)" }}
-        >
-          PAID
-        </button>
-      )}
+        {!isPaid ? (
+          <button
+            onClick={() => startTransition(async () => { await markBillPaidAction(bill.id); })}
+            className="h-7 px-2.5 rounded-lg border-2 border-[var(--color-border)] text-[10px] font-bold text-[var(--color-muted-foreground)] hover:border-[var(--color-success)] hover:text-[var(--color-success)] transition-colors"
+          >
+            PAY
+          </button>
+        ) : (
+          <button
+            onClick={() => startTransition(async () => { await markBillPendingAction(bill.id); })}
+            className="h-7 px-2.5 rounded-lg text-[10px] font-bold text-white hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: "var(--color-success)" }}
+          >
+            PAID
+          </button>
+        )}
 
-      {/* Three-dot menu */}
-      <div className="shrink-0">
         <button
           ref={buttonRef}
           onClick={toggleMenu}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
         >
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </div>
 
+      {/* Portal dropdown */}
       {menuOpen && menuPos && createPortal(
         <div
           ref={menuRef}
@@ -202,7 +173,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         document.body
       )}
 
-      {/* Edit dialog — outside the portal so it isn't unmounted when menu closes */}
+      {/* Edit dialog — outside the portal */}
       <BillForm
         bill={bill}
         categories={categories}
