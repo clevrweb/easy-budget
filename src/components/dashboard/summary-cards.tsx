@@ -15,74 +15,45 @@ interface SummaryCardProps {
   label: string;
   bills: Bill[];
   icon: React.ReactNode;
-  accentClass: string;
-  borderClass: string;
+  color: string;
 }
 
-function SummaryCard({ label, bills, icon, accentClass, borderClass }: SummaryCardProps) {
+function SummaryCard({ label, bills, icon, color }: SummaryCardProps) {
   const total = bills.reduce((sum, b) => sum + b.amount, 0);
   return (
-    <div
-      className={`bg-[var(--color-card)] rounded-xl border-l-4 ${borderClass} shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-1 transition-all duration-200 p-5`}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-          {label}
+    <div className="bg-[var(--color-card)] rounded-2xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-4 flex flex-col gap-3 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5 transition-all duration-200">
+      <div className="flex items-center justify-between">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ backgroundColor: color + "18", color }}
+        >
+          {icon}
+        </div>
+        <span
+          className="text-xs font-semibold tabular-nums px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: color + "18", color }}
+        >
+          {bills.length}
         </span>
-        <span className={`${accentClass}`}>{icon}</span>
       </div>
-      <p className={`text-2xl font-bold ${accentClass}`}>{formatCurrency(total)}</p>
-      <p className="text-xs text-[var(--color-muted-foreground)] mt-1">
-        {bills.length} {bills.length === 1 ? "bill" : "bills"}
-      </p>
+      <div>
+        <p className="text-xl font-bold text-[var(--color-foreground)] tabular-nums">
+          {formatCurrency(total)}
+        </p>
+        <p className="text-xs font-medium text-[var(--color-muted-foreground)] mt-0.5">{label}</p>
+      </div>
     </div>
   );
 }
 
 export function SummaryCards({ summary }: { summary: Summary }) {
   const cards = [
-    {
-      label: "Due Today",
-      bills: summary.dueToday,
-      icon: <Calendar className="w-4 h-4" />,
-      accentClass: "text-[var(--color-primary)]",
-      borderClass: "border-[var(--color-primary)]",
-    },
-    {
-      label: "Due This Week",
-      bills: summary.dueThisWeek,
-      icon: <CalendarDays className="w-4 h-4" />,
-      accentClass: "text-[var(--color-warning)]",
-      borderClass: "border-[var(--color-warning)]",
-    },
-    {
-      label: "Due This Month",
-      bills: summary.dueThisMonth,
-      icon: <CalendarRange className="w-4 h-4" />,
-      accentClass: "text-blue-500",
-      borderClass: "border-blue-500",
-    },
-    {
-      label: "Paid",
-      bills: summary.paid,
-      icon: <CheckCircle2 className="w-4 h-4" />,
-      accentClass: "text-[var(--color-success)]",
-      borderClass: "border-[var(--color-success)]",
-    },
-    {
-      label: "Pending",
-      bills: summary.pending,
-      icon: <Clock className="w-4 h-4" />,
-      accentClass: "text-[var(--color-muted-foreground)]",
-      borderClass: "border-[var(--color-muted-foreground)]",
-    },
-    {
-      label: "Overdue",
-      bills: summary.overdue,
-      icon: <AlertCircle className="w-4 h-4" />,
-      accentClass: "text-[var(--color-danger)]",
-      borderClass: "border-[var(--color-danger)]",
-    },
+    { label: "Due Today",      bills: summary.dueToday,     icon: <Calendar className="w-4 h-4" />,      color: "#4f46e5" },
+    { label: "Due This Week",  bills: summary.dueThisWeek,  icon: <CalendarDays className="w-4 h-4" />,  color: "#ff9800" },
+    { label: "Due This Month", bills: summary.dueThisMonth, icon: <CalendarRange className="w-4 h-4" />, color: "#0891b2" },
+    { label: "Paid",           bills: summary.paid,          icon: <CheckCircle2 className="w-4 h-4" />, color: "#4caf50" },
+    { label: "Pending",        bills: summary.pending,       icon: <Clock className="w-4 h-4" />,        color: "#94a3b8" },
+    { label: "Overdue",        bills: summary.overdue,       icon: <AlertCircle className="w-4 h-4" />,  color: "#f44336" },
   ];
 
   return (
