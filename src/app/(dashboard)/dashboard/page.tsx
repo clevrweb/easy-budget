@@ -145,10 +145,10 @@ export default async function DashboardPage({
       {/* Floating action button */}
       <Link
         href="/bills/new"
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition-all z-30"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-11 h-11 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition-all z-30"
         style={{ backgroundColor: "var(--color-primary)" }}
       >
-        <Plus className="w-6 h-6 text-white" />
+        <Plus className="w-4 h-4 text-white" />
       </Link>
     </>
   );
