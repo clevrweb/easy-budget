@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, markBillPaidAction, markBillPendingAction } from "@/app/(dashboard)/bills/actions";
@@ -41,6 +42,8 @@ interface BillRowProps {
 export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [isPending, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const today    = new Date().toISOString().split("T")[0];
@@ -61,13 +64,25 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   useEffect(() => {
     if (!menuOpen) return;
     function handler(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(e.target as Node)
+      ) {
         setMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
+
+  function toggleMenu() {
+    if (menuOpen) { setMenuOpen(false); return; }
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    }
+    setMenuOpen(true);
+  }
 
   function handleDelete() {
     setMenuOpen(false);
@@ -140,40 +155,46 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
       )}
 
       {/* Three-dot menu */}
-      <div className="relative shrink-0" ref={menuRef}>
+      <div className="shrink-0">
         <button
-          onClick={() => setMenuOpen((o) => !o)}
+          ref={buttonRef}
+          onClick={toggleMenu}
           className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
         >
           <MoreHorizontal className="w-4 h-4" />
         </button>
-
-        {menuOpen && (
-          <div className="absolute right-0 top-full mt-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl shadow-xl py-1 z-20 min-w-[130px]">
-            <BillForm
-              bill={bill}
-              categories={categories}
-              groups={groups}
-              trigger={
-                <button
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
-                  Edit
-                </button>
-              }
-            />
-            <button
-              onClick={handleDelete}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete
-            </button>
-          </div>
-        )}
       </div>
+
+      {menuOpen && menuPos && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: "fixed", top: menuPos.top, right: menuPos.right, zIndex: 9999 }}
+          className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl shadow-xl py-1 min-w-[130px]"
+        >
+          <BillForm
+            bill={bill}
+            categories={categories}
+            groups={groups}
+            trigger={
+              <button
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
+                Edit
+              </button>
+            }
+          />
+          <button
+            onClick={handleDelete}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete
+          </button>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
