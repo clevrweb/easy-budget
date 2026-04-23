@@ -21,13 +21,16 @@ function avatarColor(name: string) {
 function StatusBadge({ status, isOverdue }: { status: string; isOverdue: boolean }) {
   const effective = isOverdue ? "overdue" : status;
   const cfg = {
-    paid:    { label: "Paid",    cls: "text-[var(--color-success)] bg-green-50 dark:bg-green-950" },
-    pending: { label: "Pending", cls: "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950" },
-    overdue: { label: "Overdue", cls: "text-[var(--color-danger)] bg-red-50 dark:bg-red-950" },
-  }[effective] ?? { label: status, cls: "" };
+    paid:    { label: "Paid",    bg: "#4caf50" },
+    pending: { label: "Pending", bg: "#ff9800" },
+    overdue: { label: "Overdue", bg: "#f44336" },
+  }[effective] ?? { label: status, bg: "#94a3b8" };
 
   return (
-    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md whitespace-nowrap ${cfg.cls}`}>
+    <span
+      className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap text-white"
+      style={{ backgroundColor: cfg.bg }}
+    >
       {cfg.label}
     </span>
   );
