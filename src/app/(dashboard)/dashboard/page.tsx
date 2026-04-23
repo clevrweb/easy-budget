@@ -1,9 +1,10 @@
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { BillsList } from "@/components/dashboard/bills-list";
-import { BillForm } from "@/components/bills/bill-form";
-import type { Bill, Category, Group } from "@/types/database";
+import type { Bill } from "@/types/database";
 
 function computeSummary(bills: Bill[]) {
   const today = new Date().toISOString().split("T")[0];
@@ -47,17 +48,18 @@ export default async function DashboardPage() {
   const allBills = [...(bills ?? []), ...(overdueBills ?? [])] as Bill[];
   const summary = computeSummary(allBills);
 
-  const [{ data: categories }, { data: groups }] = await Promise.all([
-    supabase.from("categories").select("*").order("name"),
-    supabase.from("groups").select("*").order("name"),
-  ]);
-
   const monthLabel = now.toLocaleString("en-US", { month: "long", year: "numeric" });
 
   return (
     <>
       <Topbar title="Dashboard">
-        <BillForm categories={categories as Category[] ?? []} groups={groups as Group[] ?? []} />
+        <Link
+          href="/bills/new"
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" />
+          Add Bill
+        </Link>
       </Topbar>
       <main className="flex-1 p-6 space-y-6">
         <div className="flex items-center justify-between">
