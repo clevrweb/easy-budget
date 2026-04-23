@@ -33,17 +33,22 @@ export function CategorySelectWithAdd({
   const [selected, setSelected]     = useState(defaultValue);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [color, setColor]           = useState("#4f46e5");
+  const [catName, setCatName]       = useState("");
   const [error, setError]           = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function openDialog() {
     setColor("#4f46e5");
+    setCatName("");
     setError(null);
     setDialogOpen(true);
   }
 
-  async function handleSubmit(formData: FormData) {
+  function handleAdd() {
+    if (!catName.trim()) return;
     setError(null);
+    const formData = new FormData();
+    formData.set("name", catName.trim());
     formData.set("color", color);
     startTransition(async () => {
       const result = await createCategoryAction(formData);
@@ -102,8 +107,15 @@ export function CategorySelectWithAdd({
             <p className="text-xs text-[var(--color-danger)]">{error}</p>
           )}
 
-          <form action={handleSubmit} className="space-y-3">
-            <Input id="qac-name" name="name" placeholder="Category name" required autoFocus />
+          <div className="space-y-3">
+            <Input
+              id="qac-name"
+              placeholder="Category name"
+              value={catName}
+              onChange={(e) => setCatName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } }}
+              autoFocus
+            />
 
             <div className="flex flex-wrap gap-1.5">
               {COLOR_PRESETS.map((c) => (
@@ -129,14 +141,14 @@ export function CategorySelectWithAdd({
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1 h-8 text-xs" disabled={isPending}>
+              <Button type="button" className="flex-1 h-8 text-xs" disabled={isPending || !catName.trim()} onClick={handleAdd}>
                 {isPending ? "Saving..." : "Add"}
               </Button>
               <Button type="button" variant="outline" className="h-8 text-xs" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </div>
