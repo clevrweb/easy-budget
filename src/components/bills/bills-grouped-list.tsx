@@ -46,7 +46,7 @@ export function BillsGroupedList({ bills, categories, groups }: BillsGroupedList
   }
 
   return (
-    <div className="space-y-2 bg-[var(--color-background)]">
+    <div className="space-y-4 bg-[var(--color-background)]">
       {groupOrder.map((groupId) => {
         const groupBills = groupMap.get(groupId)!;
         const group = groupId ? groups.find((g) => g.id === groupId) : null;
@@ -58,7 +58,7 @@ export function BillsGroupedList({ bills, categories, groups }: BillsGroupedList
           : { backgroundColor: "#94a3b810" };
 
         return (
-          <div key={groupId ?? "__ungrouped__"} className="bg-[var(--color-card)]">
+          <div key={groupId ?? "__ungrouped__"} className="bg-[var(--color-card)] border border-[var(--color-border)]">
             {/* Group header */}
             <div
               className="flex items-center justify-between px-4 py-2.5"
