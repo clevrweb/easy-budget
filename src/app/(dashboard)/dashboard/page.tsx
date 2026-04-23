@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, RefreshCcw } from "lucide-react";
+import { RefreshCcw, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
@@ -99,15 +99,7 @@ export default async function DashboardPage({
 
   return (
     <>
-      <Topbar title="Dashboard">
-        <Link
-          href="/bills/new"
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4" />
-          Add Bill
-        </Link>
-      </Topbar>
+      <Topbar title="Dashboard" />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
         {/* Collapsible summary */}
@@ -174,6 +166,15 @@ export default async function DashboardPage({
           )}
         </div>
       </main>
+
+      {/* Floating action button */}
+      <Link
+        href="/bills/new"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition-all z-30"
+        style={{ backgroundColor: "var(--color-primary)" }}
+      >
+        <Plus className="w-6 h-6 text-white" />
+      </Link>
     </>
   );
 }
