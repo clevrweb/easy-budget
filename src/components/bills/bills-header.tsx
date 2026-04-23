@@ -12,6 +12,7 @@ interface BillsHeaderProps {
   date: string;
   status: StatusFilter;
   search: string;
+  basePath?: string;
 }
 
 const VIEWS: { label: string; value: ViewMode }[] = [
@@ -44,7 +45,7 @@ function todayDateFor(v: ViewMode) {
   return "";
 }
 
-export function BillsHeader({ view, date, status, search }: BillsHeaderProps) {
+export function BillsHeader({ view, date, status, search, basePath = "/bills" }: BillsHeaderProps) {
   const router = useRouter();
   const [searchOpen, setSearchOpen]   = useState(!!search);
   const [filterOpen, setFilterOpen]   = useState(status !== "all");
@@ -60,7 +61,7 @@ export function BillsHeader({ view, date, status, search }: BillsHeaderProps) {
     if (d) params.set("date", d);
     if (s && s !== "all") params.set("status", s);
     if (q) params.set("q", q);
-    router.push(`/bills?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
 
   function changeView(v: ViewMode) {

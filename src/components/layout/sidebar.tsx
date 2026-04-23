@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Receipt,
   RefreshCcw,
   Tag,
   BarChart2,
@@ -16,7 +15,6 @@ import { signOutAction } from "@/lib/supabase/actions";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/bills", label: "Bills", icon: Receipt },
   { href: "/recurring", label: "Recurring", icon: RefreshCcw },
   { href: "/categories", label: "Categories", icon: Tag },
   { href: "/groups", label: "Groups", icon: Users },
