@@ -48,6 +48,7 @@ create table public.bills (
   amount numeric(10,2) not null,
   due_date date not null,
   status text not null default 'pending' check (status in ('pending', 'paid', 'overdue')),
+  payment_method text,
   notes text,
   is_recurring boolean not null default false,
   paid_at timestamptz,

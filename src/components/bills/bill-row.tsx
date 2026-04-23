@@ -50,9 +50,11 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const isOverdue = bill.status === "pending" && bill.due_date < today;
   const isPaid    = bill.status === "paid";
 
-  const category = categories.find((c) => c.id === bill.category_id);
-  const group    = groups.find((g) => g.id === bill.group_id);
-  const meta     = category?.name ?? group?.name ?? null;
+  const category      = categories.find((c) => c.id === bill.category_id);
+  const group         = groups.find((g) => g.id === bill.group_id);
+  const groupLabel    = group?.name ?? null;
+  const categoryLabel = category?.name ?? null;
+  const paymentMethod = bill.payment_method ?? null;
 
   const dateStr = new Date(bill.due_date + "T00:00:00").toLocaleString("en-US", {
     month: "short",
@@ -120,12 +122,22 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
           <span className="text-xs text-[var(--color-muted-foreground)]">{dateStr}</span>
           <StatusBadge status={bill.status} isOverdue={isOverdue} />
-          {meta && (
+          {paymentMethod && (
             <>
               <span className="text-xs text-[var(--color-border)]">·</span>
-              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[120px]">
-                {meta}
-              </span>
+              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[100px]">{paymentMethod}</span>
+            </>
+          )}
+          {groupLabel && (
+            <>
+              <span className="text-xs text-[var(--color-border)]">·</span>
+              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[80px]">{groupLabel}</span>
+            </>
+          )}
+          {categoryLabel && (
+            <>
+              <span className="text-xs text-[var(--color-border)]">·</span>
+              <span className="text-xs text-[var(--color-muted-foreground)] truncate max-w-[80px]">{categoryLabel}</span>
             </>
           )}
         </div>

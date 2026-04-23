@@ -49,6 +49,7 @@ export interface Bill {
   amount: number;
   due_date: string;
   status: BillStatus;
+  payment_method: string | null;
   notes: string | null;
   is_recurring: boolean;
   recurring_template_id: string | null;
