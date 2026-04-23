@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
+import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
@@ -101,10 +102,11 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="category_id">Category</Label>
-          <select id="category_id" name="category_id" defaultValue="" className={selectCls}>
-            <option value="">No category</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <CategorySelectWithAdd
+            id="category_id"
+            name="category_id"
+            categories={categories}
+          />
         </div>
       </div>
 

@@ -18,6 +18,7 @@ import type { EndsType } from "./recurring-section";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
+import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 
 interface BillFormProps {
   bill?: Bill;
@@ -142,12 +143,12 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bf-category">Category</Label>
-              <select id="bf-category" name="category_id" defaultValue={bill?.category_id ?? ""} className={selectCls}>
-                <option value="">No category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <CategorySelectWithAdd
+                id="bf-category"
+                name="category_id"
+                categories={categories}
+                defaultValue={bill?.category_id ?? ""}
+              />
             </div>
           </div>
 

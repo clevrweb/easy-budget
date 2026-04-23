@@ -8,16 +8,18 @@ export async function createCategoryAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const { error } = await supabase.from("categories").insert({
+  const { data, error } = await supabase.from("categories").insert({
     user_id: user.id,
     name: formData.get("name") as string,
     color: (formData.get("color") as string) || "#4f46e5",
     icon: (formData.get("icon") as string) || null,
-  });
+  }).select().single();
 
   if (error) return { error: error.message };
   revalidatePath("/categories");
-  return { success: true };
+  revalidatePath("/bills");
+  revalidatePath("/dashboard");
+  return { success: true, category: data };
 }
 
 export async function updateCategoryAction(formData: FormData) {
