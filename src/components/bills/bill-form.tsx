@@ -37,7 +37,8 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const isEdit = !!bill;
+  const isEdit      = !!bill;
+  const isControlled = externalOpen !== undefined;
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];
 
@@ -64,14 +65,16 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button>
-            <Plus className="w-4 h-4" />
-            Add Bill
-          </Button>
-        )}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button>
+              <Plus className="w-4 h-4" />
+              Add Bill
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Bill" : "Add Bill"}</DialogTitle>
