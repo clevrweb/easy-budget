@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createBillAction } from "@/app/(dashboard)/bills/actions";
+import { RecurringSection } from "./recurring-section";
+import type { EndsType } from "./recurring-section";
+import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Category, Group } from "@/types/database";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
@@ -20,12 +22,25 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const today = new Date().toISOString().split("T")[0];
+
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
+  // Recurring state
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [frequency, setFrequency]     = useState("monthly");
+  const [dueDay, setDueDay]           = useState(today.getDate());
+  const [dueDate, setDueDate]         = useState(todayStr);
+  const [endsType, setEndsType]       = useState<EndsType>("never");
+  const [endDate, setEndDate]         = useState("");
+  const [endCount, setEndCount]       = useState(12);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await createBillAction(formData);
+      const result = isRecurring
+        ? await createRecurringBillAction(formData)
+        : await createBillAction(formData);
       if (result?.error) setError(result.error);
       else router.push("/dashboard");
     });
@@ -39,13 +54,11 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
         </div>
       )}
 
-      {/* Bill Name */}
       <div className="space-y-1.5">
         <Label htmlFor="name">Bill Name</Label>
         <Input id="name" name="name" placeholder="e.g., Electricity" required autoFocus />
       </div>
 
-      {/* Amount + Due Date */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="amount">Amount (USD)</Label>
@@ -53,19 +66,23 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="due_date">Due Date</Label>
-          <Input id="due_date" name="due_date" type="date" defaultValue={today} required />
+          <Input
+            id="due_date" name="due_date" type="date"
+            defaultValue={todayStr}
+            onChange={(e) => {
+              setDueDate(e.target.value);
+              if (e.target.value) setDueDay(new Date(e.target.value + "T00:00:00").getDate());
+            }}
+          />
         </div>
       </div>
 
-      {/* Group + Status */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="group_id">Group</Label>
           <select id="group_id" name="group_id" defaultValue="" className={selectCls}>
             <option value="">No group</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>{g.name}</option>
-            ))}
+            {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
@@ -77,7 +94,6 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
         </div>
       </div>
 
-      {/* Payment Method + Category */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="payment_method">Payment Method</Label>
@@ -87,24 +103,31 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
           <Label htmlFor="category_id">Category</Label>
           <select id="category_id" name="category_id" defaultValue="" className={selectCls}>
             <option value="">No category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
       </div>
 
-      {/* Notes */}
       <div className="space-y-1.5">
         <Label htmlFor="notes">Notes</Label>
         <Textarea id="notes" name="notes" placeholder="Optional notes..." />
       </div>
 
-      <div className="flex gap-3 pt-1">
-        <Button type="submit" className="flex-1" disabled={isPending}>
-          {isPending ? "Saving..." : "Add Bill"}
+      <RecurringSection
+        enabled={isRecurring}     onToggle={setIsRecurring}
+        frequency={frequency}     onFrequency={setFrequency}
+        dueDay={dueDay}           onDueDay={setDueDay}
+        dueDate={dueDate}
+        endsType={endsType}       onEndsType={setEndsType}
+        endDate={endDate}         onEndDate={setEndDate}
+        endCount={endCount}       onEndCount={setEndCount}
+      />
+
+      <div className="flex flex-col gap-2 pt-1">
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Saving..." : isRecurring ? "Add Recurring Bill" : "Add Bill"}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.push("/dashboard")} disabled={isPending}>
+        <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/dashboard")} disabled={isPending}>
           Cancel
         </Button>
       </div>

@@ -13,7 +13,9 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { createBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
+import { RecurringSection } from "./recurring-section";
+import type { EndsType } from "./recurring-section";
+import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
 
@@ -36,12 +38,25 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const [isPending, startTransition] = useTransition();
 
   const isEdit = !!bill;
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+
+  // Recurring state (only for create)
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [frequency, setFrequency]     = useState("monthly");
+  const [dueDay, setDueDay]           = useState(now.getDate());
+  const [dueDate, setDueDate]         = useState(bill?.due_date ?? todayStr);
+  const [endsType, setEndsType]       = useState<EndsType>("never");
+  const [endDate, setEndDate]         = useState("");
+  const [endCount, setEndCount]       = useState(12);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = isEdit ? await updateBillAction(formData) : await createBillAction(formData);
+      let result;
+      if (isEdit)           result = await updateBillAction(formData);
+      else if (isRecurring) result = await createRecurringBillAction(formData);
+      else                  result = await createBillAction(formData);
       if (result?.error) setError(result.error);
       else setOpen(false);
     });
@@ -85,7 +100,14 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bf-due">Due Date</Label>
-              <Input id="bf-due" name="due_date" type="date" defaultValue={bill?.due_date ?? today} required />
+              <Input
+                id="bf-due" name="due_date" type="date"
+                defaultValue={bill?.due_date ?? todayStr}
+                onChange={(e) => {
+                  setDueDate(e.target.value);
+                  if (e.target.value) setDueDay(new Date(e.target.value + "T00:00:00").getDate());
+                }}
+              />
             </div>
           </div>
 
@@ -132,9 +154,22 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             <Textarea id="bf-notes" name="notes" placeholder="Optional notes..." defaultValue={bill?.notes ?? ""} />
           </div>
 
+          {/* Recurring toggle — only on create */}
+          {!isEdit && (
+            <RecurringSection
+              enabled={isRecurring}     onToggle={setIsRecurring}
+              frequency={frequency}     onFrequency={setFrequency}
+              dueDay={dueDay}           onDueDay={setDueDay}
+              dueDate={dueDate}
+              endsType={endsType}       onEndsType={setEndsType}
+              endDate={endDate}         onEndDate={setEndDate}
+              endCount={endCount}       onEndCount={setEndCount}
+            />
+          )}
+
           <div className="flex gap-3 pt-1">
             <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Bill"}
+              {isPending ? "Saving..." : isEdit ? "Save Changes" : isRecurring ? "Add Recurring Bill" : "Add Bill"}
             </Button>
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
