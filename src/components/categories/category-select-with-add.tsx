@@ -59,8 +59,8 @@ export function CategorySelectWithAdd({
   }
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center gap-2">
+    <div className="relative">
+      <div className="flex items-center gap-1">
         <select
           id={id}
           name={name}
@@ -78,23 +78,23 @@ export function CategorySelectWithAdd({
           type="button"
           onClick={openDialog}
           title="Add new category"
-          className="w-10 h-10 shrink-0 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
+          className="shrink-0 px-1 flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Inline mini-dialog */}
+      {/* Floating overlay — full width, appears above siblings */}
       {dialogOpen && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-lg p-4 space-y-3">
+        <div className="absolute left-0 right-0 top-0 z-50 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-xl p-3 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-[var(--color-foreground)]">New Category</span>
+            <span className="text-xs font-semibold text-[var(--color-foreground)]">New Category</span>
             <button
               type="button"
               onClick={() => setDialogOpen(false)}
-              className="w-6 h-6 flex items-center justify-center rounded-md text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+              className="w-5 h-5 flex items-center justify-center rounded text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] transition-colors"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3" />
             </button>
           </div>
 
@@ -103,38 +103,32 @@ export function CategorySelectWithAdd({
           )}
 
           <form action={handleSubmit} className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="qac-name" className="text-xs">Name</Label>
-              <Input id="qac-name" name="name" placeholder="e.g. Housing" required autoFocus />
-            </div>
+            <Input id="qac-name" name="name" placeholder="Category name" required autoFocus />
 
-            <div className="space-y-1">
-              <Label className="text-xs">Color</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {COLOR_PRESETS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className="w-7 h-7 rounded-md transition-transform hover:scale-110 focus:outline-none"
-                    style={{
-                      backgroundColor: c,
-                      outline: color === c ? `3px solid ${c}` : undefined,
-                      outlineOffset: color === c ? "2px" : undefined,
-                    }}
-                  />
-                ))}
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-7 h-7 rounded-md cursor-pointer border border-[var(--color-border)] p-0.5 bg-[var(--color-card)]"
-                  title="Custom color"
+            <div className="flex flex-wrap gap-1.5">
+              {COLOR_PRESETS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className="w-6 h-6 rounded-md transition-transform hover:scale-110 focus:outline-none"
+                  style={{
+                    backgroundColor: c,
+                    outline: color === c ? `3px solid ${c}` : undefined,
+                    outlineOffset: color === c ? "2px" : undefined,
+                  }}
                 />
-              </div>
+              ))}
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-6 h-6 rounded-md cursor-pointer border border-[var(--color-border)] p-0.5 bg-[var(--color-card)]"
+                title="Custom color"
+              />
             </div>
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-2">
               <Button type="submit" className="flex-1 h-8 text-xs" disabled={isPending}>
                 {isPending ? "Saving..." : "Add"}
               </Button>
