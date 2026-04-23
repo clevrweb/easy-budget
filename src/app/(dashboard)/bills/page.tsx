@@ -1,6 +1,7 @@
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
-import { BillForm } from "@/components/bills/bill-form";
 import { BillRow } from "@/components/bills/bill-row";
 import { MonthPicker } from "@/components/ui/month-picker";
 import type { Bill, Category, Group } from "@/types/database";
@@ -57,7 +58,13 @@ export default async function BillsPage({
   return (
     <>
       <Topbar title="Bills">
-        <BillForm categories={categories as Category[] ?? []} groups={groups as Group[] ?? []} />
+        <Link
+          href="/bills/new"
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" />
+          Add Bill
+        </Link>
       </Topbar>
 
       <main className="flex-1 p-6 space-y-5">
