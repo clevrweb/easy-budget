@@ -46,7 +46,7 @@ export function BillsGroupedList({ bills, categories, groups }: BillsGroupedList
   }
 
   return (
-    <div className="space-y-3">
+    <div className="divide-y divide-[var(--color-border)]">
       {groupOrder.map((groupId) => {
         const groupBills = groupMap.get(groupId)!;
         const group = groupId ? groups.find((g) => g.id === groupId) : null;
