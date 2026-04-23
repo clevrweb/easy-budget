@@ -93,7 +93,16 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const color = avatarColor(bill.name);
 
   return (
-    <div className={`flex items-center gap-2.5 px-3 sm:px-4 py-3 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+    <div
+      className={`flex items-center gap-2.5 px-3 sm:px-4 py-3 ${isPending ? "opacity-50 pointer-events-none" : ""}`}
+      style={{
+        backgroundColor: isPaid
+          ? "#4caf5010"
+          : isOverdue
+          ? "#f4433610"
+          : undefined,
+      }}
+    >
 
       {/* Avatar */}
       <div
