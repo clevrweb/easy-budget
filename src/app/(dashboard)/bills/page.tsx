@@ -77,15 +77,7 @@ export default async function BillsPage({
 
   return (
     <>
-      <Topbar title="Bills">
-        <Link
-          href="/bills/new"
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-        >
-          <Plus className="w-4 h-4" />
-          Add Bill
-        </Link>
-      </Topbar>
+      <Topbar title="Bills" />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
         <BillsHeader view={view} date={date} status={status} search={q} />
@@ -124,6 +116,14 @@ export default async function BillsPage({
           )}
         </div>
       </main>
+
+      <Link
+        href="/bills/new"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:opacity-90 active:scale-95 transition-all z-30"
+        style={{ backgroundColor: "var(--color-primary)" }}
+      >
+        <Plus className="w-6 h-6 text-white" />
+      </Link>
     </>
   );
 }
