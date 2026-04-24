@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  RefreshCcw,
   Tag,
   BarChart2,
   Users,
@@ -16,7 +15,6 @@ import { signOutAction } from "@/lib/supabase/actions";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/recurring", label: "Recurring", icon: RefreshCcw },
   { href: "/categories", label: "Categories", icon: Tag },
   { href: "/groups", label: "Groups", icon: Users },
   { href: "/reports", label: "Reports", icon: BarChart2 },

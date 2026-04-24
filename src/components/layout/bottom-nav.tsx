@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, RefreshCcw, BarChart2, Tag, Users } from "lucide-react";
+import { LayoutDashboard, BarChart2, Tag, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard",  label: "Home",       icon: LayoutDashboard },
-  { href: "/recurring",  label: "Recurring",  icon: RefreshCcw },
   { href: "/categories", label: "Categories", icon: Tag },
   { href: "/groups",     label: "Groups",     icon: Users },
   { href: "/reports",    label: "Reports",    icon: BarChart2 },
