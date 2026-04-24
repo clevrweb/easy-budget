@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -27,15 +28,8 @@ export function Sidebar() {
   return (
     <aside className="flex flex-col w-64 min-h-screen bg-[var(--color-sidebar)] border-r border-[var(--color-border)] shrink-0">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-[var(--color-border)]">
-        <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center shrink-0">
-          <svg width="16" height="16" viewBox="0 0 32 32" fill="none">
-            <path d="M16 6L10 12H13V21H10L16 27L22 21H19V12H22L16 6Z" fill="white" />
-          </svg>
-        </div>
-        <span className="font-bold text-[var(--color-foreground)] text-base leading-tight">
-          Easy Budget
-        </span>
+      <div className="flex items-center justify-center px-6 py-4 border-b border-[var(--color-border)]">
+        <Image src="/logo.jpg" alt="Easy Budget" width={120} height={120} className="w-28 h-auto" priority />
       </div>
 
       {/* Nav */}
