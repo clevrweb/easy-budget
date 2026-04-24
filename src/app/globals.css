@@ -18,11 +18,11 @@
   --color-expense: #ff5722;
 
   /* Status badge colors — light mode */
-  --badge-paid-bg: #4caf5022;
+  --badge-paid-bg: #4caf5040;
   --badge-paid-fg: #1b5e20;
-  --badge-pending-bg: #ff980022;
+  --badge-pending-bg: #ff980040;
   --badge-pending-fg: #bf360c;
-  --badge-overdue-bg: #f4433622;
+  --badge-overdue-bg: #f4433640;
   --badge-overdue-fg: #b71c1c;
 
   /* Light mode */
@@ -65,11 +65,11 @@
 
   .dark {
     color-scheme: dark;
-    --badge-paid-bg: #16a34a38;
+    --badge-paid-bg: #16a34a55;
     --badge-paid-fg: #86efac;
-    --badge-pending-bg: #ea580c38;
+    --badge-pending-bg: #ea580c55;
     --badge-pending-fg: #fdba74;
-    --badge-overdue-bg: #dc262638;
+    --badge-overdue-bg: #dc262655;
     --badge-overdue-fg: #fca5a5;
     --color-background: #202020;
     --color-foreground: #f3f3f3;
