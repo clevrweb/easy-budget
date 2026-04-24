@@ -11,7 +11,7 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ title, children }: MobileHeaderProps) {
   const { resolvedTheme } = useTheme();
-  const logo = resolvedTheme === "dark" ? "/logo-dark.jpg" : "/logo.jpg";
+  const logo = resolvedTheme === "dark" ? "/logo-transparent.png" : "/logo.jpg";
 
   return (
     <header className="h-14 flex items-center justify-between px-4 border-b border-[var(--color-border)] bg-[var(--color-card)] md:hidden shrink-0">

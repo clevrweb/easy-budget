@@ -24,7 +24,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
-  const logo = resolvedTheme === "dark" ? "/logo-dark.jpg" : "/logo.jpg";
+  const logo = resolvedTheme === "dark" ? "/logo-transparent.png" : "/logo.jpg";
 
   return (
     <aside className="flex flex-col w-64 min-h-screen bg-[var(--color-sidebar)] border-r border-[var(--color-border)] shrink-0">
