@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { CategoryForm } from "@/components/categories/category-form";
 import { CategoryCard } from "@/components/categories/category-card";
+import { seedDefaultCategoriesAction } from "./actions";
 import type { Category } from "@/types/database";
 
 export default async function CategoriesPage() {
@@ -17,6 +18,14 @@ export default async function CategoriesPage() {
   return (
     <>
       <Topbar title="Categories">
+        <form action={seedDefaultCategoriesAction}>
+          <button
+            type="submit"
+            className="h-9 px-3 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
+          >
+            Load defaults
+          </button>
+        </form>
         <CategoryForm />
       </Topbar>
 
@@ -32,6 +41,15 @@ export default async function CategoriesPage() {
             <p className="text-sm text-[var(--color-muted-foreground)] mt-1">
               Create categories to organize your bills by type.
             </p>
+            <form action={seedDefaultCategoriesAction} className="mt-4">
+              <button
+                type="submit"
+                className="h-9 px-4 rounded-lg text-sm font-medium text-white transition-colors"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                Load default categories
+              </button>
+            </form>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
