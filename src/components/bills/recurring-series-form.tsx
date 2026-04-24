@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,9 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
-import { updateRecurringSeriesAction } from "@/app/(dashboard)/bills/actions";
+import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
+import type { EndsType } from "./recurring-section";
 
 interface RecurringSeriesFormProps {
   bill: Bill;
@@ -25,9 +26,48 @@ interface RecurringSeriesFormProps {
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
+function ordinal(n: number) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function previewText(frequency: string, dueDay: number, dueDate: string) {
+  if (frequency === "monthly") return `Every month on the ${ordinal(dueDay)}`;
+  if (frequency === "weekly") {
+    const day = dueDate ? new Date(dueDate + "T00:00:00").toLocaleString("en-US", { weekday: "long" }) : "selected day";
+    return `Every week on ${day}`;
+  }
+  if (frequency === "yearly") {
+    const label = dueDate ? new Date(dueDate + "T00:00:00").toLocaleString("en-US", { month: "long", day: "numeric" }) : "the same date";
+    return `Every year on ${label}`;
+  }
+  return "";
+}
+
 export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChange }: RecurringSeriesFormProps) {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]       = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [loading, setLoading]   = useState(false);
+
+  const defaultDueDay = new Date(bill.due_date + "T00:00:00").getDate();
+  const [frequency, setFrequency] = useState("monthly");
+  const [dueDay, setDueDay]       = useState(defaultDueDay);
+  const [endsType, setEndsType]   = useState<EndsType>("never");
+  const [endDate, setEndDate]     = useState("");
+  const [endCount, setEndCount]   = useState(12);
+
+  useEffect(() => {
+    if (!open || !bill.recurring_template_id) return;
+    setLoading(true);
+    getRecurringTemplateAction(bill.recurring_template_id).then((result) => {
+      if (result?.template) {
+        setFrequency(result.template.frequency);
+        setDueDay(result.template.due_day);
+      }
+      setLoading(false);
+    });
+  }, [open, bill.recurring_template_id]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -38,6 +78,8 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
     });
   }
 
+  const preview = previewText(frequency, dueDay, bill.due_date);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -46,7 +88,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         </DialogHeader>
 
         <p className="text-sm text-[var(--color-muted-foreground)] -mt-1">
-          Updates the template and all pending bills in this recurring series.
+          Updates the template and regenerates all pending bills.
         </p>
 
         {error && (
@@ -58,16 +100,19 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         <form action={handleSubmit} className="space-y-4">
           <input type="hidden" name="template_id" value={bill.recurring_template_id!} />
 
+          {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="rs-name">Bill Name</Label>
             <Input id="rs-name" name="name" placeholder="e.g., Electricity" defaultValue={bill.name} required />
           </div>
 
+          {/* Amount */}
           <div className="space-y-1.5">
             <Label htmlFor="rs-amount">Amount (USD)</Label>
             <Input id="rs-amount" name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" defaultValue={bill.amount} required />
           </div>
 
+          {/* Group + Category */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="rs-group">Group</Label>
@@ -89,9 +134,103 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             </div>
           </div>
 
+          {/* Recurrence settings */}
+          <div className="border-t border-[var(--color-border)] pt-4 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+              Recurrence
+            </p>
+
+            {loading ? (
+              <p className="text-sm text-[var(--color-muted-foreground)]">Loading…</p>
+            ) : (
+              <>
+                {/* Frequency */}
+                <div className="space-y-1.5">
+                  <Label>Frequency</Label>
+                  <select
+                    name="frequency"
+                    value={frequency}
+                    onChange={(e) => setFrequency(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="monthly">Monthly</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+
+                {/* Day of month (monthly only) */}
+                {frequency === "monthly" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rs-due-day">Day of month</Label>
+                    <Input
+                      id="rs-due-day"
+                      name="due_day"
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={dueDay}
+                      onChange={(e) => setDueDay(Math.max(1, Math.min(31, parseInt(e.target.value) || 1)))}
+                    />
+                  </div>
+                )}
+
+                {/* Ends */}
+                <div className="space-y-2">
+                  <Label>Ends</Label>
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="radio" name="ends_type" value="never"
+                      checked={endsType === "never"} onChange={() => setEndsType("never")}
+                      className="accent-[var(--color-primary)] w-4 h-4"
+                    />
+                    <span className="text-sm text-[var(--color-foreground)]">Never</span>
+                  </label>
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="radio" name="ends_type" value="date"
+                      checked={endsType === "date"} onChange={() => setEndsType("date")}
+                      className="accent-[var(--color-primary)] w-4 h-4"
+                    />
+                    <span className="text-sm text-[var(--color-foreground)] shrink-0">On date</span>
+                    <input
+                      type="date" name="end_date" value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      disabled={endsType !== "date"}
+                      className="h-8 flex-1 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="radio" name="ends_type" value="count"
+                      checked={endsType === "count"} onChange={() => setEndsType("count")}
+                      className="accent-[var(--color-primary)] w-4 h-4"
+                    />
+                    <span className="text-sm text-[var(--color-foreground)] shrink-0">After</span>
+                    <input
+                      type="number" name="end_count" min={1} value={endCount}
+                      onChange={(e) => setEndCount(Math.max(1, parseInt(e.target.value) || 1))}
+                      disabled={endsType !== "count"}
+                      className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                    />
+                    <span className="text-sm text-[var(--color-foreground)]">occurrences</span>
+                  </label>
+                </div>
+
+                {/* Preview */}
+                <div
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--color-primary) 10%, transparent)", color: "var(--color-primary)" }}
+                >
+                  {preview}
+                </div>
+              </>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-1">
-            <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : "Update Series"}
+            <Button type="submit" className="flex-1" disabled={isPending || loading}>
+              {isPending ? "Saving…" : "Update Series"}
             </Button>
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>

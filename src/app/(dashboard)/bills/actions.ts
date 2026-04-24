@@ -133,33 +133,95 @@ export async function createRecurringBillAction(formData: FormData) {
   return { success: true };
 }
 
+export async function getRecurringTemplateAction(templateId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { data, error } = await supabase
+    .from("recurring_templates")
+    .select("*")
+    .eq("id", templateId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (error) return { error: error.message };
+  return { template: data };
+}
+
 export async function updateRecurringSeriesAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  const templateId = formData.get("template_id") as string;
-  const name       = formData.get("name") as string;
-  const amount     = parseFloat(formData.get("amount") as string);
-  const categoryId = (formData.get("category_id") as string) || null;
-  const groupId    = (formData.get("group_id") as string) || null;
+  const templateId  = formData.get("template_id") as string;
+  const name        = formData.get("name") as string;
+  const amount      = parseFloat(formData.get("amount") as string);
+  const categoryId  = (formData.get("category_id") as string) || null;
+  const groupId     = (formData.get("group_id") as string) || null;
+  const frequency   = (formData.get("frequency") as string) || "monthly";
+  const dueDay      = parseInt(formData.get("due_day") as string) || 1;
+  const endsType    = (formData.get("ends_type") as string) || "never";
+  const endDate     = (formData.get("end_date") as string) || null;
+  const endCount    = parseInt(formData.get("end_count") as string) || null;
 
+  // Update the template
   const { error: tplError } = await supabase
     .from("recurring_templates")
-    .update({ name, amount, category_id: categoryId, group_id: groupId })
+    .update({ name, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay })
     .eq("id", templateId)
     .eq("user_id", user.id);
 
   if (tplError) return { error: tplError.message };
 
-  const { error: billsError } = await supabase
+  // Delete all pending bills for this template so we can regenerate
+  const { error: deleteError } = await supabase
     .from("bills")
-    .update({ name, amount, category_id: categoryId, group_id: groupId })
+    .delete()
     .eq("recurring_template_id", templateId)
     .eq("status", "pending")
     .eq("user_id", user.id);
 
-  if (billsError) return { error: billsError.message };
+  if (deleteError) return { error: deleteError.message };
+
+  // Regenerate bills from today
+  const today = new Date();
+  const maxPeriods = frequency === "yearly" ? 2 : 6;
+  const limit = endsType === "count" && endCount ? Math.min(maxPeriods, endCount) : maxPeriods;
+
+  const bills: object[] = [];
+  for (let i = 0; i < limit; i++) {
+    let billDate: string;
+
+    if (frequency === "monthly") {
+      const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      const day = Math.min(dueDay, lastDay);
+      billDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    } else if (frequency === "weekly") {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i * 7);
+      billDate = d.toISOString().split("T")[0];
+    } else {
+      const d = new Date(today);
+      d.setFullYear(d.getFullYear() + i);
+      billDate = d.toISOString().split("T")[0];
+    }
+
+    if (endsType === "date" && endDate && billDate > endDate) break;
+
+    bills.push({
+      user_id: user.id, name, amount,
+      due_date: billDate, status: "pending",
+      category_id: categoryId, group_id: groupId,
+      is_recurring: true, recurring_template_id: templateId,
+    });
+  }
+
+  if (bills.length > 0) {
+    const { error: billsError } = await supabase.from("bills").insert(bills);
+    if (billsError) return { error: billsError.message };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/bills");
