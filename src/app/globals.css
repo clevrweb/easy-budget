@@ -57,20 +57,20 @@
 
   .dark {
     color-scheme: dark;
-    --color-background: #0f172a;
-    --color-foreground: #e2e8f0;
-    --color-card: #1e293b;
-    --color-card-foreground: #e2e8f0;
-    --color-muted: #1e293b;
-    --color-muted-foreground: #94a3b8;
-    --color-border: #334155;
-    --color-input: #334155;
-    --color-sidebar: #1e293b;
-    --color-sidebar-foreground: #e2e8f0;
-    --color-sidebar-active: #2e1065;
-    --color-sidebar-active-foreground: #c4b5fd;
-    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --color-background: #202020;
+    --color-foreground: #f3f3f3;
+    --color-card: #2c2c2c;
+    --color-card-foreground: #f3f3f3;
+    --color-muted: #383838;
+    --color-muted-foreground: #ababab;
+    --color-border: #404040;
+    --color-input: #404040;
+    --color-sidebar: #1c1c1c;
+    --color-sidebar-foreground: #f3f3f3;
+    --color-sidebar-active: #3a1f6e;
+    --color-sidebar-active-foreground: #d4b8ff;
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.5);
   }
 
   * {
