@@ -51,8 +51,10 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const [loading, setLoading]   = useState(false);
 
   const defaultDueDay = new Date(bill.due_date + "T00:00:00").getDate();
+  const todayStr = new Date().toISOString().split("T")[0];
   const [frequency, setFrequency] = useState("monthly");
   const [dueDay, setDueDay]       = useState(defaultDueDay);
+  const [startDate, setStartDate] = useState(todayStr);
   const [endsType, setEndsType]   = useState<EndsType>("never");
   const [endDate, setEndDate]     = useState("");
   const [endCount, setEndCount]   = useState(12);
@@ -144,6 +146,21 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
               <p className="text-sm text-[var(--color-muted-foreground)]">Loading…</p>
             ) : (
               <>
+                {/* Starting date */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="rs-start-date">Starting from</Label>
+                  <Input
+                    id="rs-start-date"
+                    name="start_date"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                  <p className="text-xs text-[var(--color-muted-foreground)]">
+                    Pending bills will be regenerated from this date forward.
+                  </p>
+                </div>
+
                 {/* Frequency */}
                 <div className="space-y-1.5">
                   <Label>Frequency</Label>

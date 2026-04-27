@@ -184,8 +184,9 @@ export async function updateRecurringSeriesAction(formData: FormData) {
 
   if (deleteError) return { error: deleteError.message };
 
-  // Regenerate bills from today
-  const today = new Date();
+  // Regenerate bills from the given start date (defaults to today)
+  const startDateStr = (formData.get("start_date") as string) || new Date().toISOString().split("T")[0];
+  const today = new Date(startDateStr + "T00:00:00");
   const maxPeriods = frequency === "yearly" ? 2 : 6;
   const limit = endsType === "count" && endCount ? Math.min(maxPeriods, endCount) : maxPeriods;
 
@@ -222,6 +223,20 @@ export async function updateRecurringSeriesAction(formData: FormData) {
     const { error: billsError } = await supabase.from("bills").insert(bills);
     if (billsError) return { error: billsError.message };
   }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/bills");
+  revalidatePath("/recurring");
+  return { success: true };
+}
+
+export async function deleteRecurringSeriesAction(templateId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  await supabase.from("bills").delete().eq("recurring_template_id", templateId).eq("status", "pending").eq("user_id", user.id);
+  await supabase.from("recurring_templates").delete().eq("id", templateId).eq("user_id", user.id);
 
   revalidatePath("/dashboard");
   revalidatePath("/bills");
