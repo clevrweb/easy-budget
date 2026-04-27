@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git commit -m 'Switch dark mode to neutral Windows-style grays *)",
+      "Bash(git push *)",
+      "Bash(git commit -m 'Fix status badge visibility in dark mode with proper dark variants *)",
+      "Bash(git commit -m 'Fix status badges in both light and dark mode using CSS variables *)",
+      "Bash(git commit -m 'Increase status badge color opacity in light and dark mode *)",
+      "Bash(git commit -m 'Add EasyBudget logo to sidebar and mobile header *)",
+      "Bash(git commit -m 'Remove Recurring from sidebar and bottom nav *)",
+      "Bash(git commit -m 'Use dark logo in dark mode on sidebar and mobile header *)",
+      "Bash(git commit -m 'Use logo-transparent.png for dark mode logo *)",
+      "Bash(git commit -m 'Add seed default categories action and Load defaults button *)",
+      "Bash(npx web-push *)"
     ]
   }
 }

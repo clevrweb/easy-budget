@@ -9,6 +9,7 @@ import {
   Tag,
   BarChart2,
   Users,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/categories", label: "Categories", icon: Tag },
   { href: "/groups", label: "Groups", icon: Users },
   { href: "/reports", label: "Reports", icon: BarChart2 },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {
