@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/dialog";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets } from "./biller-presets";
+import { BillerPresets, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 
 interface BillFormProps {
@@ -44,13 +44,24 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];
 
-  const [billName, setBillName] = useState(bill?.name ?? "");
-  const [logoUrl, setLogoUrl]   = useState<string | null>(bill?.logo_url ?? null);
+  const [billName, setBillName]   = useState(bill?.name ?? "");
+  const [logoUrl, setLogoUrl]     = useState<string | null>(bill?.logo_url ?? null);
+  const logoSetByPreset           = useRef(false);
 
   function handlePresetSelect(name: string, url: string | null) {
+    logoSetByPreset.current = true;
     setBillName(name);
     setLogoUrl(url);
   }
+
+  useEffect(() => {
+    if (billName.length < 3 || logoSetByPreset.current) return;
+    const timer = setTimeout(async () => {
+      const url = await fetchBillerLogo(billName);
+      setLogoUrl(url);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [billName]);
 
   // Recurring state (only for create)
   const [isRecurring, setIsRecurring] = useState(false);
@@ -102,12 +113,21 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
           {/* Bill Name */}
           <div className="space-y-1.5">
             <Label htmlFor="bf-name">Bill Name</Label>
-            {!isEdit && <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />}
+            <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
+            {logoUrl && (
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--color-muted)] w-fit">
+                <img src={logoUrl} className="w-4 h-4 object-contain" alt="" />
+                <span className="text-xs text-[var(--color-muted-foreground)]">Logo found</span>
+                <button type="button" onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}>
+                  <X className="w-3 h-3 text-[var(--color-muted-foreground)]" />
+                </button>
+              </div>
+            )}
             <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
             <Input
               id="bf-name" name="name" placeholder="e.g., Electricity" required
               value={billName}
-              onChange={(e) => { setBillName(e.target.value); setLogoUrl(null); }}
+              onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); setLogoUrl(null); }}
             />
           </div>
 

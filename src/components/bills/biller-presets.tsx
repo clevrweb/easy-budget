@@ -112,6 +112,19 @@ function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
   );
 }
 
+export async function fetchBillerLogo(name: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(name)}`
+    );
+    const data = await res.json();
+    if (!data?.[0]?.domain) return null;
+    return `https://www.google.com/s2/favicons?domain=${data[0].domain}&sz=128`;
+  } catch {
+    return null;
+  }
+}
+
 interface BillerPresetsProps {
   selectedName: string;
   onSelect: (name: string, logoUrl: string | null) => void;
@@ -125,6 +138,7 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
     const logoUrl = `https://www.google.com/s2/favicons?domain=${biller.domain}&sz=128`;
     onSelect(biller.name, logoUrl);
   }
+
 
   return (
     <div className="space-y-2">

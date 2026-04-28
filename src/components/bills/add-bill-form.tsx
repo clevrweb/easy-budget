@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets } from "./biller-presets";
+import { BillerPresets, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
@@ -28,13 +29,24 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
 
-  const [billName, setBillName] = useState("");
-  const [logoUrl, setLogoUrl]   = useState<string | null>(null);
+  const [billName, setBillName]   = useState("");
+  const [logoUrl, setLogoUrl]     = useState<string | null>(null);
+  const logoSetByPreset           = useRef(false);
 
   function handlePresetSelect(name: string, url: string | null) {
+    logoSetByPreset.current = true;
     setBillName(name);
     setLogoUrl(url);
   }
+
+  useEffect(() => {
+    if (billName.length < 3 || logoSetByPreset.current) return;
+    const timer = setTimeout(async () => {
+      const url = await fetchBillerLogo(billName);
+      setLogoUrl(url);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [billName]);
 
   // Recurring state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -67,11 +79,20 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       <div className="space-y-1.5">
         <Label htmlFor="name">Bill Name</Label>
         <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
+        {logoUrl && (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--color-muted)] w-fit">
+            <img src={logoUrl} className="w-4 h-4 object-contain" alt="" />
+            <span className="text-xs text-[var(--color-muted-foreground)]">Logo found</span>
+            <button type="button" onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}>
+              <X className="w-3 h-3 text-[var(--color-muted-foreground)]" />
+            </button>
+          </div>
+        )}
         <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
         <Input
           id="name" name="name" placeholder="e.g., Electricity" required autoFocus
           value={billName}
-          onChange={(e) => { setBillName(e.target.value); setLogoUrl(null); }}
+          onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); setLogoUrl(null); }}
         />
       </div>
 
