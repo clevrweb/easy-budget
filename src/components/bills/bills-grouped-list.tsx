@@ -71,7 +71,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
           }
 
           return (
-            <div key={dayDate} className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden">
+            <div key={dayDate} className="bg-[var(--color-card)] rounded-t-xl overflow-hidden">
               {/* Day header */}
               <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-muted)]">
                 <div className="flex items-center gap-2">
