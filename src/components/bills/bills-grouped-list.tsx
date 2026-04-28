@@ -49,7 +49,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
     }
 
     return (
-      <div className="space-y-4 bg-[var(--color-background)]">
+      <div className="space-y-6 bg-[var(--color-background)]">
         {dayOrder.map((dayDate) => {
           const dayBills = dayMap.get(dayDate)!;
           const dayTotal = dayBills.reduce((s, b) => s + b.amount, 0);
@@ -71,9 +71,9 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
           }
 
           return (
-            <div key={dayDate} className="bg-[var(--color-card)] border border-[var(--color-border)]">
+            <div key={dayDate} className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden">
               {/* Day header */}
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-muted)]">
+              <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-muted)]">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-[var(--color-foreground)] capitalize">{dayLabel}</span>
                   <span className="text-xs text-[var(--color-muted-foreground)]">· {dayBills.length} {billWord}</span>
