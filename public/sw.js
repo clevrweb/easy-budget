@@ -1,10 +1,9 @@
-const CACHE = "easybudget-v1";
-const OFFLINE_URL = "/dashboard";
+const CACHE = "easybudget-v2";
+const OFFLINE_URL = "/offline.html";
+const PRECACHE = ["/offline.html", "/manifest.json", "/logo-transparent.png"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.add(OFFLINE_URL))
-  );
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
@@ -18,10 +17,28 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  // Cache-first for Next.js static assets (content-hashed, safe to cache forever)
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(
+      caches.match(event.request).then((cached) =>
+        cached ?? fetch(event.request).then((res) => {
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(event.request, clone));
+          return res;
+        })
+      )
+    );
+    return;
+  }
+
+  // Network-first for page navigation, fall back to offline page
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(OFFLINE_URL))
     );
+    return;
   }
 });
 
