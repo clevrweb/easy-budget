@@ -49,7 +49,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
     }
 
     return (
-      <div className="space-y-6 bg-[var(--color-background)]">
+      <div className="space-y-6">
         {dayOrder.map((dayDate) => {
           const dayBills = dayMap.get(dayDate)!;
           const dayTotal = dayBills.reduce((s, b) => s + b.amount, 0);

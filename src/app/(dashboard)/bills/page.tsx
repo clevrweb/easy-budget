@@ -88,7 +88,7 @@ export default async function BillsPage({
         <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} />
 
         {/* Bills list */}
-        <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
+        <div className={groupBy === "day" ? "" : "bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden"}>
           <BillsGroupedList
             bills={filtered}
             categories={(categories ?? []) as Category[]}
