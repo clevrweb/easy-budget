@@ -81,6 +81,8 @@ export interface Dict {
     pay: string;
     paidBtn: string;
     searchPlaceholder: string;
+    byGroup: string;
+    byDay: string;
     noBills: string;
     noBillsHint: string;
     ungrouped: string;

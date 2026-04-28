@@ -4,11 +4,13 @@ import { formatCurrency } from "@/lib/utils";
 import { BillRow } from "./bill-row";
 import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
+import type { GroupBy } from "./bills-header";
 
 interface BillsGroupedListProps {
   bills: Bill[];
   categories: Category[];
   groups: Group[];
+  groupBy?: GroupBy;
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
@@ -21,7 +23,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   };
 }
 
-export function BillsGroupedList({ bills, categories, groups }: BillsGroupedListProps) {
+export function BillsGroupedList({ bills, categories, groups, groupBy = "group" }: BillsGroupedListProps) {
   const dict = useDict();
 
   if (bills.length === 0) {
@@ -29,6 +31,52 @@ export function BillsGroupedList({ bills, categories, groups }: BillsGroupedList
       <div className="py-16 text-center">
         <p className="text-[var(--color-muted-foreground)] text-sm">{dict.bills.noBills}</p>
         <p className="text-[var(--color-muted-foreground)] text-xs mt-1">{dict.bills.noBillsHint}</p>
+      </div>
+    );
+  }
+
+  if (groupBy === "day") {
+    const dayMap = new Map<string, Bill[]>();
+    const dayOrder: string[] = [];
+
+    for (const bill of bills) {
+      const key = bill.due_date;
+      if (!dayMap.has(key)) {
+        dayMap.set(key, []);
+        dayOrder.push(key);
+      }
+      dayMap.get(key)!.push(bill);
+    }
+
+    return (
+      <div className="space-y-4 bg-[var(--color-background)]">
+        {dayOrder.map((dayDate) => {
+          const dayBills = dayMap.get(dayDate)!;
+          const total = dayBills.reduce((s, b) => s + b.amount, 0);
+          const dayLabel = new Date(dayDate + "T00:00:00").toLocaleString(dict.locale, {
+            weekday: "long", month: "short", day: "numeric",
+          });
+          const billWord = dayBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
+
+          return (
+            <div key={dayDate} className="bg-[var(--color-card)] border border-[var(--color-border)]">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-muted)]">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-[var(--color-foreground)] capitalize">{dayLabel}</span>
+                  <span className="text-xs text-[var(--color-muted-foreground)]">· {dayBills.length} {billWord}</span>
+                </div>
+                <span className="text-sm font-bold text-[var(--color-foreground)] tabular-nums">
+                  {formatCurrency(total)}
+                </span>
+              </div>
+              <div className="divide-y divide-[var(--color-border)]">
+                {dayBills.map((bill) => (
+                  <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   }

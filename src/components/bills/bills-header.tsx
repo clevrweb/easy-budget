@@ -7,12 +7,14 @@ import { useDict } from "@/components/language-provider";
 
 export type ViewMode = "day" | "week" | "month" | "all";
 export type StatusFilter = "all" | "pending" | "paid" | "overdue";
+export type GroupBy = "group" | "day";
 
 interface BillsHeaderProps {
   view: ViewMode;
   date: string;
   status: StatusFilter;
   search: string;
+  groupBy?: GroupBy;
   basePath?: string;
 }
 
@@ -32,7 +34,7 @@ function todayDateFor(v: ViewMode) {
   return "";
 }
 
-export function BillsHeader({ view, date, status, search, basePath = "/bills" }: BillsHeaderProps) {
+export function BillsHeader({ view, date, status, search, groupBy = "group", basePath = "/bills" }: BillsHeaderProps) {
   const router = useRouter();
   const dict = useDict();
   const [searchOpen, setSearchOpen]   = useState(!!search);
@@ -53,21 +55,23 @@ export function BillsHeader({ view, date, status, search, basePath = "/bills" }:
     { label: dict.bills.overdue, value: "overdue" },
   ];
 
-  function push(overrides: Partial<{ view: ViewMode; date: string; status: StatusFilter; q: string }>) {
+  function push(overrides: Partial<{ view: ViewMode; date: string; status: StatusFilter; q: string; groupBy: GroupBy }>) {
     const params = new URLSearchParams();
-    const v = overrides.view   ?? view;
-    const d = overrides.date   ?? date;
-    const s = overrides.status ?? status;
-    const q = overrides.q      ?? search;
+    const v = overrides.view    ?? view;
+    const d = overrides.date    ?? date;
+    const s = overrides.status  ?? status;
+    const q = overrides.q       ?? search;
+    const g = overrides.groupBy ?? groupBy;
     params.set("view", v);
     if (d) params.set("date", d);
     if (s && s !== "all") params.set("status", s);
     if (q) params.set("q", q);
+    if (v === "week" && g === "day") params.set("groupBy", "day");
     router.push(`${basePath}?${params.toString()}`);
   }
 
   function changeView(v: ViewMode) {
-    push({ view: v, date: todayDateFor(v) });
+    push({ view: v, date: todayDateFor(v), groupBy: "group" });
   }
 
   function goToPrev() {
@@ -201,6 +205,24 @@ export function BillsHeader({ view, date, status, search, basePath = "/bills" }:
             className="h-8 px-3 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0"
           >
             {dict.bills.todayBtn}
+          </button>
+        </div>
+      )}
+
+      {/* Week groupBy toggle */}
+      {view === "week" && (
+        <div className="flex items-center rounded-lg border border-[var(--color-border)] overflow-hidden text-xs font-medium w-fit">
+          <button
+            onClick={() => push({ groupBy: "group" })}
+            className={`px-3 py-1.5 transition-colors ${groupBy !== "day" ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"}`}
+          >
+            {dict.bills.byGroup}
+          </button>
+          <button
+            onClick={() => push({ groupBy: "day" })}
+            className={`px-3 py-1.5 transition-colors ${groupBy === "day" ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"}`}
+          >
+            {dict.bills.byDay}
           </button>
         </div>
       )}

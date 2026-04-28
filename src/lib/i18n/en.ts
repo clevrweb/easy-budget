@@ -83,6 +83,8 @@ export const en: Dict = {
     pay: "PAY",
     paidBtn: "PAID",
     searchPlaceholder: "Search bills...",
+    byGroup: "By Group",
+    byDay: "By Day",
     noBills: "No bills found.",
     noBillsHint: "Try a different period or add a new bill.",
     ungrouped: "Ungrouped",

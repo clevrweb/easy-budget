@@ -6,7 +6,7 @@ import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
 import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import type { Bill, Category, Group } from "@/types/database";
-import type { ViewMode, StatusFilter } from "@/components/bills/bills-header";
+import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
 
 function getDateRange(view: ViewMode, date: string): { start: string; end: string } | null {
@@ -30,15 +30,16 @@ function getDateRange(view: ViewMode, date: string): { start: string; end: strin
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string }>;
+  searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string; groupBy?: string }>;
 }) {
-  const [{ view: rawView, date: rawDate, status: rawStatus, q = "" }, dict] = await Promise.all([
+  const [{ view: rawView, date: rawDate, status: rawStatus, q = "", groupBy: rawGroupBy }, dict] = await Promise.all([
     searchParams,
     getServerDict(),
   ]);
 
-  const view   = (["day", "week", "month", "all"].includes(rawView ?? "") ? rawView : "month") as ViewMode;
-  const status = (["all", "pending", "paid", "overdue"].includes(rawStatus ?? "") ? rawStatus : "all") as StatusFilter;
+  const view    = (["day", "week", "month", "all"].includes(rawView ?? "") ? rawView : "month") as ViewMode;
+  const status  = (["all", "pending", "paid", "overdue"].includes(rawStatus ?? "") ? rawStatus : "all") as StatusFilter;
+  const groupBy = (rawGroupBy === "day" ? "day" : "group") as GroupBy;
   const now    = new Date();
 
   const defaultDate = view === "month"
@@ -103,13 +104,14 @@ export default async function DashboardPage({
 
 
         {/* Bills filter + list */}
-        <BillsHeader view={view} date={date} status={status} search={q} basePath="/dashboard" />
+        <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
 
         <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
           <BillsGroupedList
             bills={filteredBills}
             categories={(categories ?? []) as Category[]}
             groups={(groups ?? []) as Group[]}
+            groupBy={groupBy}
           />
         </div>
       </main>

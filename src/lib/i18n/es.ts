@@ -83,6 +83,8 @@ export const es: Dict = {
     pay: "PAGAR",
     paidBtn: "PAGADO",
     searchPlaceholder: "Buscar facturas…",
+    byGroup: "Por grupo",
+    byDay: "Por día",
     noBills: "No se encontraron facturas.",
     noBillsHint: "Prueba un período diferente o agrega una nueva.",
     ungrouped: "Sin grupo",

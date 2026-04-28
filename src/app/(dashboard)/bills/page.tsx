@@ -5,7 +5,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import { BillsHeader } from "@/components/bills/bills-header";
 import type { Bill, Category, Group } from "@/types/database";
-import type { ViewMode, StatusFilter } from "@/components/bills/bills-header";
+import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
 
 function getDateRange(view: ViewMode, date: string): { start: string; end: string } | null {
@@ -35,15 +35,16 @@ function getDateRange(view: ViewMode, date: string): { start: string; end: strin
 export default async function BillsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string }>;
+  searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string; groupBy?: string }>;
 }) {
-  const [{ view: rawView, date: rawDate, status: rawStatus, q = "" }, dict] = await Promise.all([
+  const [{ view: rawView, date: rawDate, status: rawStatus, q = "", groupBy: rawGroupBy }, dict] = await Promise.all([
     searchParams,
     getServerDict(),
   ]);
 
-  const view = (["day", "week", "month", "all"].includes(rawView ?? "") ? rawView : "month") as ViewMode;
-  const status = (["all", "pending", "paid", "overdue"].includes(rawStatus ?? "") ? rawStatus : "all") as StatusFilter;
+  const view    = (["day", "week", "month", "all"].includes(rawView ?? "") ? rawView : "month") as ViewMode;
+  const status  = (["all", "pending", "paid", "overdue"].includes(rawStatus ?? "") ? rawStatus : "all") as StatusFilter;
+  const groupBy = (rawGroupBy === "day" ? "day" : "group") as GroupBy;
 
   const now = new Date();
   const defaultDate = view === "month"
@@ -84,7 +85,7 @@ export default async function BillsPage({
       <Topbar title={dict.bills.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
-        <BillsHeader view={view} date={date} status={status} search={q} />
+        <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} />
 
         {/* Bills list */}
         <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
@@ -92,6 +93,7 @@ export default async function BillsPage({
             bills={filtered}
             categories={(categories ?? []) as Category[]}
             groups={(groups ?? []) as Group[]}
+            groupBy={groupBy}
           />
         </div>
       </main>
