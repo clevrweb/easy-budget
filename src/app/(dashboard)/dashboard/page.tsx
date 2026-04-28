@@ -106,7 +106,7 @@ export default async function DashboardPage({
         {/* Bills filter + list */}
         <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
 
-        <div className={groupBy === "day" ? "" : "bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden"}>
+        <div className={groupBy === "day" || view === "month" || view === "day" ? "" : "bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden"}>
           <BillsGroupedList
             bills={filteredBills}
             categories={(categories ?? []) as Category[]}
