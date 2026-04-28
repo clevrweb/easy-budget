@@ -72,7 +72,7 @@ interface BillerChipProps {
 }
 
 function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
-  const logoUrl = `https://logo.clearbit.com/${biller.domain}`;
+  const logoUrl = `https://www.google.com/s2/favicons?domain=${biller.domain}&sz=128`;
   const color   = avatarColor(biller.name);
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -122,7 +122,7 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
   const current = CATEGORIES[activeTab];
 
   function handleSelect(biller: Biller) {
-    const logoUrl = `https://logo.clearbit.com/${biller.domain}`;
+    const logoUrl = `https://www.google.com/s2/favicons?domain=${biller.domain}&sz=128`;
     onSelect(biller.name, logoUrl);
   }
 
