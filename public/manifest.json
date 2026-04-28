@@ -1,6 +1,7 @@
 {
   "name": "Easy Budget",
   "short_name": "EasyBudget",
+  "id": "/dashboard",
   "description": "A simple, powerful bill tracking and budget management app.",
   "start_url": "/dashboard",
   "display": "standalone",
