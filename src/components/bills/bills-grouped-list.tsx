@@ -52,27 +52,73 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
       <div className="space-y-4 bg-[var(--color-background)]">
         {dayOrder.map((dayDate) => {
           const dayBills = dayMap.get(dayDate)!;
-          const total = dayBills.reduce((s, b) => s + b.amount, 0);
+          const dayTotal = dayBills.reduce((s, b) => s + b.amount, 0);
           const dayLabel = new Date(dayDate + "T00:00:00").toLocaleString(dict.locale, {
             weekday: "long", month: "short", day: "numeric",
           });
           const billWord = dayBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
 
+          // Within each day, sub-group by group
+          const subGroupMap = new Map<string | null, Bill[]>();
+          const subGroupOrder: (string | null)[] = [];
+          for (const bill of dayBills) {
+            const key = bill.group_id ?? null;
+            if (!subGroupMap.has(key)) {
+              subGroupMap.set(key, []);
+              subGroupOrder.push(key);
+            }
+            subGroupMap.get(key)!.push(bill);
+          }
+
           return (
             <div key={dayDate} className="bg-[var(--color-card)] border border-[var(--color-border)]">
+              {/* Day header */}
               <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-muted)]">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-[var(--color-foreground)] capitalize">{dayLabel}</span>
                   <span className="text-xs text-[var(--color-muted-foreground)]">· {dayBills.length} {billWord}</span>
                 </div>
                 <span className="text-sm font-bold text-[var(--color-foreground)] tabular-nums">
-                  {formatCurrency(total)}
+                  {formatCurrency(dayTotal)}
                 </span>
               </div>
+
+              {/* Sub-groups within the day */}
               <div className="divide-y divide-[var(--color-border)]">
-                {dayBills.map((bill) => (
-                  <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
-                ))}
+                {subGroupOrder.map((groupId) => {
+                  const groupBills = subGroupMap.get(groupId)!;
+                  const group = groupId ? groups.find((g) => g.id === groupId) : null;
+                  const groupTotal = groupBills.reduce((s, b) => s + b.amount, 0);
+                  const color = group?.color ?? "#94a3b8";
+                  const rgb = hexToRgb(color);
+                  const bgStyle = rgb
+                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.07)` }
+                    : { backgroundColor: "#94a3b807" };
+
+                  return (
+                    <div key={groupId ?? "__ungrouped__"}>
+                      {/* Group sub-header — only shown when there are multiple groups in the day */}
+                      {subGroupOrder.length > 1 && (
+                        <div className="flex items-center justify-between px-4 py-1.5" style={bgStyle}>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                            <span className="text-xs font-semibold text-[var(--color-muted-foreground)]">
+                              {group?.name ?? dict.bills.ungrouped}
+                            </span>
+                          </div>
+                          <span className="text-xs font-semibold text-[var(--color-muted-foreground)] tabular-nums">
+                            {formatCurrency(groupTotal)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="divide-y divide-[var(--color-border)]">
+                        {groupBills.map((bill) => (
+                          <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
