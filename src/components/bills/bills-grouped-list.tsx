@@ -153,7 +153,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
         const billWord = groupBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
 
         return (
-          <div key={groupId ?? "__ungrouped__"} className="bg-[var(--color-card)] border border-[var(--color-border)]">
+          <div key={groupId ?? "__ungrouped__"} className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-t-lg overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2.5" style={bgStyle}>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
