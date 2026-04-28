@@ -51,6 +51,7 @@ export interface Bill {
   status: BillStatus;
   payment_method: string | null;
   notes: string | null;
+  logo_url: string | null;
   is_recurring: boolean;
   recurring_template_id: string | null;
   paid_at: string | null;

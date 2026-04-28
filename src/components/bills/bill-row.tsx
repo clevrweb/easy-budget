@@ -124,10 +124,23 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
 
       {/* Avatar */}
       <div
-        className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
-        style={{ backgroundColor: color }}
+        className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none overflow-hidden"
+        style={{ backgroundColor: bill.logo_url ? "transparent" : color }}
       >
-        {bill.name[0].toUpperCase()}
+        {bill.logo_url ? (
+          <img
+            src={bill.logo_url}
+            alt={bill.name}
+            className="w-9 h-9 object-contain rounded-full"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+              e.currentTarget.parentElement!.style.backgroundColor = color;
+              e.currentTarget.parentElement!.textContent = bill.name[0].toUpperCase();
+            }}
+          />
+        ) : (
+          bill.name[0].toUpperCase()
+        )}
       </div>
 
       {/* Name + meta — takes all remaining space */}

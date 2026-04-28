@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
+import { BillerPresets } from "./biller-presets";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
@@ -42,6 +43,14 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const isControlled = externalOpen !== undefined;
   const now = new Date();
   const todayStr = now.toISOString().split("T")[0];
+
+  const [billName, setBillName] = useState(bill?.name ?? "");
+  const [logoUrl, setLogoUrl]   = useState<string | null>(bill?.logo_url ?? null);
+
+  function handlePresetSelect(name: string, url: string | null) {
+    setBillName(name);
+    setLogoUrl(url);
+  }
 
   // Recurring state (only for create)
   const [isRecurring, setIsRecurring] = useState(false);
@@ -93,7 +102,13 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
           {/* Bill Name */}
           <div className="space-y-1.5">
             <Label htmlFor="bf-name">Bill Name</Label>
-            <Input id="bf-name" name="name" placeholder="e.g., Electricity" defaultValue={bill?.name} required />
+            {!isEdit && <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />}
+            <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+            <Input
+              id="bf-name" name="name" placeholder="e.g., Electricity" required
+              value={billName}
+              onChange={(e) => { setBillName(e.target.value); setLogoUrl(null); }}
+            />
           </div>
 
           {/* Amount + Due Date */}

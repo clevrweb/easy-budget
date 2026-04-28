@@ -19,6 +19,7 @@ export async function createBillAction(formData: FormData) {
     category_id: (formData.get("category_id") as string) || null,
     group_id: (formData.get("group_id") as string) || null,
     notes: (formData.get("notes") as string) || null,
+    logo_url: (formData.get("logo_url") as string) || null,
     is_recurring: false,
     paid_at: status === "paid" ? new Date().toISOString() : null,
   });
@@ -48,6 +49,7 @@ export async function updateBillAction(formData: FormData) {
       category_id: (formData.get("category_id") as string) || null,
       group_id: (formData.get("group_id") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      logo_url: (formData.get("logo_url") as string) || null,
       paid_at: status === "paid" ? new Date().toISOString() : null,
     })
     .eq("id", id)

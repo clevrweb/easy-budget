@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
+import { BillerPresets } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
@@ -26,6 +27,14 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
+
+  const [billName, setBillName] = useState("");
+  const [logoUrl, setLogoUrl]   = useState<string | null>(null);
+
+  function handlePresetSelect(name: string, url: string | null) {
+    setBillName(name);
+    setLogoUrl(url);
+  }
 
   // Recurring state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -57,7 +66,13 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="space-y-1.5">
         <Label htmlFor="name">Bill Name</Label>
-        <Input id="name" name="name" placeholder="e.g., Electricity" required autoFocus />
+        <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
+        <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+        <Input
+          id="name" name="name" placeholder="e.g., Electricity" required autoFocus
+          value={billName}
+          onChange={(e) => { setBillName(e.target.value); setLogoUrl(null); }}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
