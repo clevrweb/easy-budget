@@ -92,25 +92,24 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
                   const color = group?.color ?? "#94a3b8";
                   const rgb = hexToRgb(color);
                   const bgStyle = rgb
-                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.07)` }
-                    : { backgroundColor: "#94a3b807" };
+                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.15)` }
+                    : { backgroundColor: "#94a3b826" };
 
                   return (
                     <div key={groupId ?? "__ungrouped__"}>
-                      {/* Group sub-header — only shown when there are multiple groups in the day */}
-                      {subGroupOrder.length > 1 && (
-                        <div className="flex items-center justify-between px-4 py-1.5" style={bgStyle}>
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                            <span className="text-xs font-semibold text-[var(--color-muted-foreground)]">
-                              {group?.name ?? dict.bills.ungrouped}
-                            </span>
-                          </div>
-                          <span className="text-xs font-semibold text-[var(--color-muted-foreground)] tabular-nums">
-                            {formatCurrency(groupTotal)}
+                      <div
+                        className="flex items-center justify-between pl-3 pr-4 py-1.5"
+                        style={{ ...bgStyle, borderLeft: `3px solid ${color}` }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-[var(--color-foreground)]">
+                            {group?.name ?? dict.bills.ungrouped}
                           </span>
                         </div>
-                      )}
+                        <span className="text-xs font-semibold text-[var(--color-muted-foreground)] tabular-nums">
+                          {formatCurrency(groupTotal)}
+                        </span>
+                      </div>
                       <div className="divide-y divide-[var(--color-border)]">
                         {groupBills.map((bill) => (
                           <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
