@@ -43,7 +43,7 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
     if (billName.length < 3 || logoSetByPreset.current) return;
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(billName);
-      setLogoUrl(url);
+      if (url) setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
   }, [billName]);
@@ -79,21 +79,27 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       <div className="space-y-1.5">
         <Label htmlFor="name">Bill Name</Label>
         <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
-        {logoUrl && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--color-muted)] w-fit">
-            <img src={logoUrl} className="w-4 h-4 object-contain" alt="" />
-            <span className="text-xs text-[var(--color-muted-foreground)]">Logo found</span>
-            <button type="button" onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}>
-              <X className="w-3 h-3 text-[var(--color-muted-foreground)]" />
-            </button>
-          </div>
-        )}
         <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
-        <Input
-          id="name" name="name" placeholder="e.g., Electricity" required autoFocus
-          value={billName}
-          onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); setLogoUrl(null); }}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            id="name" name="name" placeholder="e.g., Electricity" required autoFocus
+            value={billName}
+            onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+            className="flex-1"
+          />
+          {logoUrl && (
+            <div className="relative shrink-0">
+              <img src={logoUrl} alt="" className="w-10 h-10 object-contain rounded-xl border border-[var(--color-border)]" />
+              <button
+                type="button"
+                onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}
+                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
+              >
+                <X className="w-2.5 h-2.5 text-white" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

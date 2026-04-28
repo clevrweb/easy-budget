@@ -161,6 +161,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   const amount      = parseFloat(formData.get("amount") as string);
   const categoryId  = (formData.get("category_id") as string) || null;
   const groupId     = (formData.get("group_id") as string) || null;
+  const logoUrl     = (formData.get("logo_url") as string) || null;
   const frequency   = (formData.get("frequency") as string) || "monthly";
   const dueDay      = parseInt(formData.get("due_day") as string) || 1;
   const endsType    = (formData.get("ends_type") as string) || "never";
@@ -217,6 +218,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
       user_id: user.id, name, amount,
       due_date: billDate, status: "pending",
       category_id: categoryId, group_id: groupId,
+      logo_url: logoUrl,
       is_recurring: true, recurring_template_id: templateId,
     });
   }

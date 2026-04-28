@@ -47,6 +47,9 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const [billName, setBillName]   = useState(bill?.name ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill?.logo_url ?? null);
   const logoSetByPreset           = useRef(false);
+  // Declare before effects that reference them
+  const [dueDate, setDueDate]     = useState(bill?.due_date ?? todayStr);
+  const [dueDay, setDueDay]       = useState(now.getDate());
 
   function handlePresetSelect(name: string, url: string | null) {
     logoSetByPreset.current = true;
@@ -57,7 +60,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   // Reset all controlled state when dialog opens so edits always show fresh bill data
   useEffect(() => {
     if (!open) return;
-    logoSetByPreset.current = true; // prevent auto-fetch on open
+    logoSetByPreset.current = true;
     setBillName(bill?.name ?? "");
     setLogoUrl(bill?.logo_url ?? null);
     setDueDate(bill?.due_date ?? todayStr);
@@ -69,7 +72,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
     if (billName.length < 3 || logoSetByPreset.current) return;
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(billName);
-      setLogoUrl(url);
+      if (url) setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
   }, [billName]);
@@ -77,8 +80,6 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   // Recurring state (only for create)
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency]     = useState("monthly");
-  const [dueDay, setDueDay]           = useState(now.getDate());
-  const [dueDate, setDueDate]         = useState(bill?.due_date ?? todayStr);
   const [endsType, setEndsType]       = useState<EndsType>("never");
   const [endDate, setEndDate]         = useState("");
   const [endCount, setEndCount]       = useState(12);
@@ -125,21 +126,27 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
           <div className="space-y-1.5">
             <Label htmlFor="bf-name">Bill Name</Label>
             <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
-            {logoUrl && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--color-muted)] w-fit">
-                <img src={logoUrl} className="w-4 h-4 object-contain" alt="" />
-                <span className="text-xs text-[var(--color-muted-foreground)]">Logo found</span>
-                <button type="button" onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}>
-                  <X className="w-3 h-3 text-[var(--color-muted-foreground)]" />
-                </button>
-              </div>
-            )}
             <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
-            <Input
-              id="bf-name" name="name" placeholder="e.g., Electricity" required
-              value={billName}
-              onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); setLogoUrl(null); }}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="bf-name" name="name" placeholder="e.g., Electricity" required
+                value={billName}
+                onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+                className="flex-1"
+              />
+              {logoUrl && (
+                <div className="relative shrink-0">
+                  <img src={logoUrl} alt="" className="w-10 h-10 object-contain rounded-xl border border-[var(--color-border)]" />
+                  <button
+                    type="button"
+                    onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
+                  >
+                    <X className="w-2.5 h-2.5 text-white" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Amount + Due Date */}

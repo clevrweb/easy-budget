@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +13,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
+import { BillerPresets, fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import type { EndsType } from "./recurring-section";
@@ -51,13 +53,29 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const [loading, setLoading]   = useState(false);
 
   const defaultDueDay = new Date(bill.due_date + "T00:00:00").getDate();
-  const todayStr = new Date().toISOString().split("T")[0];
+  const [billName, setBillName]   = useState(bill.name);
+  const [logoUrl, setLogoUrl]     = useState<string | null>(bill.logo_url ?? null);
+  const logoSetByPreset           = useRef(false);
   const [frequency, setFrequency] = useState("monthly");
   const [dueDay, setDueDay]       = useState(defaultDueDay);
-  const [startDate, setStartDate] = useState(todayStr);
+  const [startDate, setStartDate] = useState(bill.due_date);
   const [endsType, setEndsType]   = useState<EndsType>("never");
   const [endDate, setEndDate]     = useState("");
   const [endCount, setEndCount]   = useState(12);
+
+  // Reset to bill's current values each time the dialog opens
+  useEffect(() => {
+    if (!open) return;
+    logoSetByPreset.current = true;
+    setBillName(bill.name);
+    setLogoUrl(bill.logo_url ?? null);
+    setStartDate(bill.due_date);
+    setEndsType("never");
+    setEndDate("");
+    setEndCount(12);
+    setError(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     if (!open || !bill.recurring_template_id) return;
@@ -70,6 +88,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
       setLoading(false);
     });
   }, [open, bill.recurring_template_id]);
+
+  useEffect(() => {
+    if (billName.length < 3 || logoSetByPreset.current) return;
+    const timer = setTimeout(async () => {
+      const url = await fetchBillerLogo(billName);
+      if (url) setLogoUrl(url);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [billName]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -105,7 +132,28 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
           {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="rs-name">Bill Name</Label>
-            <Input id="rs-name" name="name" placeholder="e.g., Electricity" defaultValue={bill.name} required />
+            <BillerPresets selectedName={billName} onSelect={(name, url) => { logoSetByPreset.current = true; setBillName(name); setLogoUrl(url); }} />
+            <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+            <div className="flex items-center gap-2">
+              <Input
+                id="rs-name" name="name" placeholder="e.g., Electricity" required
+                value={billName}
+                onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+                className="flex-1"
+              />
+              {logoUrl && (
+                <div className="relative shrink-0">
+                  <img src={logoUrl} alt="" className="w-10 h-10 object-contain rounded-xl border border-[var(--color-border)]" />
+                  <button
+                    type="button"
+                    onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
+                  >
+                    <X className="w-2.5 h-2.5 text-white" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Amount */}
