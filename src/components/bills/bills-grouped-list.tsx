@@ -92,8 +92,8 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
                   const color = group?.color ?? "#94a3b8";
                   const rgb = hexToRgb(color);
                   const bgStyle = rgb
-                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.15)` }
-                    : { backgroundColor: "#94a3b826" };
+                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.08)` }
+                    : { backgroundColor: "#94a3b814" };
 
                   return (
                     <div key={groupId ?? "__ungrouped__"}>
@@ -147,7 +147,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
         const color = group?.color ?? "#94a3b8";
         const rgb = hexToRgb(color);
         const bgStyle = rgb
-          ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.10)` }
+          ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.06)` }
           : { backgroundColor: "#94a3b810" };
 
         const billWord = groupBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
