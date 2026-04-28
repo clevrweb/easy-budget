@@ -54,6 +54,17 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
     setLogoUrl(url);
   }
 
+  // Reset all controlled state when dialog opens so edits always show fresh bill data
+  useEffect(() => {
+    if (!open) return;
+    logoSetByPreset.current = true; // prevent auto-fetch on open
+    setBillName(bill?.name ?? "");
+    setLogoUrl(bill?.logo_url ?? null);
+    setDueDate(bill?.due_date ?? todayStr);
+    setError(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   useEffect(() => {
     if (billName.length < 3 || logoSetByPreset.current) return;
     const timer = setTimeout(async () => {
@@ -141,7 +152,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
               <Label htmlFor="bf-due">Due Date</Label>
               <Input
                 id="bf-due" name="due_date" type="date"
-                defaultValue={bill?.due_date ?? todayStr}
+                value={dueDate}
                 onChange={(e) => {
                   setDueDate(e.target.value);
                   if (e.target.value) setDueDay(new Date(e.target.value + "T00:00:00").getDate());
