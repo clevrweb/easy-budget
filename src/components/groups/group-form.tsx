@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { createGroupAction, updateGroupAction } from "@/app/(dashboard)/groups/actions";
+import { useDict } from "@/components/language-provider";
 import type { Group } from "@/types/database";
 import { Plus } from "lucide-react";
 
@@ -26,6 +27,8 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   const [color, setColor] = useState(group?.color ?? "#4f46e5");
   const [isPending, startTransition] = useTransition();
   const isEdit = !!group;
+  const dict = useDict();
+  const t = dict.groups;
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -42,11 +45,11 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setColor(group?.color ?? "#4f46e5"); }}>
       <DialogTrigger asChild>
-        {trigger ?? <Button><Plus className="w-4 h-4" />Add Group</Button>}
+        {trigger ?? <Button><Plus className="w-4 h-4" />{t.addGroup}</Button>}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Group" : "Add Group"}</DialogTitle>
+          <DialogTitle>{isEdit ? t.editGroup : t.addGroup}</DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -59,12 +62,12 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
           {isEdit && <input type="hidden" name="id" value={group.id} />}
 
           <div className="space-y-1.5">
-            <Label htmlFor="grp-name">Name</Label>
+            <Label htmlFor="grp-name">{t.nameLabel}</Label>
             <Input id="grp-name" name="name" placeholder="e.g. Household, Business, Personal" defaultValue={group?.name} required />
           </div>
 
           <div className="space-y-2">
-            <Label>Color</Label>
+            <Label>{t.colorLabel}</Label>
             <div className="flex flex-wrap gap-2">
               {COLOR_PRESETS.map((c) => (
                 <button
@@ -80,7 +83,6 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
                 className="w-8 h-8 rounded-lg cursor-pointer border border-[var(--color-border)] p-0.5 bg-[var(--color-card)]"
-                title="Custom color"
               />
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -91,10 +93,10 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Group"}
+              {isPending ? t.saving : isEdit ? t.saveChanges : t.addGroup}
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{t.cancel}</Button>
             </DialogClose>
           </div>
         </form>

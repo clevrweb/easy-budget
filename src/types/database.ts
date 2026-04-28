@@ -1,9 +1,15 @@
 export type BillStatus = "pending" | "paid" | "overdue";
 export type RecurringFrequency = "monthly" | "weekly" | "yearly";
+export type Language = "en" | "es";
 
 export interface Database {
   public: {
     Tables: {
+      profiles: {
+        Row: Profile;
+        Insert: Omit<Profile, "created_at">;
+        Update: Partial<Omit<Profile, "created_at">>;
+      };
       categories: {
         Row: Category;
         Insert: Omit<Category, "id" | "created_at">;
@@ -29,6 +35,13 @@ export interface Database {
     Functions: Record<string, never>;
     Enums: Record<string, never>;
   };
+}
+
+export interface Profile {
+  user_id: string;
+  full_name: string;
+  language: Language;
+  created_at: string;
 }
 
 export interface Category {

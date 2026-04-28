@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Calendar, X } from "lucide-react";
+import { useDict } from "@/components/language-provider";
 
 export type ViewMode = "day" | "week" | "month" | "all";
 export type StatusFilter = "all" | "pending" | "paid" | "overdue";
@@ -14,20 +15,6 @@ interface BillsHeaderProps {
   search: string;
   basePath?: string;
 }
-
-const VIEWS: { label: string; value: ViewMode }[] = [
-  { label: "Day",   value: "day"   },
-  { label: "Week",  value: "week"  },
-  { label: "Month", value: "month" },
-  { label: "All",   value: "all"   },
-];
-
-const STATUSES: { label: string; value: StatusFilter }[] = [
-  { label: "All",     value: "all"     },
-  { label: "Pending", value: "pending" },
-  { label: "Paid",    value: "paid"    },
-  { label: "Overdue", value: "overdue" },
-];
 
 function getMondayOf(d: Date) {
   const day = d.getDay();
@@ -47,9 +34,24 @@ function todayDateFor(v: ViewMode) {
 
 export function BillsHeader({ view, date, status, search, basePath = "/bills" }: BillsHeaderProps) {
   const router = useRouter();
+  const dict = useDict();
   const [searchOpen, setSearchOpen]   = useState(!!search);
   const [filterOpen, setFilterOpen]   = useState(status !== "all");
   const [searchValue, setSearchValue] = useState(search);
+
+  const VIEWS: { label: string; value: ViewMode }[] = [
+    { label: dict.bills.day,   value: "day"   },
+    { label: dict.bills.week,  value: "week"  },
+    { label: dict.bills.month, value: "month" },
+    { label: dict.bills.all,   value: "all"   },
+  ];
+
+  const STATUSES: { label: string; value: StatusFilter }[] = [
+    { label: dict.bills.all,     value: "all"     },
+    { label: dict.bills.pending, value: "pending" },
+    { label: dict.bills.paid,    value: "paid"    },
+    { label: dict.bills.overdue, value: "overdue" },
+  ];
 
   function push(overrides: Partial<{ view: ViewMode; date: string; status: StatusFilter; q: string }>) {
     const params = new URLSearchParams();
@@ -101,20 +103,20 @@ export function BillsHeader({ view, date, status, search, basePath = "/bills" }:
   }
 
   function getLabel() {
-    if (view === "all") return "All Time";
+    if (view === "all") return dict.bills.allTime;
     if (view === "month") {
       const [y, m] = date.split("-").map(Number);
-      return new Date(y, m - 1).toLocaleString("en-US", { month: "long", year: "numeric" });
+      return new Date(y, m - 1).toLocaleString(dict.locale, { month: "long", year: "numeric" });
     }
     if (view === "day") {
-      return new Date(date + "T00:00:00").toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric" });
+      return new Date(date + "T00:00:00").toLocaleString(dict.locale, { month: "long", day: "numeric", year: "numeric" });
     }
     if (view === "week") {
       const start = new Date(date + "T00:00:00");
       const end   = new Date(date + "T00:00:00");
       end.setDate(end.getDate() + 6);
-      const s = start.toLocaleString("en-US", { month: "short", day: "numeric" });
-      const e = end.toLocaleString("en-US",   { month: "short", day: "numeric", year: "numeric" });
+      const s = start.toLocaleString(dict.locale, { month: "short", day: "numeric" });
+      const e = end.toLocaleString(dict.locale,   { month: "short", day: "numeric", year: "numeric" });
       return `${s} – ${e}`;
     }
     return date;
@@ -198,7 +200,7 @@ export function BillsHeader({ view, date, status, search, basePath = "/bills" }:
             onClick={() => push({ date: todayDateFor(view) })}
             className="h-8 px-3 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0"
           >
-            Today
+            {dict.bills.todayBtn}
           </button>
         </div>
       )}
@@ -210,7 +212,7 @@ export function BillsHeader({ view, date, status, search, basePath = "/bills" }:
           <input
             autoFocus
             type="text"
-            placeholder="Search bills..."
+            placeholder={dict.bills.searchPlaceholder}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && push({ q: searchValue })}
@@ -230,7 +232,7 @@ export function BillsHeader({ view, date, status, search, basePath = "/bills" }:
       {/* Status filter pills */}
       {filterOpen && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-[var(--color-muted-foreground)]">Status:</span>
+          <span className="text-xs font-medium text-[var(--color-muted-foreground)]">{dict.bills.statusPrefix}</span>
           {STATUSES.map((s) => (
             <button
               key={s.value}

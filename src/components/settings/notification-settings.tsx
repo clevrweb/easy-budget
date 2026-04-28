@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { saveSubscriptionAction, deleteSubscriptionAction } from "@/app/(dashboard)/settings/actions";
+import { useDict } from "@/components/language-provider";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -22,6 +23,8 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
   const [busy, setBusy]              = useState(false);
   const [error, setError]            = useState<string | null>(null);
   const [status, setStatus]          = useState<string | null>(null);
+  const dict = useDict();
+  const t = dict.settings;
 
   const isLoading = busy || isPending;
 
@@ -36,15 +39,15 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
     setStatus(null);
 
     if (!window.isSecureContext) {
-      setError("Notifications require a secure connection (HTTPS).");
+      setError(t.requiresHTTPS);
       return;
     }
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setError("Push notifications are not supported in this browser.");
+      setError(t.notSupported);
       return;
     }
     if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
-      setError("Notification configuration is missing. Please contact support.");
+      setError(t.configMissing);
       return;
     }
 
@@ -52,17 +55,17 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
     try {
       let perm = Notification.permission;
       if (perm !== "granted") {
-        setStatus("Waiting for permission…");
+        setStatus(t.waitingPermission);
         perm = await Notification.requestPermission();
         setPermission(perm);
       }
 
       if (perm !== "granted") {
-        setError("Notification permission was denied. Enable it in your device settings and try again.");
+        setError(t.permissionDenied);
         return;
       }
 
-      setStatus("Setting up notifications…");
+      setStatus(t.settingUp);
       const reg = await navigator.serviceWorker.ready;
       const existing = await reg.pushManager.getSubscription();
       const sub = existing ?? await reg.pushManager.subscribe({
@@ -74,14 +77,14 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
       startTransition(async () => {
         const result = await saveSubscriptionAction(sub.toJSON() as object);
         if (result?.error) {
-          setError(`Could not save subscription: ${result.error}`);
+          setError(`${t.couldNotSave} ${result.error}`);
         } else {
           setEnabled(true);
           setStatus(null);
         }
       });
     } catch (err) {
-      setError(`Subscription failed: ${err instanceof Error ? err.message : String(err)}`);
+      setError(`${t.subscriptionFailed} ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setBusy(false);
       if (!enabled) setStatus(null);
@@ -112,9 +115,9 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
             }
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--color-foreground)]">Bills due today</p>
+            <p className="text-sm font-semibold text-[var(--color-foreground)]">{t.billsDueToday}</p>
             <p className="text-xs text-[var(--color-muted-foreground)]">
-              {status ?? "Get notified each morning when bills are due"}
+              {status ?? t.notifyMorning}
             </p>
           </div>
         </div>
@@ -137,7 +140,7 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
 
       {permission === "denied" && !error && (
         <p className="text-xs text-[var(--color-danger)] bg-red-50 dark:bg-red-950/30 px-3 py-2 rounded-lg">
-          Notifications are blocked. Go to your device settings → app/browser permissions and allow notifications for this site.
+          {t.blocked}
         </p>
       )}
 
@@ -149,7 +152,7 @@ export function NotificationSettings({ initialEnabled }: NotificationSettingsPro
 
       {enabled && !error && !isLoading && (
         <p className="text-xs text-[var(--color-muted-foreground)]">
-          You will receive a notification at 9 AM on days when you have bills due.
+          {t.notifyAt9}
         </p>
       )}
     </div>

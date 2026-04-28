@@ -3,6 +3,7 @@
 import { RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDict } from "@/components/language-provider";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
@@ -30,25 +31,6 @@ interface RecurringSectionProps {
   onEndCount: (v: number) => void;
 }
 
-const FREQUENCIES = [
-  { value: "monthly", label: "Monthly", hint: "Once a month on the due date" },
-  { value: "weekly",  label: "Weekly",  hint: "Once a week on the same weekday" },
-  { value: "yearly",  label: "Yearly",  hint: "Once a year on the same date" },
-];
-
-function preview(frequency: string, dueDay: number, dueDate: string) {
-  if (frequency === "monthly") return `Every month on the ${ordinal(dueDay)}`;
-  if (frequency === "weekly") {
-    const day = dueDate ? new Date(dueDate + "T00:00:00").toLocaleString("en-US", { weekday: "long" }) : "selected day";
-    return `Every week on ${day}`;
-  }
-  if (frequency === "yearly") {
-    const label = dueDate ? new Date(dueDate + "T00:00:00").toLocaleString("en-US", { month: "long", day: "numeric" }) : "the same date";
-    return `Every year on ${label}`;
-  }
-  return "";
-}
-
 export function RecurringSection({
   enabled, onToggle,
   frequency, onFrequency,
@@ -58,7 +40,36 @@ export function RecurringSection({
   endDate, onEndDate,
   endCount, onEndCount,
 }: RecurringSectionProps) {
+  const dict = useDict();
+  const r = dict.recurring;
+
+  const FREQUENCIES = [
+    { value: "monthly", label: r.monthly, hint: r.monthlyHint },
+    { value: "weekly",  label: r.weekly,  hint: r.weeklyHint  },
+    { value: "yearly",  label: r.yearly,  hint: r.yearlyHint  },
+  ];
+
   const hint = FREQUENCIES.find((f) => f.value === frequency)?.hint ?? "";
+
+  function preview(freq: string, day: number, date: string) {
+    if (freq === "monthly") {
+      return `${r.previewMonthlyPrefix} ${r.useOrdinal ? ordinal(day) : day}`;
+    }
+    if (freq === "weekly") {
+      const weekday = date
+        ? new Date(date + "T00:00:00").toLocaleString(dict.locale, { weekday: "long" })
+        : "—";
+      return `${r.previewWeeklyPrefix} ${weekday}`;
+    }
+    if (freq === "yearly") {
+      const label = date
+        ? new Date(date + "T00:00:00").toLocaleString(dict.locale, { month: "long", day: "numeric" })
+        : "—";
+      return `${r.previewYearlyPrefix} ${label}`;
+    }
+    return "";
+  }
+
   const previewText = preview(frequency, dueDay, dueDate);
 
   return (
@@ -74,7 +85,7 @@ export function RecurringSection({
         </div>
         <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-foreground)]">
           <RefreshCw className="w-4 h-4 text-[var(--color-muted-foreground)]" />
-          This is a recurring bill
+          {r.toggleLabel}
         </div>
       </button>
 
@@ -82,7 +93,7 @@ export function RecurringSection({
         <div className="space-y-4 pl-1">
           {/* Frequency */}
           <div className="space-y-1.5">
-            <Label>Recurrence</Label>
+            <Label>{r.recurrence}</Label>
             <select
               name="frequency"
               value={frequency}
@@ -99,7 +110,7 @@ export function RecurringSection({
           {/* Day of month (monthly only) */}
           {frequency === "monthly" && (
             <div className="space-y-1.5">
-              <Label htmlFor="due_day">Day of month</Label>
+              <Label htmlFor="due_day">{r.dayOfMonth}</Label>
               <Input
                 id="due_day"
                 name="due_day"
@@ -109,38 +120,22 @@ export function RecurringSection({
                 value={dueDay}
                 onChange={(e) => onDueDay(Math.max(1, Math.min(31, parseInt(e.target.value) || 1)))}
               />
-              <p className="text-xs text-[var(--color-muted-foreground)]">
-                Day the bill is due (1–31). Defaults to the day of the Due Date above.
-              </p>
+              <p className="text-xs text-[var(--color-muted-foreground)]">{r.dayOfMonthHint}</p>
             </div>
           )}
 
           {/* Ends */}
           <div className="space-y-2">
-            <Label>Ends</Label>
+            <Label>{r.ends}</Label>
 
             <label className="flex items-center gap-2.5 cursor-pointer">
-              <input
-                type="radio"
-                name="ends_type"
-                value="never"
-                checked={endsType === "never"}
-                onChange={() => onEndsType("never")}
-                className="accent-[var(--color-primary)] w-4 h-4"
-              />
-              <span className="text-sm text-[var(--color-foreground)]">Never (open-ended series)</span>
+              <input type="radio" name="ends_type" value="never" checked={endsType === "never"} onChange={() => onEndsType("never")} className="accent-[var(--color-primary)] w-4 h-4" />
+              <span className="text-sm text-[var(--color-foreground)]">{r.never}</span>
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer">
-              <input
-                type="radio"
-                name="ends_type"
-                value="date"
-                checked={endsType === "date"}
-                onChange={() => onEndsType("date")}
-                className="accent-[var(--color-primary)] w-4 h-4"
-              />
-              <span className="text-sm text-[var(--color-foreground)] shrink-0">On date</span>
+              <input type="radio" name="ends_type" value="date" checked={endsType === "date"} onChange={() => onEndsType("date")} className="accent-[var(--color-primary)] w-4 h-4" />
+              <span className="text-sm text-[var(--color-foreground)] shrink-0">{r.onDate}</span>
               <input
                 type="date"
                 name="end_date"
@@ -152,15 +147,8 @@ export function RecurringSection({
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer">
-              <input
-                type="radio"
-                name="ends_type"
-                value="count"
-                checked={endsType === "count"}
-                onChange={() => onEndsType("count")}
-                className="accent-[var(--color-primary)] w-4 h-4"
-              />
-              <span className="text-sm text-[var(--color-foreground)] shrink-0">After</span>
+              <input type="radio" name="ends_type" value="count" checked={endsType === "count"} onChange={() => onEndsType("count")} className="accent-[var(--color-primary)] w-4 h-4" />
+              <span className="text-sm text-[var(--color-foreground)] shrink-0">{r.after}</span>
               <input
                 type="number"
                 name="end_count"
@@ -170,7 +158,7 @@ export function RecurringSection({
                 disabled={endsType !== "count"}
                 className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
               />
-              <span className="text-sm text-[var(--color-foreground)]">occurrences</span>
+              <span className="text-sm text-[var(--color-foreground)]">{r.occurrences}</span>
             </label>
           </div>
 
@@ -179,10 +167,7 @@ export function RecurringSection({
             {previewText}
           </div>
 
-          <p className="text-xs text-[var(--color-muted-foreground)] leading-relaxed">
-            Saving will create a recurring template and auto-schedule bills. Use{" "}
-            <strong>Recurring → Generate</strong> to extend further into the future.
-          </p>
+          <p className="text-xs text-[var(--color-muted-foreground)] leading-relaxed">{r.savingNote}</p>
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { formatCurrency } from "@/lib/utils";
 import { BillRow } from "./bill-row";
+import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
 
 interface BillsGroupedListProps {
@@ -21,18 +22,17 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 }
 
 export function BillsGroupedList({ bills, categories, groups }: BillsGroupedListProps) {
+  const dict = useDict();
+
   if (bills.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-[var(--color-muted-foreground)] text-sm">No bills found.</p>
-        <p className="text-[var(--color-muted-foreground)] text-xs mt-1">
-          Try a different period or add a new bill.
-        </p>
+        <p className="text-[var(--color-muted-foreground)] text-sm">{dict.bills.noBills}</p>
+        <p className="text-[var(--color-muted-foreground)] text-xs mt-1">{dict.bills.noBillsHint}</p>
       </div>
     );
   }
 
-  // Build ordered group buckets preserving due_date order within each group
   const groupMap = new Map<string | null, Bill[]>();
   const groupOrder: (string | null)[] = [];
 
@@ -57,23 +57,18 @@ export function BillsGroupedList({ bills, categories, groups }: BillsGroupedList
           ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.10)` }
           : { backgroundColor: "#94a3b810" };
 
+        const billWord = groupBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
+
         return (
           <div key={groupId ?? "__ungrouped__"} className="bg-[var(--color-card)] border border-[var(--color-border)]">
-            {/* Group header */}
-            <div
-              className="flex items-center justify-between px-4 py-2.5"
-              style={bgStyle}
-            >
+            <div className="flex items-center justify-between px-4 py-2.5" style={bgStyle}>
               <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: color }}
-                />
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                 <span className="text-sm font-semibold text-[var(--color-foreground)]">
-                  {group?.name ?? "Ungrouped"}
+                  {group?.name ?? dict.bills.ungrouped}
                 </span>
                 <span className="text-xs text-[var(--color-muted-foreground)]">
-                  · {groupBills.length} {groupBills.length === 1 ? "bill" : "bills"}
+                  · {groupBills.length} {billWord}
                 </span>
               </div>
               <span className="text-sm font-bold text-[var(--color-foreground)] tabular-nums">
@@ -81,15 +76,9 @@ export function BillsGroupedList({ bills, categories, groups }: BillsGroupedList
               </span>
             </div>
 
-            {/* Bills in this group */}
             <div className="divide-y divide-[var(--color-border)]">
               {groupBills.map((bill) => (
-                <BillRow
-                  key={bill.id}
-                  bill={bill}
-                  categories={categories}
-                  groups={groups}
-                />
+                <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
               ))}
             </div>
           </div>

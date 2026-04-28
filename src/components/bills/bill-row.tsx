@@ -7,6 +7,7 @@ import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
 import { RecurringSeriesForm } from "./recurring-series-form";
+import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
 
 const AVATAR_COLORS = [
@@ -17,24 +18,6 @@ const AVATAR_COLORS = [
 
 function avatarColor(name: string) {
   return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-}
-
-function StatusBadge({ status, isOverdue }: { status: string; isOverdue: boolean }) {
-  const effective = isOverdue ? "overdue" : status;
-  const cfg = {
-    paid:    { label: "Paid",    bg: "var(--badge-paid-bg)",    color: "var(--badge-paid-fg)"    },
-    pending: { label: "Pending", bg: "var(--badge-pending-bg)", color: "var(--badge-pending-fg)" },
-    overdue: { label: "Overdue", bg: "var(--badge-overdue-bg)", color: "var(--badge-overdue-fg)" },
-  }[effective] ?? { label: status, bg: "#94a3b822", color: "#475569" };
-
-  return (
-    <span
-      className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
-      style={{ backgroundColor: cfg.bg, color: cfg.color }}
-    >
-      {cfg.label}
-    </span>
-  );
 }
 
 interface BillRowProps {
@@ -53,6 +36,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [deleteChoiceOpen, setDeleteChoiceOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef   = useRef<HTMLDivElement>(null);
+  const dict = useDict();
 
   const today     = new Date().toISOString().split("T")[0];
   const isOverdue = bill.status === "pending" && bill.due_date < today;
@@ -63,9 +47,22 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const paymentMethod = bill.payment_method ?? null;
   const metaLabel     = paymentMethod ?? group?.name ?? category?.name ?? null;
 
-  const dateStr = new Date(bill.due_date + "T00:00:00").toLocaleString("en-US", {
+  const dateStr = new Date(bill.due_date + "T00:00:00").toLocaleString(dict.locale, {
     month: "short", day: "numeric",
   });
+
+  const statusLabel = {
+    paid:    dict.bills.paid,
+    pending: dict.bills.pending,
+    overdue: dict.bills.overdue,
+  };
+
+  const effectiveStatus = isOverdue ? "overdue" : bill.status;
+  const cfg = {
+    paid:    { label: statusLabel.paid,    bg: "var(--badge-paid-bg)",    color: "var(--badge-paid-fg)"    },
+    pending: { label: statusLabel.pending, bg: "var(--badge-pending-bg)", color: "var(--badge-pending-fg)" },
+    overdue: { label: statusLabel.overdue, bg: "var(--badge-overdue-bg)", color: "var(--badge-overdue-fg)" },
+  }[effectiveStatus] ?? { label: bill.status, bg: "#94a3b822", color: "#475569" };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -94,7 +91,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
       setDeleteChoiceOpen(true);
       return;
     }
-    if (!confirm(`Delete "${bill.name}"?`)) return;
+    if (!confirm(`${dict.bills.confirmDelete} "${bill.name}"?`)) return;
     startTransition(async () => { await deleteBillAction(bill.id); });
   }
 
@@ -121,7 +118,6 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
           : undefined,
       }}
     >
-
       {/* Avatar */}
       <div
         className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none overflow-hidden"
@@ -143,14 +139,19 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         )}
       </div>
 
-      {/* Name + meta — takes all remaining space */}
+      {/* Name + meta */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm text-[var(--color-foreground)] truncate leading-tight">
           {bill.name}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-xs text-[var(--color-muted-foreground)] shrink-0">{dateStr}</span>
-          <StatusBadge status={bill.status} isOverdue={isOverdue} />
+          <span
+            className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+            style={{ backgroundColor: cfg.bg, color: cfg.color }}
+          >
+            {cfg.label}
+          </span>
           {metaLabel && (
             <span className="text-xs text-[var(--color-muted-foreground)] truncate hidden sm:inline">
               · {metaLabel}
@@ -159,7 +160,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         </div>
       </div>
 
-      {/* Right-side group: amount + pay + menu */}
+      {/* Right-side group */}
       <div className="flex items-center gap-1.5 shrink-0">
         <span className="font-bold text-sm text-[var(--color-foreground)] tabular-nums">
           {formatCurrency(bill.amount)}
@@ -170,7 +171,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
             onClick={() => startTransition(async () => { await markBillPaidAction(bill.id); })}
             className="h-7 px-2.5 rounded-lg border-2 border-[var(--color-border)] text-[10px] font-bold text-[var(--color-muted-foreground)] hover:border-[var(--color-success)] hover:text-[var(--color-success)] transition-colors"
           >
-            PAY
+            {dict.bills.pay}
           </button>
         ) : (
           <button
@@ -178,7 +179,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
             className="h-7 px-2.5 rounded-lg text-[10px] font-bold text-white hover:opacity-80 transition-opacity"
             style={{ backgroundColor: "var(--color-success)" }}
           >
-            PAID
+            {dict.bills.paidBtn}
           </button>
         )}
 
@@ -207,60 +208,36 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
             }}
           >
             <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
-            Edit
+            {dict.common.edit}
           </button>
           <button
             onClick={handleDelete}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            Delete
+            {dict.common.delete}
           </button>
         </div>,
         document.body
       )}
 
-      {/* Edit dialog — outside the portal */}
-      <BillForm
-        bill={bill}
-        categories={categories}
-        groups={groups}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-      />
+      {/* Edit dialog */}
+      <BillForm bill={bill} categories={categories} groups={groups} open={editOpen} onOpenChange={setEditOpen} />
 
       {/* Recurring choice dialog */}
       {choiceOpen && createPortal(
-        <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40"
-          onClick={() => setChoiceOpen(false)}
-        >
-          <div
-            className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-5 mx-4 max-w-sm w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">Edit recurring bill</p>
-            <p className="text-xs text-[var(--color-muted-foreground)] mb-4">
-              This bill is part of a recurring series. What would you like to edit?
-            </p>
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40" onClick={() => setChoiceOpen(false)}>
+          <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-5 mx-4 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">{dict.recurring.editTitle}</p>
+            <p className="text-xs text-[var(--color-muted-foreground)] mb-4">{dict.recurring.editDesc}</p>
             <div className="flex flex-col gap-2">
-              <button
-                onClick={() => { setChoiceOpen(false); setEditOpen(true); }}
-                className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-              >
-                Just this bill
-                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">
-                  Only edit this specific occurrence
-                </span>
+              <button onClick={() => { setChoiceOpen(false); setEditOpen(true); }} className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors">
+                {dict.recurring.justThis}
+                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">{dict.recurring.justThisEditDesc}</span>
               </button>
-              <button
-                onClick={() => { setChoiceOpen(false); setSeriesEditOpen(true); }}
-                className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-              >
-                Entire series
-                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">
-                  Update all pending bills in this series
-                </span>
+              <button onClick={() => { setChoiceOpen(false); setSeriesEditOpen(true); }} className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors">
+                {dict.recurring.entireSeries}
+                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">{dict.recurring.entireSeriesEditDesc}</span>
               </button>
             </div>
           </div>
@@ -270,36 +247,18 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
 
       {/* Delete recurring choice dialog */}
       {deleteChoiceOpen && createPortal(
-        <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40"
-          onClick={() => setDeleteChoiceOpen(false)}
-        >
-          <div
-            className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-5 mx-4 max-w-sm w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">Delete recurring bill</p>
-            <p className="text-xs text-[var(--color-muted-foreground)] mb-4">
-              This bill is part of a recurring series. What would you like to delete?
-            </p>
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40" onClick={() => setDeleteChoiceOpen(false)}>
+          <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-5 mx-4 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">{dict.recurring.deleteTitle}</p>
+            <p className="text-xs text-[var(--color-muted-foreground)] mb-4">{dict.recurring.deleteDesc}</p>
             <div className="flex flex-col gap-2">
-              <button
-                onClick={handleDeleteThis}
-                className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-              >
-                Just this bill
-                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">
-                  Only remove this specific occurrence
-                </span>
+              <button onClick={handleDeleteThis} className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors">
+                {dict.recurring.justThis}
+                <span className="block text-xs text-[var(--color-muted-foreground)] font-normal mt-0.5">{dict.recurring.justThisDeleteDesc}</span>
               </button>
-              <button
-                onClick={handleDeleteSeries}
-                className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-danger)]/40 text-sm font-medium text-[var(--color-danger)] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-              >
-                Entire series
-                <span className="block text-xs font-normal mt-0.5 opacity-80">
-                  Delete all pending bills in this series
-                </span>
+              <button onClick={handleDeleteSeries} className="w-full text-left px-4 py-3 rounded-xl border border-[var(--color-danger)]/40 text-sm font-medium text-[var(--color-danger)] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+                {dict.recurring.entireSeries}
+                <span className="block text-xs font-normal mt-0.5 opacity-80">{dict.recurring.entireSeriesDeleteDesc}</span>
               </button>
             </div>
           </div>
@@ -309,13 +268,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
 
       {/* Recurring series edit dialog */}
       {bill.recurring_template_id && (
-        <RecurringSeriesForm
-          bill={bill}
-          categories={categories}
-          groups={groups}
-          open={seriesEditOpen}
-          onOpenChange={setSeriesEditOpen}
-        />
+        <RecurringSeriesForm bill={bill} categories={categories} groups={groups} open={seriesEditOpen} onOpenChange={setSeriesEditOpen} />
       )}
     </div>
   );

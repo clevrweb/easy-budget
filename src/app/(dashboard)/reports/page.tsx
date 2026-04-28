@@ -7,6 +7,7 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import type { Bill, Category } from "@/types/database";
 import type { MonthlyDataPoint } from "@/components/reports/monthly-chart";
 import type { CategoryDataPoint } from "@/components/reports/category-chart";
+import { getServerDict } from "@/lib/i18n";
 
 const FALLBACK_COLORS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
@@ -18,7 +19,11 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ month?: string }>;
 }) {
-  const { month } = await searchParams;
+  const [{ month }, dict] = await Promise.all([
+    searchParams,
+    getServerDict(),
+  ]);
+  const t = dict.reports;
 
   const now = new Date();
   const selectedMonth =
@@ -32,7 +37,7 @@ export default async function ReportsPage({
     months.push({
       year: d.getFullYear(),
       mon: d.getMonth() + 1,
-      label: d.toLocaleString("en-US", { month: "short", year: "2-digit" }),
+      label: d.toLocaleString(dict.locale, { month: "short", year: "2-digit" }),
       key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
     });
   }
@@ -82,7 +87,7 @@ export default async function ReportsPage({
   selBills.forEach((bill) => {
     const key = bill.category_id ?? "__none__";
     const cat = bill.category_id ? catMap.get(bill.category_id) : null;
-    const name = cat?.name ?? "Uncategorized";
+    const name = cat?.name ?? t.uncategorized;
     const color = cat?.color ?? "#94a3b8";
 
     const existing = categoryTotals.get(key);
@@ -97,11 +102,11 @@ export default async function ReportsPage({
       color: item.color !== "#94a3b8" ? item.color : FALLBACK_COLORS[i % FALLBACK_COLORS.length],
     }));
 
-  const monthLabel = new Date(selYear, selMon - 1).toLocaleString("en-US", { month: "long", year: "numeric" });
+  const monthLabel = new Date(selYear, selMon - 1).toLocaleString(dict.locale, { month: "long", year: "numeric" });
 
   return (
     <>
-      <Topbar title="Reports" />
+      <Topbar title={t.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-6">
         {/* Month picker */}
@@ -119,14 +124,14 @@ export default async function ReportsPage({
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* Monthly trend */}
           <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5">
-            <h2 className="font-semibold text-[var(--color-foreground)] mb-1">Monthly Trend</h2>
-            <p className="text-xs text-[var(--color-muted-foreground)] mb-5">Last 6 months</p>
+            <h2 className="font-semibold text-[var(--color-foreground)] mb-1">{t.monthlyTrend}</h2>
+            <p className="text-xs text-[var(--color-muted-foreground)] mb-5">{t.last6Months}</p>
             <MonthlyChart data={monthlyData} />
           </div>
 
           {/* Category breakdown */}
           <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5">
-            <h2 className="font-semibold text-[var(--color-foreground)] mb-1">By Category</h2>
+            <h2 className="font-semibold text-[var(--color-foreground)] mb-1">{t.byCategory}</h2>
             <p className="text-xs text-[var(--color-muted-foreground)] mb-5">{monthLabel}</p>
             <CategoryChart data={categoryData} />
           </div>
@@ -136,7 +141,7 @@ export default async function ReportsPage({
         {categoryData.length > 0 && (
           <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--color-border)]">
-              <h2 className="font-semibold text-[var(--color-foreground)]">Category Breakdown</h2>
+              <h2 className="font-semibold text-[var(--color-foreground)]">{t.categoryBreakdown}</h2>
             </div>
             <div className="divide-y divide-[var(--color-border)]">
               {categoryData.map((cat) => {

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { createCategoryAction, updateCategoryAction } from "@/app/(dashboard)/categories/actions";
+import { useDict } from "@/components/language-provider";
 import type { Category } from "@/types/database";
 import { Plus } from "lucide-react";
 
@@ -26,6 +27,8 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
   const [color, setColor] = useState(category?.color ?? "#4f46e5");
   const [isPending, startTransition] = useTransition();
   const isEdit = !!category;
+  const dict = useDict();
+  const t = dict.categories;
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -42,11 +45,11 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setColor(category?.color ?? "#4f46e5"); }}>
       <DialogTrigger asChild>
-        {trigger ?? <Button><Plus className="w-4 h-4" />Add Category</Button>}
+        {trigger ?? <Button><Plus className="w-4 h-4" />{t.addCategory}</Button>}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Category" : "Add Category"}</DialogTitle>
+          <DialogTitle>{isEdit ? t.editCategory : t.addCategory}</DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -59,12 +62,12 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
           {isEdit && <input type="hidden" name="id" value={category.id} />}
 
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name">Name</Label>
+            <Label htmlFor="cat-name">{t.nameLabel}</Label>
             <Input id="cat-name" name="name" placeholder="e.g. Housing, Food, Transport" defaultValue={category?.name} required />
           </div>
 
           <div className="space-y-2">
-            <Label>Color</Label>
+            <Label>{t.colorLabel}</Label>
             <div className="flex flex-wrap gap-2">
               {COLOR_PRESETS.map((c) => (
                 <button
@@ -80,7 +83,6 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
                 className="w-8 h-8 rounded-lg cursor-pointer border border-[var(--color-border)] p-0.5 bg-[var(--color-card)]"
-                title="Custom color"
               />
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -91,10 +93,10 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Category"}
+              {isPending ? t.saving : isEdit ? t.saveChanges : t.addCategory}
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{t.cancel}</Button>
             </DialogClose>
           </div>
         </form>

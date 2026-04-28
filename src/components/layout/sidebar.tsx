@@ -14,19 +14,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/supabase/actions";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/categories", label: "Categories", icon: Tag },
-  { href: "/groups", label: "Groups", icon: Users },
-  { href: "/reports", label: "Reports", icon: BarChart2 },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+import { useDict } from "@/components/language-provider";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const logo = resolvedTheme === "dark" ? "/logo-transparent.png" : "/logo.jpg";
+  const dict = useDict();
+
+  const navItems = [
+    { href: "/dashboard", label: dict.nav.dashboard, icon: LayoutDashboard },
+    { href: "/categories", label: dict.nav.categories, icon: Tag },
+    { href: "/groups", label: dict.nav.groups, icon: Users },
+    { href: "/reports", label: dict.nav.reports, icon: BarChart2 },
+    { href: "/settings", label: dict.nav.settings, icon: Settings },
+  ];
 
   return (
     <aside className="flex flex-col w-64 min-h-screen bg-[var(--color-sidebar)] border-r border-[var(--color-border)] shrink-0">
@@ -65,7 +67,7 @@ export function Sidebar() {
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors duration-150 w-full"
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            Sign Out
+            {dict.nav.signOut}
           </button>
         </form>
       </div>

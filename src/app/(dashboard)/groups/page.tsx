@@ -3,9 +3,14 @@ import { Topbar } from "@/components/layout/topbar";
 import { GroupForm } from "@/components/groups/group-form";
 import { GroupCard } from "@/components/groups/group-card";
 import type { Group } from "@/types/database";
+import { getServerDict } from "@/lib/i18n";
 
 export default async function GroupsPage() {
-  const supabase = await createClient();
+  const [supabase, dict] = await Promise.all([
+    createClient(),
+    getServerDict(),
+  ]);
+  const t = dict.groups;
 
   const { data: groups } = await supabase
     .from("groups")
@@ -16,7 +21,7 @@ export default async function GroupsPage() {
 
   return (
     <>
-      <Topbar title="Groups">
+      <Topbar title={t.title}>
         <GroupForm />
       </Topbar>
 
@@ -28,9 +33,9 @@ export default async function GroupsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <p className="text-[var(--color-foreground)] font-medium">No groups yet</p>
+            <p className="text-[var(--color-foreground)] font-medium">{t.noGroups}</p>
             <p className="text-sm text-[var(--color-muted-foreground)] mt-1">
-              Groups let you bundle bills together — e.g. Household, Business.
+              {t.noGroupsDesc}
             </p>
           </div>
         ) : (

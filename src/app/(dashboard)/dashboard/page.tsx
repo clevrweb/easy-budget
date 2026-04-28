@@ -7,6 +7,7 @@ import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import type { Bill, Category, Group } from "@/types/database";
 import type { ViewMode, StatusFilter } from "@/components/bills/bills-header";
+import { getServerDict } from "@/lib/i18n";
 
 function getDateRange(view: ViewMode, date: string): { start: string; end: string } | null {
   if (view === "all") return null;
@@ -31,7 +32,10 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string }>;
 }) {
-  const { view: rawView, date: rawDate, status: rawStatus, q = "" } = await searchParams;
+  const [{ view: rawView, date: rawDate, status: rawStatus, q = "" }, dict] = await Promise.all([
+    searchParams,
+    getServerDict(),
+  ]);
 
   const view   = (["day", "week", "month", "all"].includes(rawView ?? "") ? rawView : "month") as ViewMode;
   const status = (["all", "pending", "paid", "overdue"].includes(rawStatus ?? "") ? rawStatus : "all") as StatusFilter;
@@ -90,7 +94,7 @@ export default async function DashboardPage({
 
   return (
     <>
-      <Topbar title="Dashboard" />
+      <Topbar title={dict.dashboard.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
         {/* Collapsible summary */}

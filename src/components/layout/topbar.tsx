@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useDict } from "@/components/language-provider";
 
 interface TopbarProps {
   title: string;
@@ -9,6 +12,8 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, children, backHref }: TopbarProps) {
+  const dict = useDict();
+
   return (
     <header className="relative h-14 flex items-center justify-between px-4 md:px-6 border-b border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
       {/* Left */}
@@ -18,7 +23,7 @@ export function Topbar({ title, children, backHref }: TopbarProps) {
           className="flex items-center gap-1 text-sm font-medium text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors min-w-[60px]"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back
+          {dict.nav.back}
         </Link>
       ) : (
         <>

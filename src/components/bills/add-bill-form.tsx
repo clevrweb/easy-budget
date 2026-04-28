@@ -13,6 +13,7 @@ import { BillerPresets, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
+import { useDict } from "@/components/language-provider";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
@@ -25,6 +26,8 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
+  const t = dict.bills;
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -77,12 +80,12 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       )}
 
       <div className="space-y-1.5">
-        <Label htmlFor="name">Bill Name</Label>
+        <Label htmlFor="name">{t.nameLabel}</Label>
         <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
         <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
         <div className="flex items-center gap-2">
           <Input
-            id="name" name="name" placeholder="e.g., Electricity" required autoFocus
+            id="name" name="name" placeholder={t.namePlaceholder} required autoFocus
             value={billName}
             onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
             className="flex-1"
@@ -104,11 +107,11 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="amount">Amount (USD)</Label>
+          <Label htmlFor="amount">{t.amountLabel}</Label>
           <Input id="amount" name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="due_date">Due Date</Label>
+          <Label htmlFor="due_date">{t.dueDateLabel}</Label>
           <Input
             id="due_date" name="due_date" type="date"
             defaultValue={todayStr}
@@ -122,28 +125,28 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="group_id">Group</Label>
+          <Label htmlFor="group_id">{t.groupLabel}</Label>
           <select id="group_id" name="group_id" defaultValue="" className={selectCls}>
-            <option value="">No group</option>
+            <option value="">{t.noGroup}</option>
             {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="status">Status</Label>
+          <Label htmlFor="status">{t.statusLabel}</Label>
           <select id="status" name="status" defaultValue="pending" className={selectCls}>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
+            <option value="pending">{t.pending}</option>
+            <option value="paid">{t.paid}</option>
           </select>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="payment_method">Payment Method</Label>
+          <Label htmlFor="payment_method">{t.paymentMethodLabel}</Label>
           <Input id="payment_method" name="payment_method" placeholder="e.g., Bofa Checking" />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="category_id">Category</Label>
+          <Label htmlFor="category_id">{t.categoryLabel}</Label>
           <CategorySelectWithAdd
             id="category_id"
             name="category_id"
@@ -153,8 +156,8 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea id="notes" name="notes" placeholder="Optional notes..." />
+        <Label htmlFor="notes">{t.notesLabel}</Label>
+        <Textarea id="notes" name="notes" placeholder={t.notesPlaceholder} />
       </div>
 
       <RecurringSection
@@ -169,10 +172,10 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="flex flex-col gap-2 pt-1">
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "Saving..." : isRecurring ? "Add Recurring Bill" : "Add Bill"}
+          {isPending ? t.saving : isRecurring ? t.addRecurringBill : t.addBill}
         </Button>
         <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/dashboard")} disabled={isPending}>
-          Cancel
+          {t.cancel}
         </Button>
       </div>
     </form>

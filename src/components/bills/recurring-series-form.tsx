@@ -17,6 +17,7 @@ import { BillerPresets, fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import type { EndsType } from "./recurring-section";
+import { useDict } from "@/components/language-provider";
 
 interface RecurringSeriesFormProps {
   bill: Bill;
@@ -34,23 +35,13 @@ function ordinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function previewText(frequency: string, dueDay: number, dueDate: string) {
-  if (frequency === "monthly") return `Every month on the ${ordinal(dueDay)}`;
-  if (frequency === "weekly") {
-    const day = dueDate ? new Date(dueDate + "T00:00:00").toLocaleString("en-US", { weekday: "long" }) : "selected day";
-    return `Every week on ${day}`;
-  }
-  if (frequency === "yearly") {
-    const label = dueDate ? new Date(dueDate + "T00:00:00").toLocaleString("en-US", { month: "long", day: "numeric" }) : "the same date";
-    return `Every year on ${label}`;
-  }
-  return "";
-}
-
 export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChange }: RecurringSeriesFormProps) {
   const [error, setError]       = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading]   = useState(false);
+  const dict = useDict();
+  const t = dict.recurring;
+  const tb = dict.bills;
 
   const defaultDueDay = new Date(bill.due_date + "T00:00:00").getDate();
   const [billName, setBillName]   = useState(bill.name);
@@ -107,17 +98,35 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
     });
   }
 
-  const preview = previewText(frequency, dueDay, bill.due_date);
+  function previewText() {
+    if (frequency === "monthly") {
+      const dayLabel = t.useOrdinal ? ordinal(dueDay) : String(dueDay);
+      return `${t.previewMonthlyPrefix} ${dayLabel}`;
+    }
+    if (frequency === "weekly") {
+      const day = bill.due_date
+        ? new Date(bill.due_date + "T00:00:00").toLocaleString(dict.locale, { weekday: "long" })
+        : "selected day";
+      return `${t.previewWeeklyPrefix} ${day}`;
+    }
+    if (frequency === "yearly") {
+      const label = bill.due_date
+        ? new Date(bill.due_date + "T00:00:00").toLocaleString(dict.locale, { month: "long", day: "numeric" })
+        : "the same date";
+      return `${t.previewYearlyPrefix} ${label}`;
+    }
+    return "";
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Entire Series</DialogTitle>
+          <DialogTitle>{t.editEntireSeries}</DialogTitle>
         </DialogHeader>
 
         <p className="text-sm text-[var(--color-muted-foreground)] -mt-1">
-          Updates the template and regenerates all pending bills.
+          {t.editSeriesSubtitle}
         </p>
 
         {error && (
@@ -129,14 +138,13 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         <form action={handleSubmit} className="space-y-4">
           <input type="hidden" name="template_id" value={bill.recurring_template_id!} />
 
-          {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="rs-name">Bill Name</Label>
+            <Label htmlFor="rs-name">{tb.nameLabel}</Label>
             <BillerPresets selectedName={billName} onSelect={(name, url) => { logoSetByPreset.current = true; setBillName(name); setLogoUrl(url); }} />
             <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
             <div className="flex items-center gap-2">
               <Input
-                id="rs-name" name="name" placeholder="e.g., Electricity" required
+                id="rs-name" name="name" placeholder={tb.namePlaceholder} required
                 value={billName}
                 onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
                 className="flex-1"
@@ -156,25 +164,23 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             </div>
           </div>
 
-          {/* Amount */}
           <div className="space-y-1.5">
-            <Label htmlFor="rs-amount">Amount (USD)</Label>
+            <Label htmlFor="rs-amount">{tb.amountLabel}</Label>
             <Input id="rs-amount" name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" defaultValue={bill.amount} required />
           </div>
 
-          {/* Group + Category */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="rs-group">Group</Label>
+              <Label htmlFor="rs-group">{tb.groupLabel}</Label>
               <select id="rs-group" name="group_id" defaultValue={bill.group_id ?? ""} className={selectCls}>
-                <option value="">No group</option>
+                <option value="">{tb.noGroup}</option>
                 {groups.map((g) => (
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="rs-category">Category</Label>
+              <Label htmlFor="rs-category">{tb.categoryLabel}</Label>
               <CategorySelectWithAdd
                 id="rs-category"
                 name="category_id"
@@ -184,19 +190,17 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             </div>
           </div>
 
-          {/* Recurrence settings */}
           <div className="border-t border-[var(--color-border)] pt-4 space-y-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
-              Recurrence
+              {t.recurrence}
             </p>
 
             {loading ? (
-              <p className="text-sm text-[var(--color-muted-foreground)]">Loading…</p>
+              <p className="text-sm text-[var(--color-muted-foreground)]">{t.loading}</p>
             ) : (
               <>
-                {/* Starting date */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="rs-start-date">Starting from</Label>
+                  <Label htmlFor="rs-start-date">{t.startingFrom}</Label>
                   <Input
                     id="rs-start-date"
                     name="start_date"
@@ -205,29 +209,27 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                   <p className="text-xs text-[var(--color-muted-foreground)]">
-                    Pending bills will be regenerated from this date forward.
+                    {t.regenerateHint}
                   </p>
                 </div>
 
-                {/* Frequency */}
                 <div className="space-y-1.5">
-                  <Label>Frequency</Label>
+                  <Label>{t.frequency}</Label>
                   <select
                     name="frequency"
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
                     className={selectCls}
                   >
-                    <option value="monthly">Monthly</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="yearly">Yearly</option>
+                    <option value="monthly">{t.monthly}</option>
+                    <option value="weekly">{t.weekly}</option>
+                    <option value="yearly">{t.yearly}</option>
                   </select>
                 </div>
 
-                {/* Day of month (monthly only) */}
                 {frequency === "monthly" && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="rs-due-day">Day of month</Label>
+                    <Label htmlFor="rs-due-day">{t.dayOfMonth}</Label>
                     <Input
                       id="rs-due-day"
                       name="due_day"
@@ -240,16 +242,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                   </div>
                 )}
 
-                {/* Ends */}
                 <div className="space-y-2">
-                  <Label>Ends</Label>
+                  <Label>{t.ends}</Label>
                   <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
                       type="radio" name="ends_type" value="never"
                       checked={endsType === "never"} onChange={() => setEndsType("never")}
                       className="accent-[var(--color-primary)] w-4 h-4"
                     />
-                    <span className="text-sm text-[var(--color-foreground)]">Never</span>
+                    <span className="text-sm text-[var(--color-foreground)]">{t.neverShort}</span>
                   </label>
                   <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
@@ -257,7 +258,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                       checked={endsType === "date"} onChange={() => setEndsType("date")}
                       className="accent-[var(--color-primary)] w-4 h-4"
                     />
-                    <span className="text-sm text-[var(--color-foreground)] shrink-0">On date</span>
+                    <span className="text-sm text-[var(--color-foreground)] shrink-0">{t.onDate}</span>
                     <input
                       type="date" name="end_date" value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
@@ -271,23 +272,22 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                       checked={endsType === "count"} onChange={() => setEndsType("count")}
                       className="accent-[var(--color-primary)] w-4 h-4"
                     />
-                    <span className="text-sm text-[var(--color-foreground)] shrink-0">After</span>
+                    <span className="text-sm text-[var(--color-foreground)] shrink-0">{t.after}</span>
                     <input
                       type="number" name="end_count" min={1} value={endCount}
                       onChange={(e) => setEndCount(Math.max(1, parseInt(e.target.value) || 1))}
                       disabled={endsType !== "count"}
                       className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
                     />
-                    <span className="text-sm text-[var(--color-foreground)]">occurrences</span>
+                    <span className="text-sm text-[var(--color-foreground)]">{t.occurrences}</span>
                   </label>
                 </div>
 
-                {/* Preview */}
                 <div
                   className="rounded-lg px-3 py-2.5 text-sm font-medium"
                   style={{ backgroundColor: "color-mix(in srgb, var(--color-primary) 10%, transparent)", color: "var(--color-primary)" }}
                 >
-                  {preview}
+                  {previewText()}
                 </div>
               </>
             )}
@@ -295,10 +295,10 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
           <div className="flex gap-3 pt-1">
             <Button type="submit" className="flex-1" disabled={isPending || loading}>
-              {isPending ? "Saving…" : "Update Series"}
+              {isPending ? t.loading : t.updateSeries}
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{dict.common.cancel}</Button>
             </DialogClose>
           </div>
         </form>

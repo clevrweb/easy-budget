@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { SummaryCards } from "./summary-cards";
+import { useDict } from "@/components/language-provider";
 import type { Bill } from "@/types/database";
 
 interface Summary {
@@ -17,6 +18,7 @@ interface Summary {
 
 export function CollapsibleSummary({ summary }: { summary: Summary }) {
   const [expanded, setExpanded] = useState(false);
+  const dict = useDict();
 
   const todayTotal = summary.dueToday.reduce((s, b) => s + b.amount, 0);
 
@@ -30,10 +32,10 @@ export function CollapsibleSummary({ summary }: { summary: Summary }) {
           <LayoutGrid className="w-4 h-4 text-[var(--color-primary)]" />
         </div>
 
-        <span className="text-sm font-semibold text-[var(--color-foreground)]">Summary</span>
+        <span className="text-sm font-semibold text-[var(--color-foreground)]">{dict.dashboard.summary}</span>
 
         <span className="text-sm text-[var(--color-muted-foreground)]">
-          Today{" "}
+          {dict.dashboard.today}{" "}
           <span className="font-semibold text-[var(--color-foreground)]">
             {formatCurrency(todayTotal)}
           </span>

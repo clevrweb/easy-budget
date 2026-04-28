@@ -1,4 +1,5 @@
 import { registerAction } from "@/lib/supabase/actions";
+import { getServerDict } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,8 @@ export default async function RegisterPage({
   searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { error, message } = await searchParams;
+  const dict = await getServerDict();
+  const t = dict.auth;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-4">
@@ -27,14 +30,14 @@ export default async function RegisterPage({
             </span>
           </div>
           <p className="text-[var(--color-muted-foreground)] text-sm">
-            Track bills. Master money.
+            {dict.appTagline}
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-[var(--color-card)] rounded-2xl shadow-[var(--shadow-card)] border border-[var(--color-border)] p-8">
           <h1 className="text-xl font-semibold text-[var(--color-foreground)] mb-6">
-            Create your account
+            {t.registerTitle}
           </h1>
 
           {error && (
@@ -50,7 +53,18 @@ export default async function RegisterPage({
 
           <form action={registerAction} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="full_name">{t.fullName}</Label>
+              <Input
+                id="full_name"
+                name="full_name"
+                type="text"
+                placeholder={t.fullNamePlaceholder}
+                required
+                autoComplete="name"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email">{t.email}</Label>
               <Input
                 id="email"
                 name="email"
@@ -61,19 +75,19 @@ export default async function RegisterPage({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.password}</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Min. 8 characters"
+                placeholder={t.passwordMin}
                 required
                 minLength={8}
                 autoComplete="new-password"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -83,18 +97,44 @@ export default async function RegisterPage({
                 autoComplete="new-password"
               />
             </div>
+
+            {/* Language selector */}
+            <div className="space-y-1.5">
+              <Label>{t.preferredLanguage}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: "en", label: t.english },
+                  { value: "es", label: t.spanish },
+                ].map(({ value, label }) => (
+                  <label
+                    key={value}
+                    className="flex items-center justify-center gap-2 h-10 rounded-lg border border-[var(--color-input)] cursor-pointer has-[:checked]:border-[var(--color-primary)] has-[:checked]:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] transition-colors"
+                  >
+                    <input
+                      type="radio"
+                      name="language"
+                      value={value}
+                      defaultChecked={value === "en"}
+                      className="sr-only"
+                    />
+                    <span className="text-sm font-medium text-[var(--color-foreground)]">{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <Button type="submit" className="w-full mt-2">
-              Create Account
+              {t.createAccount}
             </Button>
           </form>
 
           <p className="text-center text-sm text-[var(--color-muted-foreground)] mt-6">
-            Already have an account?{" "}
+            {t.alreadyHaveAccount}{" "}
             <Link
               href="/login"
               className="text-[var(--color-primary)] font-medium hover:underline"
             >
-              Sign in
+              {t.signInLink}
             </Link>
           </p>
         </div>

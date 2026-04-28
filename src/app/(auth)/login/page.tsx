@@ -1,4 +1,5 @@
 import { loginAction } from "@/lib/supabase/actions";
+import { getServerDict } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,8 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { error, message } = await searchParams;
+  const dict = await getServerDict();
+  const t = dict.auth;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-4">
@@ -27,14 +30,14 @@ export default async function LoginPage({
             </span>
           </div>
           <p className="text-[var(--color-muted-foreground)] text-sm">
-            Track bills. Master money.
+            {dict.appTagline}
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-[var(--color-card)] rounded-2xl shadow-[var(--shadow-card)] border border-[var(--color-border)] p-8">
           <h1 className="text-xl font-semibold text-[var(--color-foreground)] mb-6">
-            Sign in to your account
+            {t.signInTitle}
           </h1>
 
           {error && (
@@ -50,7 +53,7 @@ export default async function LoginPage({
 
           <form action={loginAction} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.email}</Label>
               <Input
                 id="email"
                 name="email"
@@ -61,7 +64,7 @@ export default async function LoginPage({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.password}</Label>
               <Input
                 id="password"
                 name="password"
@@ -72,17 +75,17 @@ export default async function LoginPage({
               />
             </div>
             <Button type="submit" className="w-full mt-2">
-              Sign In
+              {t.signIn}
             </Button>
           </form>
 
           <p className="text-center text-sm text-[var(--color-muted-foreground)] mt-6">
-            Don&apos;t have an account?{" "}
+            {t.dontHaveAccount}{" "}
             <Link
               href="/register"
               className="text-[var(--color-primary)] font-medium hover:underline"
             >
-              Create one
+              {t.createOneLink}
             </Link>
           </p>
         </div>

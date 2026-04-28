@@ -1,5 +1,8 @@
+"use client";
+
 import { Calendar, CalendarDays, CalendarRange, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useDict } from "@/components/language-provider";
 import type { Bill } from "@/types/database";
 
 interface Summary {
@@ -47,13 +50,16 @@ function SummaryCard({ label, bills, icon, color }: SummaryCardProps) {
 }
 
 export function SummaryCards({ summary }: { summary: Summary }) {
+  const dict = useDict();
+  const d = dict.dashboard;
+
   const cards = [
-    { label: "Due Today",      bills: summary.dueToday,     icon: <Calendar className="w-4 h-4" />,      color: "#4f46e5" },
-    { label: "Due This Week",  bills: summary.dueThisWeek,  icon: <CalendarDays className="w-4 h-4" />,  color: "#ff9800" },
-    { label: "Due This Month", bills: summary.dueThisMonth, icon: <CalendarRange className="w-4 h-4" />, color: "#0891b2" },
-    { label: "Paid",           bills: summary.paid,          icon: <CheckCircle2 className="w-4 h-4" />, color: "#4caf50" },
-    { label: "Pending",        bills: summary.pending,       icon: <Clock className="w-4 h-4" />,        color: "#94a3b8" },
-    { label: "Overdue",        bills: summary.overdue,       icon: <AlertCircle className="w-4 h-4" />,  color: "#f44336" },
+    { label: d.dueToday,     bills: summary.dueToday,     icon: <Calendar className="w-4 h-4" />,      color: "#4f46e5" },
+    { label: d.dueThisWeek,  bills: summary.dueThisWeek,  icon: <CalendarDays className="w-4 h-4" />,  color: "#ff9800" },
+    { label: d.dueThisMonth, bills: summary.dueThisMonth, icon: <CalendarRange className="w-4 h-4" />, color: "#0891b2" },
+    { label: d.paid,         bills: summary.paid,          icon: <CheckCircle2 className="w-4 h-4" />, color: "#4caf50" },
+    { label: d.pending,      bills: summary.pending,       icon: <Clock className="w-4 h-4" />,        color: "#94a3b8" },
+    { label: d.overdue,      bills: summary.overdue,       icon: <AlertCircle className="w-4 h-4" />,  color: "#f44336" },
   ];
 
   return (

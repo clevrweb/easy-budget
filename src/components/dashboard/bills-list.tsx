@@ -1,32 +1,37 @@
+"use client";
+
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useDict } from "@/components/language-provider";
 import type { Bill } from "@/types/database";
 import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
-const statusConfig = {
-  paid: {
-    label: "Paid",
-    icon: CheckCircle2,
-    className: "text-[var(--color-success)] bg-green-50 dark:bg-green-950",
-  },
-  pending: {
-    label: "Pending",
-    icon: Clock,
-    className: "text-[var(--color-warning)] bg-yellow-50 dark:bg-yellow-950",
-  },
-  overdue: {
-    label: "Overdue",
-    icon: AlertCircle,
-    className: "text-[var(--color-danger)] bg-red-50 dark:bg-red-950",
-  },
-};
-
 export function BillsList({ bills, title }: { bills: Bill[]; title: string }) {
+  const dict = useDict();
+
+  const statusConfig = {
+    paid: {
+      label: dict.dashboard.paid,
+      icon: CheckCircle2,
+      className: "text-[var(--color-success)] bg-green-50 dark:bg-green-950",
+    },
+    pending: {
+      label: dict.dashboard.pending,
+      icon: Clock,
+      className: "text-[var(--color-warning)] bg-yellow-50 dark:bg-yellow-950",
+    },
+    overdue: {
+      label: dict.dashboard.overdue,
+      icon: AlertCircle,
+      className: "text-[var(--color-danger)] bg-red-50 dark:bg-red-950",
+    },
+  };
+
   if (bills.length === 0) {
     return (
       <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-12 text-center">
-        <p className="text-[var(--color-muted-foreground)] text-sm">No bills for this month.</p>
+        <p className="text-[var(--color-muted-foreground)] text-sm">{dict.dashboard.noMonthBills}</p>
         <p className="text-[var(--color-muted-foreground)] text-xs mt-1">
-          Use <strong>Add Bill</strong> or <strong>Generate Recurring</strong> to populate this month.
+          {dict.dashboard.noMonthBillsHint}
         </p>
       </div>
     );

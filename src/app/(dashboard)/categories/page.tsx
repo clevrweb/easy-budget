@@ -4,9 +4,14 @@ import { CategoryForm } from "@/components/categories/category-form";
 import { CategoryCard } from "@/components/categories/category-card";
 import { seedDefaultCategoriesAction } from "./actions";
 import type { Category } from "@/types/database";
+import { getServerDict } from "@/lib/i18n";
 
 export default async function CategoriesPage() {
-  const supabase = await createClient();
+  const [supabase, dict] = await Promise.all([
+    createClient(),
+    getServerDict(),
+  ]);
+  const t = dict.categories;
 
   const { data: categories } = await supabase
     .from("categories")
@@ -17,13 +22,13 @@ export default async function CategoriesPage() {
 
   return (
     <>
-      <Topbar title="Categories">
+      <Topbar title={t.title}>
         <form action={seedDefaultCategoriesAction}>
           <button
             type="submit"
             className="h-9 px-3 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
           >
-            Load defaults
+            {t.loadDefaults}
           </button>
         </form>
         <CategoryForm />
@@ -37,9 +42,9 @@ export default async function CategoriesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
               </svg>
             </div>
-            <p className="text-[var(--color-foreground)] font-medium">No categories yet</p>
+            <p className="text-[var(--color-foreground)] font-medium">{t.noCategories}</p>
             <p className="text-sm text-[var(--color-muted-foreground)] mt-1">
-              Create categories to organize your bills by type.
+              {t.noCategoriesDesc}
             </p>
             <form action={seedDefaultCategoriesAction} className="mt-4">
               <button
@@ -47,7 +52,7 @@ export default async function CategoriesPage() {
                 className="h-9 px-4 rounded-lg text-sm font-medium text-white transition-colors"
                 style={{ backgroundColor: "var(--color-primary)" }}
               >
-                Load default categories
+                {t.loadDefaultsFull}
               </button>
             </form>
           </div>

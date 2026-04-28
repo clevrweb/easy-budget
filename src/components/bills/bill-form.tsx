@@ -20,6 +20,7 @@ import { createBillAction, createRecurringBillAction, updateBillAction } from "@
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus, X } from "lucide-react";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
+import { useDict } from "@/components/language-provider";
 
 interface BillFormProps {
   bill?: Bill;
@@ -38,6 +39,8 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const setOpen = onOpenChange  !== undefined ? onOpenChange  : setInternalOpen;
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const dict = useDict();
+  const t = dict.bills;
 
   const isEdit      = !!bill;
   const isControlled = externalOpen !== undefined;
@@ -47,7 +50,6 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const [billName, setBillName]   = useState(bill?.name ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill?.logo_url ?? null);
   const logoSetByPreset           = useRef(false);
-  // Declare before effects that reference them
   const [dueDate, setDueDate]     = useState(bill?.due_date ?? todayStr);
   const [dueDay, setDueDay]       = useState(now.getDate());
 
@@ -103,14 +105,14 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
           {trigger ?? (
             <Button>
               <Plus className="w-4 h-4" />
-              Add Bill
+              {t.addBill}
             </Button>
           )}
         </DialogTrigger>
       )}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Bill" : "Add Bill"}</DialogTitle>
+          <DialogTitle>{isEdit ? t.editBill : t.addBill}</DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -122,14 +124,13 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
         <form action={handleSubmit} className="space-y-4">
           {isEdit && <input type="hidden" name="id" value={bill.id} />}
 
-          {/* Bill Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="bf-name">Bill Name</Label>
+            <Label htmlFor="bf-name">{t.nameLabel}</Label>
             <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
             <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
             <div className="flex items-center gap-2">
               <Input
-                id="bf-name" name="name" placeholder="e.g., Electricity" required
+                id="bf-name" name="name" placeholder={t.namePlaceholder} required
                 value={billName}
                 onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
                 className="flex-1"
@@ -149,14 +150,13 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             </div>
           </div>
 
-          {/* Amount + Due Date */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="bf-amount">Amount (USD)</Label>
+              <Label htmlFor="bf-amount">{t.amountLabel}</Label>
               <Input id="bf-amount" name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" defaultValue={bill?.amount} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bf-due">Due Date</Label>
+              <Label htmlFor="bf-due">{t.dueDateLabel}</Label>
               <Input
                 id="bf-due" name="due_date" type="date"
                 value={dueDate}
@@ -168,34 +168,32 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             </div>
           </div>
 
-          {/* Group + Status */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="bf-group">Group</Label>
+              <Label htmlFor="bf-group">{t.groupLabel}</Label>
               <select id="bf-group" name="group_id" defaultValue={bill?.group_id ?? ""} className={selectCls}>
-                <option value="">No group</option>
+                <option value="">{t.noGroup}</option>
                 {groups.map((g) => (
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bf-status">Status</Label>
+              <Label htmlFor="bf-status">{t.statusLabel}</Label>
               <select id="bf-status" name="status" defaultValue={bill?.status ?? "pending"} className={selectCls}>
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
+                <option value="pending">{t.pending}</option>
+                <option value="paid">{t.paid}</option>
               </select>
             </div>
           </div>
 
-          {/* Payment Method + Category */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="bf-payment">Payment Method</Label>
+              <Label htmlFor="bf-payment">{t.paymentMethodLabel}</Label>
               <Input id="bf-payment" name="payment_method" placeholder="e.g., Bofa Checking" defaultValue={bill?.payment_method ?? ""} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bf-category">Category</Label>
+              <Label htmlFor="bf-category">{t.categoryLabel}</Label>
               <CategorySelectWithAdd
                 id="bf-category"
                 name="category_id"
@@ -205,13 +203,11 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             </div>
           </div>
 
-          {/* Notes */}
           <div className="space-y-1.5">
-            <Label htmlFor="bf-notes">Notes</Label>
-            <Textarea id="bf-notes" name="notes" placeholder="Optional notes..." defaultValue={bill?.notes ?? ""} />
+            <Label htmlFor="bf-notes">{t.notesLabel}</Label>
+            <Textarea id="bf-notes" name="notes" placeholder={t.notesPlaceholder} defaultValue={bill?.notes ?? ""} />
           </div>
 
-          {/* Recurring toggle — only on create */}
           {!isEdit && (
             <RecurringSection
               enabled={isRecurring}     onToggle={setIsRecurring}
@@ -226,10 +222,10 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
           <div className="flex gap-3 pt-1">
             <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : isEdit ? "Save Changes" : isRecurring ? "Add Recurring Bill" : "Add Bill"}
+              {isPending ? t.saving : isEdit ? t.saveChanges : isRecurring ? t.addRecurringBill : t.addBill}
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{t.cancel}</Button>
             </DialogClose>
           </div>
         </form>
