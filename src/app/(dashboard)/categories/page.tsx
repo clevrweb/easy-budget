@@ -4,7 +4,7 @@ import { CategoryForm } from "@/components/categories/category-form";
 import { CategoryCard } from "@/components/categories/category-card";
 import { seedDefaultCategoriesAction } from "./actions";
 import type { Category } from "@/types/database";
-import { getServerDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
 
 export default async function CategoriesPage() {
   const [supabase, dict] = await Promise.all([

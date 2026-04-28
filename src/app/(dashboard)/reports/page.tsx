@@ -7,7 +7,7 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import type { Bill, Category } from "@/types/database";
 import type { MonthlyDataPoint } from "@/components/reports/monthly-chart";
 import type { CategoryDataPoint } from "@/components/reports/category-chart";
-import { getServerDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
 
 const FALLBACK_COLORS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",

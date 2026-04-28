@@ -3,7 +3,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { GroupForm } from "@/components/groups/group-form";
 import { GroupCard } from "@/components/groups/group-card";
 import type { Group } from "@/types/database";
-import { getServerDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
 
 export default async function GroupsPage() {
   const [supabase, dict] = await Promise.all([

@@ -1,7 +1,7 @@
 import { Topbar } from "@/components/layout/topbar";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { getNotificationStatusAction } from "./actions";
-import { getServerDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 
 export default async function SettingsPage() {

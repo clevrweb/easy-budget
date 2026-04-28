@@ -1,5 +1,5 @@
 import { loginAction } from "@/lib/supabase/actions";
-import { getServerDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -7,7 +7,7 @@ import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import type { Bill, Category, Group } from "@/types/database";
 import type { ViewMode, StatusFilter } from "@/components/bills/bills-header";
-import { getServerDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
 
 function getDateRange(view: ViewMode, date: string): { start: string; end: string } | null {
   if (view === "all") return null;
