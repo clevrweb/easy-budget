@@ -33,6 +33,7 @@ export interface Dict {
     reports: string;
     settings: string;
     recurring: string;
+    income: string;
     signOut: string;
     back: string;
   };
@@ -195,6 +196,38 @@ export interface Dict {
     language: string;
     languageDesc: string;
     languageUpdated: string;
+  };
+
+  income: {
+    title: string;
+    addIncome: string;
+    editIncome: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    amountLabel: string;
+    frequencyLabel: string;
+    startDateLabel: string;
+    startDateHint: string;
+    weekly: string;
+    biweekly: string;
+    twiceMonthly: string;
+    monthly: string;
+    weeklyHint: string;
+    biweeklyHint: string;
+    twiceMonthlyHint: string;
+    monthlyHint: string;
+    saving: string;
+    saveChanges: string;
+    cancel: string;
+    confirmDelete: string;
+    noIncome: string;
+    noIncomeHint: string;
+    incomeSectionTitle: string;
+    billsSectionTitle: string;
+    netLabel: string;
+    perPaycheck: string;
+    occurrences: string;
+    noPeriodIncome: string;
   };
 
   common: {

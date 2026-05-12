@@ -11,6 +11,7 @@ import {
   Users,
   Settings,
   LogOut,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/supabase/actions";
@@ -23,11 +24,12 @@ export function Sidebar() {
   const dict = useDict();
 
   const navItems = [
-    { href: "/dashboard", label: dict.nav.dashboard, icon: LayoutDashboard },
+    { href: "/dashboard",  label: dict.nav.dashboard,  icon: LayoutDashboard },
+    { href: "/income",     label: dict.nav.income,     icon: TrendingUp },
     { href: "/categories", label: dict.nav.categories, icon: Tag },
-    { href: "/groups", label: dict.nav.groups, icon: Users },
-    { href: "/reports", label: dict.nav.reports, icon: BarChart2 },
-    { href: "/settings", label: dict.nav.settings, icon: Settings },
+    { href: "/groups",     label: dict.nav.groups,     icon: Users },
+    { href: "/reports",    label: dict.nav.reports,    icon: BarChart2 },
+    { href: "/settings",   label: dict.nav.settings,   icon: Settings },
   ];
 
   return (

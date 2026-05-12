@@ -1,5 +1,6 @@
 export type BillStatus = "pending" | "paid" | "overdue";
 export type RecurringFrequency = "monthly" | "weekly" | "yearly";
+export type IncomeFrequency = "weekly" | "biweekly" | "twice_monthly" | "monthly";
 export type Language = "en" | "es";
 
 export interface Database {
@@ -29,6 +30,11 @@ export interface Database {
         Row: Group;
         Insert: Omit<Group, "id" | "created_at">;
         Update: Partial<Omit<Group, "id" | "created_at">>;
+      };
+      income_sources: {
+        Row: IncomeSource;
+        Insert: Omit<IncomeSource, "id" | "created_at">;
+        Update: Partial<Omit<IncomeSource, "id" | "created_at">>;
       };
     };
     Views: Record<string, never>;
@@ -89,5 +95,16 @@ export interface Group {
   user_id: string;
   name: string;
   color: string;
+  created_at: string;
+}
+
+export interface IncomeSource {
+  id: string;
+  user_id: string;
+  name: string;
+  amount: number;
+  frequency: IncomeFrequency;
+  start_date: string;
+  is_active: boolean;
   created_at: string;
 }

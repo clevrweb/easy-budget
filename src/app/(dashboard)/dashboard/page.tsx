@@ -5,7 +5,8 @@ import { Topbar } from "@/components/layout/topbar";
 import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
 import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
-import type { Bill, Category, Group } from "@/types/database";
+import { IncomeSection } from "@/components/income/income-section";
+import type { Bill, Category, Group, IncomeSource } from "@/types/database";
 import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
 
@@ -61,11 +62,13 @@ export default async function DashboardPage({
     { data: overdueBills },
     { data: categories },
     { data: groups },
+    { data: incomeSources },
   ] = await Promise.all([
     supabase.from("bills").select("*").gte("due_date", monthStart).lte("due_date", monthEnd).order("due_date"),
     supabase.from("bills").select("*").lt("due_date", monthStart).eq("status", "pending"),
     supabase.from("categories").select("*").order("name"),
     supabase.from("groups").select("*").order("name"),
+    supabase.from("income_sources").select("*").eq("is_active", true),
   ]);
 
   const allCurrentBills = [...(monthBills ?? []), ...(overdueBills ?? [])] as Bill[];
@@ -93,6 +96,8 @@ export default async function DashboardPage({
     return effective === status;
   });
 
+  const billsTotal = filteredBills.reduce((s, b) => s + b.amount, 0);
+
   return (
     <>
       <Topbar title={dict.dashboard.title} />
@@ -101,10 +106,17 @@ export default async function DashboardPage({
         {/* Collapsible summary */}
         <CollapsibleSummary summary={summary} />
 
-
-
         {/* Bills filter + list */}
         <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
+
+        {/* Income + net total section */}
+        {range && (
+          <IncomeSection
+            incomeSources={(incomeSources ?? []) as IncomeSource[]}
+            billsTotal={billsTotal}
+            range={range}
+          />
+        )}
 
         <div className={groupBy === "day" || view === "month" || view === "day" ? "" : "bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden"}>
           <BillsGroupedList

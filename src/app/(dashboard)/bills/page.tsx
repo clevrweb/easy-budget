@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import { BillsHeader } from "@/components/bills/bills-header";
-import type { Bill, Category, Group } from "@/types/database";
+import { IncomeSection } from "@/components/income/income-section";
+import type { Bill, Category, Group, IncomeSource } from "@/types/database";
 import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
 
@@ -65,10 +66,11 @@ export default async function BillsPage({
     query = query.ilike("name", `%${q}%`);
   }
 
-  const [{ data: bills }, { data: categories }, { data: groups }] = await Promise.all([
+  const [{ data: bills }, { data: categories }, { data: groups }, { data: incomeSources }] = await Promise.all([
     query,
     supabase.from("categories").select("*").order("name"),
     supabase.from("groups").select("*").order("name"),
+    supabase.from("income_sources").select("*").eq("is_active", true),
   ]);
 
   const allBills = (bills ?? []) as Bill[];
@@ -80,12 +82,23 @@ export default async function BillsPage({
     return effective === status;
   });
 
+  const billsTotal = filtered.reduce((s, b) => s + b.amount, 0);
+
   return (
     <>
       <Topbar title={dict.bills.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
         <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} />
+
+        {/* Income + net total section */}
+        {range && (
+          <IncomeSection
+            incomeSources={(incomeSources ?? []) as IncomeSource[]}
+            billsTotal={billsTotal}
+            range={range}
+          />
+        )}
 
         {/* Bills list */}
         <div className={groupBy === "day" || view === "month" || view === "day" ? "" : "bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] overflow-hidden"}>

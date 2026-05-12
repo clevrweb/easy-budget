@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BarChart2, Tag, Users, Settings } from "lucide-react";
+import { LayoutDashboard, BarChart2, Tag, TrendingUp, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 
@@ -11,11 +11,11 @@ export function BottomNav() {
   const dict = useDict();
 
   const navItems = [
-    { href: "/dashboard",  label: dict.nav.home,       icon: LayoutDashboard },
+    { href: "/dashboard", label: dict.nav.home,     icon: LayoutDashboard },
+    { href: "/income",    label: dict.nav.income,   icon: TrendingUp },
     { href: "/categories", label: dict.nav.categories, icon: Tag },
-    { href: "/groups",     label: dict.nav.groups,     icon: Users },
-    { href: "/reports",    label: dict.nav.reports,    icon: BarChart2 },
-    { href: "/settings",   label: dict.nav.settings,   icon: Settings },
+    { href: "/reports",   label: dict.nav.reports,  icon: BarChart2 },
+    { href: "/settings",  label: dict.nav.settings, icon: Settings },
   ];
 
   return (
