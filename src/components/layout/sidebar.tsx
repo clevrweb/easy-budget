@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
   Tag,
@@ -19,8 +18,7 @@ import { useDict } from "@/components/language-provider";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { resolvedTheme } = useTheme();
-  const logo = resolvedTheme === "dark" ? "/logo-transparent.png" : "/logo.jpg";
+  const logo = "/play_store_512.png";
   const dict = useDict();
 
   const navItems = [
