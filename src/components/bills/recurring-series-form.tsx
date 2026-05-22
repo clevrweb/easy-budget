@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
-import { BillerPresets, fetchBillerLogo } from "./biller-presets";
+import { BillerSearchInput, fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import type { EndsType } from "./recurring-section";
@@ -53,7 +52,6 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const [endsType, setEndsType]   = useState<EndsType>("never");
   const [endDate, setEndDate]     = useState("");
   const [endCount, setEndCount]   = useState(12);
-  const [nameActive, setNameActive] = useState(false);
 
   // Reset to bill's current values each time the dialog opens
   useEffect(() => {
@@ -142,29 +140,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
           <div className="space-y-1.5">
             <Label htmlFor="rs-name">{tb.nameLabel}</Label>
-            <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
-            <div className="flex items-center gap-2">
-              <Input
-                id="rs-name" name="name" placeholder={tb.namePlaceholder} required
-                value={billName}
-                onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
-                onFocus={() => setNameActive(true)}
-                onBlur={() => setTimeout(() => setNameActive(false), 200)}
-                className="flex-1"
-              />
-              {logoUrl && (
-                <div className="relative shrink-0">
-                  <img src={logoUrl} alt="" className="w-10 h-10 object-contain rounded-xl border border-[var(--color-border)]" />
-                  <button
-                    type="button"
-                    onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
-                  >
-                    <X className="w-2.5 h-2.5 text-white" />
-                  </button>
-                </div>
-              )}
-            </div>
+            <BillerSearchInput
+              id="rs-name"
+              value={billName}
+              logoUrl={logoUrl}
+              onChange={(v) => { logoSetByPreset.current = false; setBillName(v); }}
+              onLogoSelect={(name, url) => { logoSetByPreset.current = url !== null; setBillName(name); setLogoUrl(url); }}
+              placeholder={tb.namePlaceholder}
+              required
+            />
           </div>
 
           <div className="space-y-1.5">

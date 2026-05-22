@@ -2,14 +2,13 @@
 
 import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets, fetchBillerLogo } from "./biller-presets";
+import { BillerPresets, BillerSearchInput, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
@@ -38,6 +37,12 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
   function handlePresetSelect(name: string, url: string | null) {
     logoSetByPreset.current = true;
+    setBillName(name);
+    setLogoUrl(url);
+  }
+
+  function handleLogoSelect(name: string, url: string | null) {
+    logoSetByPreset.current = url !== null;
     setBillName(name);
     setLogoUrl(url);
   }
@@ -82,27 +87,16 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       <div className="space-y-1.5">
         <Label htmlFor="name">{t.nameLabel}</Label>
         <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
-        <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
-        <div className="flex items-center gap-2">
-          <Input
-            id="name" name="name" placeholder={t.namePlaceholder} required autoFocus
-            value={billName}
-            onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
-            className="flex-1"
-          />
-          {logoUrl && (
-            <div className="relative shrink-0">
-              <img src={logoUrl} alt="" className="w-10 h-10 object-contain rounded-xl border border-[var(--color-border)]" />
-              <button
-                type="button"
-                onClick={() => { setLogoUrl(null); logoSetByPreset.current = false; }}
-                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
-              >
-                <X className="w-2.5 h-2.5 text-white" />
-              </button>
-            </div>
-          )}
-        </div>
+        <BillerSearchInput
+          id="name"
+          value={billName}
+          logoUrl={logoUrl}
+          onChange={(v) => { logoSetByPreset.current = false; setBillName(v); }}
+          onLogoSelect={handleLogoSelect}
+          placeholder={t.namePlaceholder}
+          required
+          autoFocus
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">

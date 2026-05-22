@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const AVATAR_COLORS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
@@ -72,7 +74,7 @@ interface BillerChipProps {
 }
 
 function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
-  const logoUrl = `https://www.google.com/s2/favicons?domain=${biller.domain}&sz=128`;
+  const logoUrl = `https://logo.clearbit.com/${biller.domain}`;
   const color   = avatarColor(biller.name);
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -89,7 +91,7 @@ function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
     >
       <div
         className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm overflow-hidden"
-        style={{ backgroundColor: imgFailed ? color : "transparent" }}
+        style={{ backgroundColor: imgFailed ? color : "var(--color-muted)" }}
       >
         {imgFailed ? (
           biller.name[0].toUpperCase()
@@ -97,7 +99,7 @@ function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
           <img
             src={logoUrl}
             alt={biller.name}
-            className="w-10 h-10 object-contain rounded-xl"
+            className="w-10 h-10 object-contain rounded-xl p-1"
             onError={() => setImgFailed(true)}
           />
         )}
@@ -117,9 +119,9 @@ export async function fetchBillerLogo(name: string): Promise<string | null> {
     const res = await fetch(
       `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(name)}`
     );
-    const data = await res.json();
-    if (!data?.[0]?.domain) return null;
-    return `https://www.google.com/s2/favicons?domain=${data[0].domain}&sz=128`;
+    const data = await res.json() as { name: string; domain: string; logo: string }[];
+    if (!data?.[0]?.logo) return null;
+    return data[0].logo;
   } catch {
     return null;
   }
@@ -135,10 +137,9 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
   const current = CATEGORIES[activeTab];
 
   function handleSelect(biller: Biller) {
-    const logoUrl = `https://www.google.com/s2/favicons?domain=${biller.domain}&sz=128`;
+    const logoUrl = `https://logo.clearbit.com/${biller.domain}`;
     onSelect(biller.name, logoUrl);
   }
-
 
   return (
     <div className="space-y-2">
@@ -176,6 +177,147 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+// ── Company search input with live Clearbit dropdown ──────────────────────────
+
+interface SearchResult {
+  name: string;
+  logo: string;
+}
+
+interface BillerSearchInputProps {
+  id?: string;
+  name?: string;
+  value: string;
+  logoUrl: string | null;
+  onChange: (value: string) => void;
+  onLogoSelect: (name: string, logoUrl: string | null) => void;
+  placeholder?: string;
+  required?: boolean;
+  autoFocus?: boolean;
+  className?: string;
+}
+
+export function BillerSearchInput({
+  id, name = "name", value, logoUrl, onChange, onLogoSelect,
+  placeholder, required, autoFocus, className,
+}: BillerSearchInputProps) {
+  const [results, setResults]     = useState<SearchResult[]>([]);
+  const [showDrop, setShowDrop]   = useState(false);
+  const userTypingRef             = useRef(false);
+  const containerRef              = useRef<HTMLDivElement>(null);
+
+  // Fetch suggestions while user types
+  useEffect(() => {
+    if (!userTypingRef.current || value.length < 2) {
+      setResults([]);
+      setShowDrop(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(value)}`
+        );
+        const data = await res.json() as { name: string; domain: string; logo: string }[];
+        const next = data.slice(0, 7).map(({ name, logo }) => ({ name, logo }));
+        setResults(next);
+        setShowDrop(next.length > 0);
+      } catch {
+        setResults([]);
+      }
+    }, 320);
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowDrop(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    userTypingRef.current = true;
+    onChange(e.target.value);
+  }
+
+  function handleSelect(r: SearchResult) {
+    userTypingRef.current = false;
+    setShowDrop(false);
+    setResults([]);
+    onLogoSelect(r.name, r.logo);
+  }
+
+  function handleClearLogo() {
+    userTypingRef.current = false;
+    onLogoSelect(value, null);
+  }
+
+  return (
+    <div ref={containerRef} className="relative flex items-center gap-2">
+      <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+
+      <div className="relative flex-1">
+        <Input
+          id={id}
+          name={name}
+          placeholder={placeholder}
+          required={required}
+          autoFocus={autoFocus}
+          value={value}
+          onChange={handleInputChange}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowDrop(false); }}
+          className={className}
+        />
+
+        {showDrop && results.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl shadow-xl z-[100] overflow-hidden">
+            {results.map((r) => (
+              <button
+                key={r.name}
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); handleSelect(r); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--color-muted)] transition-colors text-left"
+              >
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-[var(--color-muted)] flex items-center justify-center">
+                  <img
+                    src={r.logo}
+                    alt=""
+                    className="w-8 h-8 object-contain p-0.5"
+                    onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.backgroundColor = avatarColor(r.name); e.currentTarget.replaceWith(Object.assign(document.createElement("span"), { className: "text-white font-bold text-sm", textContent: r.name[0].toUpperCase() })); }}
+                  />
+                </div>
+                <span className="text-sm font-medium text-[var(--color-foreground)] truncate">{r.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {logoUrl && (
+        <div className="relative shrink-0">
+          <img
+            src={logoUrl}
+            alt=""
+            className="w-10 h-10 object-contain rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] p-0.5"
+          />
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); handleClearLogo(); }}
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
+          >
+            <X className="w-2.5 h-2.5 text-white" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
