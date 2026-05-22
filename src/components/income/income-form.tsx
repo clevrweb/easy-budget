@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,16 +22,26 @@ const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)
 interface IncomeFormProps {
   source?: IncomeSource;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
 }
 
-export function IncomeForm({ source, trigger }: IncomeFormProps) {
-  const [open, setOpen] = useState(false);
+export function IncomeForm({ source, trigger, open: controlledOpen, onOpenChange: controlledOnOpenChange }: IncomeFormProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [frequency, setFrequency] = useState(source?.frequency ?? "monthly");
   const isEdit = !!source;
   const dict = useDict();
   const t = dict.income;
+
+  useEffect(() => {
+    if (open) setFrequency(source?.frequency ?? "monthly");
+    else setError(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const FREQUENCIES = [
     { value: "weekly",       label: t.weekly,       hint: t.weeklyHint },
@@ -43,11 +53,8 @@ export function IncomeForm({ source, trigger }: IncomeFormProps) {
   const hint = FREQUENCIES.find((f) => f.value === frequency)?.hint ?? "";
 
   function handleOpenChange(v: boolean) {
-    setOpen(v);
-    if (!v) {
-      setError(null);
-      setFrequency(source?.frequency ?? "monthly");
-    }
+    if (isControlled) controlledOnOpenChange?.(v);
+    else setInternalOpen(v);
   }
 
   async function handleSubmit(formData: FormData) {
@@ -58,7 +65,7 @@ export function IncomeForm({ source, trigger }: IncomeFormProps) {
         : await createIncomeSourceAction(formData);
 
       if (result?.error) setError(result.error);
-      else setOpen(false);
+      else handleOpenChange(false);
     });
   }
 
@@ -66,14 +73,16 @@ export function IncomeForm({ source, trigger }: IncomeFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button>
-            <Plus className="w-4 h-4" />
-            {t.addIncome}
-          </Button>
-        )}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button>
+              <Plus className="w-4 h-4" />
+              {t.addIncome}
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? t.editIncome : t.addIncome}</DialogTitle>
