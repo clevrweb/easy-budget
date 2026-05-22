@@ -12,7 +12,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
-import { BillerSearchInput, fetchBillerLogo } from "./biller-presets";
+import { CompanyLogoSearch, fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import type { EndsType } from "./recurring-section";
@@ -140,14 +140,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
           <div className="space-y-1.5">
             <Label htmlFor="rs-name">{tb.nameLabel}</Label>
-            <BillerSearchInput
-              id="rs-name"
+            <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+            <Input
+              id="rs-name" name="name" placeholder={tb.namePlaceholder} required
               value={billName}
+              onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+            />
+            <CompanyLogoSearch
               logoUrl={logoUrl}
-              onChange={(v) => { logoSetByPreset.current = false; setBillName(v); }}
-              onLogoSelect={(name, url) => { logoSetByPreset.current = url !== null; setBillName(name); setLogoUrl(url); }}
-              placeholder={tb.namePlaceholder}
-              required
+              onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
             />
           </div>
 

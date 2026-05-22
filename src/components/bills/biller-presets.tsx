@@ -181,46 +181,30 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
   );
 }
 
-// ── Company search input with live Clearbit dropdown ──────────────────────────
+// ── Standalone company logo search field ─────────────────────────────────────
 
 interface SearchResult {
   name: string;
   logo: string;
 }
 
-interface BillerSearchInputProps {
-  id?: string;
-  name?: string;
-  value: string;
+interface CompanyLogoSearchProps {
   logoUrl: string | null;
-  onChange: (value: string) => void;
-  onLogoSelect: (name: string, logoUrl: string | null) => void;
-  placeholder?: string;
-  required?: boolean;
-  autoFocus?: boolean;
-  className?: string;
+  onSelect: (logoUrl: string | null) => void;
 }
 
-export function BillerSearchInput({
-  id, name = "name", value, logoUrl, onChange, onLogoSelect,
-  placeholder, required, autoFocus, className,
-}: BillerSearchInputProps) {
+export function CompanyLogoSearch({ logoUrl, onSelect }: CompanyLogoSearchProps) {
+  const [query, setQuery]         = useState("");
   const [results, setResults]     = useState<SearchResult[]>([]);
   const [showDrop, setShowDrop]   = useState(false);
-  const userTypingRef             = useRef(false);
   const containerRef              = useRef<HTMLDivElement>(null);
 
-  // Fetch suggestions while user types
   useEffect(() => {
-    if (!userTypingRef.current || value.length < 2) {
-      setResults([]);
-      setShowDrop(false);
-      return;
-    }
+    if (query.length < 2) { setResults([]); setShowDrop(false); return; }
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(value)}`
+          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(query)}`
         );
         const data = await res.json() as { name: string; domain: string; logo: string }[];
         const next = data.slice(0, 7).map(({ name, logo }) => ({ name, logo }));
@@ -229,11 +213,10 @@ export function BillerSearchInput({
       } catch {
         setResults([]);
       }
-    }, 320);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [value]);
+  }, [query]);
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -244,38 +227,21 @@ export function BillerSearchInput({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    userTypingRef.current = true;
-    onChange(e.target.value);
-  }
-
-  function handleSelect(r: SearchResult) {
-    userTypingRef.current = false;
-    setShowDrop(false);
+  function handlePick(r: SearchResult) {
+    setQuery("");
     setResults([]);
-    onLogoSelect(r.name, r.logo);
-  }
-
-  function handleClearLogo() {
-    userTypingRef.current = false;
-    onLogoSelect(value, null);
+    setShowDrop(false);
+    onSelect(r.logo);
   }
 
   return (
     <div ref={containerRef} className="relative flex items-center gap-2">
-      <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
-
       <div className="relative flex-1">
         <Input
-          id={id}
-          name={name}
-          placeholder={placeholder}
-          required={required}
-          autoFocus={autoFocus}
-          value={value}
-          onChange={handleInputChange}
-          onKeyDown={(e) => { if (e.key === "Escape") setShowDrop(false); }}
-          className={className}
+          placeholder="Search company for logo…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Escape") { setShowDrop(false); setQuery(""); } }}
         />
 
         {showDrop && results.length > 0 && (
@@ -284,7 +250,7 @@ export function BillerSearchInput({
               <button
                 key={r.name}
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); handleSelect(r); }}
+                onMouseDown={(e) => { e.preventDefault(); handlePick(r); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--color-muted)] transition-colors text-left"
               >
                 <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-[var(--color-muted)] flex items-center justify-center">
@@ -292,7 +258,15 @@ export function BillerSearchInput({
                     src={r.logo}
                     alt=""
                     className="w-8 h-8 object-contain p-0.5"
-                    onError={(e) => { (e.currentTarget.parentElement as HTMLDivElement).style.backgroundColor = avatarColor(r.name); e.currentTarget.replaceWith(Object.assign(document.createElement("span"), { className: "text-white font-bold text-sm", textContent: r.name[0].toUpperCase() })); }}
+                    onError={(e) => {
+                      const el = e.currentTarget;
+                      const parent = el.parentElement as HTMLElement;
+                      parent.style.backgroundColor = avatarColor(r.name);
+                      const span = document.createElement("span");
+                      span.className = "text-white font-bold text-sm";
+                      span.textContent = r.name[0].toUpperCase();
+                      el.replaceWith(span);
+                    }}
                   />
                 </div>
                 <span className="text-sm font-medium text-[var(--color-foreground)] truncate">{r.name}</span>
@@ -302,7 +276,7 @@ export function BillerSearchInput({
         )}
       </div>
 
-      {logoUrl && (
+      {logoUrl ? (
         <div className="relative shrink-0">
           <img
             src={logoUrl}
@@ -311,11 +285,15 @@ export function BillerSearchInput({
           />
           <button
             type="button"
-            onMouseDown={(e) => { e.preventDefault(); handleClearLogo(); }}
+            onMouseDown={(e) => { e.preventDefault(); onSelect(null); }}
             className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--color-muted-foreground)] flex items-center justify-center"
           >
             <X className="w-2.5 h-2.5 text-white" />
           </button>
+        </div>
+      ) : (
+        <div className="w-10 h-10 rounded-xl border border-dashed border-[var(--color-border)] flex items-center justify-center shrink-0 text-[var(--color-muted-foreground)]">
+          <span className="text-lg">🏢</span>
         </div>
       )}
     </div>

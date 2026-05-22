@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets, BillerSearchInput, fetchBillerLogo } from "./biller-presets";
+import { BillerPresets, CompanyLogoSearch, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
@@ -37,12 +37,6 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
   function handlePresetSelect(name: string, url: string | null) {
     logoSetByPreset.current = true;
-    setBillName(name);
-    setLogoUrl(url);
-  }
-
-  function handleLogoSelect(name: string, url: string | null) {
-    logoSetByPreset.current = url !== null;
     setBillName(name);
     setLogoUrl(url);
   }
@@ -87,15 +81,15 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       <div className="space-y-1.5">
         <Label htmlFor="name">{t.nameLabel}</Label>
         <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
-        <BillerSearchInput
-          id="name"
+        <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+        <Input
+          id="name" name="name" placeholder={t.namePlaceholder} required autoFocus
           value={billName}
+          onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+        />
+        <CompanyLogoSearch
           logoUrl={logoUrl}
-          onChange={(v) => { logoSetByPreset.current = false; setBillName(v); }}
-          onLogoSelect={handleLogoSelect}
-          placeholder={t.namePlaceholder}
-          required
-          autoFocus
+          onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
         />
       </div>
 

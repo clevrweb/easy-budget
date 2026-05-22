@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets, BillerSearchInput, fetchBillerLogo } from "./biller-presets";
+import { BillerPresets, CompanyLogoSearch, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
@@ -55,12 +55,6 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
   function handlePresetSelect(name: string, url: string | null) {
     logoSetByPreset.current = true;
-    setBillName(name);
-    setLogoUrl(url);
-  }
-
-  function handleLogoSelect(name: string, url: string | null) {
-    logoSetByPreset.current = url !== null;
     setBillName(name);
     setLogoUrl(url);
   }
@@ -133,14 +127,15 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
           <div className="space-y-1.5">
             <Label htmlFor="bf-name">{t.nameLabel}</Label>
             <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
-            <BillerSearchInput
-              id="bf-name"
+            <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
+            <Input
+              id="bf-name" name="name" placeholder={t.namePlaceholder} required
               value={billName}
+              onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+            />
+            <CompanyLogoSearch
               logoUrl={logoUrl}
-              onChange={(v) => { logoSetByPreset.current = false; setBillName(v); }}
-              onLogoSelect={handleLogoSelect}
-              placeholder={t.namePlaceholder}
-              required
+              onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
             />
           </div>
 
