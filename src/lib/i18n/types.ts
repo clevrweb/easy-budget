@@ -111,8 +111,11 @@ export interface Dict {
     after: string;
     occurrences: string;
     savingNote: string;
+    weekIntervalLabel: string;
+    weekIntervalUnit: string;
     previewMonthlyPrefix: string;
     previewWeeklyPrefix: string;
+    previewWeeklyNWeeksOn: string;
     previewYearlyPrefix: string;
     useOrdinal: boolean;
     editTitle: string;

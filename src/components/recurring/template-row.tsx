@@ -8,11 +8,12 @@ import type { RecurringTemplate, Category, Group } from "@/types/database";
 import { Pencil, Trash2, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const frequencyLabel: Record<string, string> = {
-  monthly: "Monthly",
-  weekly: "Weekly",
-  yearly: "Yearly",
-};
+function frequencyLabel(frequency: string, dueDay: number): string {
+  if (frequency === "weekly") {
+    return dueDay <= 1 ? "Weekly" : `Every ${dueDay} weeks`;
+  }
+  return { monthly: "Monthly", yearly: "Yearly" }[frequency] ?? frequency;
+}
 
 function ordinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
@@ -68,7 +69,7 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
           {template.name}
         </p>
         <p className="text-xs text-[var(--color-muted-foreground)]">
-          {frequencyLabel[template.frequency]} · due {ordinal(template.due_day)}
+          {frequencyLabel(template.frequency, template.due_day)}{template.frequency !== "weekly" && ` · due ${ordinal(template.due_day)}`}
         </p>
       </div>
 
@@ -79,7 +80,7 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
 
       {/* Frequency badge */}
       <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-[var(--color-border)] text-[var(--color-muted-foreground)] hidden sm:inline-flex shrink-0">
-        {frequencyLabel[template.frequency]}
+        {frequencyLabel(template.frequency, template.due_day)}
       </span>
 
       {/* Actions */}

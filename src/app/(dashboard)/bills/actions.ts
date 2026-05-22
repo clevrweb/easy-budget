@@ -71,7 +71,7 @@ export async function createRecurringBillAction(formData: FormData) {
   const dueDate        = formData.get("due_date") as string;
   const frequency      = (formData.get("frequency") as string) || "monthly";
   const dueDateObj     = new Date(dueDate + "T00:00:00");
-  const dueDay         = parseInt(formData.get("due_day") as string) || dueDateObj.getDate();
+  const dueDay         = parseInt(formData.get("due_day") as string) || (frequency === "weekly" ? 1 : dueDateObj.getDate());
   const endsType       = (formData.get("ends_type") as string) || "never";
   const endDate        = (formData.get("end_date") as string) || null;
   const endCount       = parseInt(formData.get("end_count") as string) || null;
@@ -105,7 +105,7 @@ export async function createRecurringBillAction(formData: FormData) {
       billDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     } else if (frequency === "weekly") {
       const d = new Date(dueDateObj);
-      d.setDate(d.getDate() + i * 7);
+      d.setDate(d.getDate() + i * dueDay * 7);
       billDate = d.toISOString().split("T")[0];
     } else {
       const d = new Date(dueDateObj);
@@ -204,7 +204,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
       billDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     } else if (frequency === "weekly") {
       const d = new Date(today);
-      d.setDate(d.getDate() + i * 7);
+      d.setDate(d.getDate() + i * dueDay * 7);
       billDate = d.toISOString().split("T")[0];
     } else {
       const d = new Date(today);

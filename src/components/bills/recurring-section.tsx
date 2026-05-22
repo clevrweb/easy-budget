@@ -59,7 +59,8 @@ export function RecurringSection({
       const weekday = date
         ? new Date(date + "T00:00:00").toLocaleString(dict.locale, { weekday: "long" })
         : "—";
-      return `${r.previewWeeklyPrefix} ${weekday}`;
+      if (day <= 1) return `${r.previewWeeklyPrefix} ${weekday}`;
+      return `${r.previewWeeklyNWeeksOn.replace("{n}", String(day))} ${weekday}`;
     }
     if (freq === "yearly") {
       const label = date
@@ -97,7 +98,12 @@ export function RecurringSection({
             <select
               name="frequency"
               value={frequency}
-              onChange={(e) => onFrequency(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                onFrequency(next);
+                if (next === "weekly") onDueDay(1);
+                else if (next === "monthly" && dueDate) onDueDay(new Date(dueDate + "T00:00:00").getDate());
+              }}
               className={selectCls}
             >
               {FREQUENCIES.map((f) => (
@@ -121,6 +127,26 @@ export function RecurringSection({
                 onChange={(e) => onDueDay(Math.max(1, Math.min(31, parseInt(e.target.value) || 1)))}
               />
               <p className="text-xs text-[var(--color-muted-foreground)]">{r.dayOfMonthHint}</p>
+            </div>
+          )}
+
+          {/* Week interval (weekly only) */}
+          {frequency === "weekly" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="due_day">{r.weekIntervalLabel}</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="due_day"
+                  name="due_day"
+                  type="number"
+                  min={1}
+                  max={52}
+                  value={dueDay}
+                  onChange={(e) => onDueDay(Math.max(1, Math.min(52, parseInt(e.target.value) || 1)))}
+                  className="w-24"
+                />
+                <span className="text-sm text-[var(--color-muted-foreground)]">{r.weekIntervalUnit}</span>
+              </div>
             </div>
           )}
 

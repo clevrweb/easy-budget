@@ -53,6 +53,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const [endsType, setEndsType]   = useState<EndsType>("never");
   const [endDate, setEndDate]     = useState("");
   const [endCount, setEndCount]   = useState(12);
+  const [nameActive, setNameActive] = useState(false);
 
   // Reset to bill's current values each time the dialog opens
   useEffect(() => {
@@ -104,14 +105,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
       return `${t.previewMonthlyPrefix} ${dayLabel}`;
     }
     if (frequency === "weekly") {
-      const day = bill.due_date
-        ? new Date(bill.due_date + "T00:00:00").toLocaleString(dict.locale, { weekday: "long" })
+      const day = startDate
+        ? new Date(startDate + "T00:00:00").toLocaleString(dict.locale, { weekday: "long" })
         : "selected day";
-      return `${t.previewWeeklyPrefix} ${day}`;
+      if (dueDay <= 1) return `${t.previewWeeklyPrefix} ${day}`;
+      return `${t.previewWeeklyNWeeksOn.replace("{n}", String(dueDay))} ${day}`;
     }
     if (frequency === "yearly") {
-      const label = bill.due_date
-        ? new Date(bill.due_date + "T00:00:00").toLocaleString(dict.locale, { month: "long", day: "numeric" })
+      const label = startDate
+        ? new Date(startDate + "T00:00:00").toLocaleString(dict.locale, { month: "long", day: "numeric" })
         : "the same date";
       return `${t.previewYearlyPrefix} ${label}`;
     }
@@ -140,13 +142,14 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
           <div className="space-y-1.5">
             <Label htmlFor="rs-name">{tb.nameLabel}</Label>
-            <BillerPresets selectedName={billName} onSelect={(name, url) => { logoSetByPreset.current = true; setBillName(name); setLogoUrl(url); }} />
             <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
             <div className="flex items-center gap-2">
               <Input
                 id="rs-name" name="name" placeholder={tb.namePlaceholder} required
                 value={billName}
                 onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+                onFocus={() => setNameActive(true)}
+                onBlur={() => setTimeout(() => setNameActive(false), 200)}
                 className="flex-1"
               />
               {logoUrl && (
@@ -218,7 +221,12 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                   <select
                     name="frequency"
                     value={frequency}
-                    onChange={(e) => setFrequency(e.target.value)}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setFrequency(next);
+                      if (next === "weekly") setDueDay(1);
+                      else if (next === "monthly") setDueDay(new Date(startDate + "T00:00:00").getDate() || 1);
+                    }}
                     className={selectCls}
                   >
                     <option value="monthly">{t.monthly}</option>
@@ -239,6 +247,25 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                       value={dueDay}
                       onChange={(e) => setDueDay(Math.max(1, Math.min(31, parseInt(e.target.value) || 1)))}
                     />
+                  </div>
+                )}
+
+                {frequency === "weekly" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="rs-week-interval">{t.weekIntervalLabel}</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="rs-week-interval"
+                        name="due_day"
+                        type="number"
+                        min={1}
+                        max={52}
+                        value={dueDay}
+                        onChange={(e) => setDueDay(Math.max(1, Math.min(52, parseInt(e.target.value) || 1)))}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-[var(--color-muted-foreground)]">{t.weekIntervalUnit}</span>
+                    </div>
                   </div>
                 )}
 

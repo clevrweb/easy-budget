@@ -33,6 +33,8 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [frequency, setFrequency] = useState<string>(template?.frequency ?? "monthly");
+  const [dueDay, setDueDay] = useState(template?.due_day ?? 1);
   const isEdit = !!template;
 
   async function handleSubmit(formData: FormData) {
@@ -82,20 +84,41 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                id="amount"
-                name="amount"
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="0.00"
-                defaultValue={template?.amount}
-                required
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="amount">Amount</Label>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder="0.00"
+              defaultValue={template?.amount}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="frequency">Frequency</Label>
+            <select
+              id="frequency"
+              name="frequency"
+              value={frequency}
+              onChange={(e) => {
+                const next = e.target.value;
+                setFrequency(next);
+                if (next === "weekly") setDueDay(1);
+                else setDueDay(template?.due_day ?? 1);
+              }}
+              className="flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+            >
+              {FREQUENCIES.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {frequency === "monthly" || frequency === "yearly" ? (
             <div className="space-y-1.5">
               <Label htmlFor="due_day">Due Day</Label>
               <Input
@@ -105,25 +128,30 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
                 min="1"
                 max="31"
                 placeholder="1–31"
-                defaultValue={template?.due_day ?? 1}
+                value={dueDay}
+                onChange={(e) => setDueDay(Math.max(1, Math.min(31, parseInt(e.target.value) || 1)))}
                 required
               />
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="frequency">Frequency</Label>
-            <select
-              id="frequency"
-              name="frequency"
-              defaultValue={template?.frequency ?? "monthly"}
-              className="flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
-            >
-              {FREQUENCIES.map((f) => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
-          </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="due_day">Repeat every</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="due_day"
+                  name="due_day"
+                  type="number"
+                  min="1"
+                  max="52"
+                  value={dueDay}
+                  onChange={(e) => setDueDay(Math.max(1, Math.min(52, parseInt(e.target.value) || 1)))}
+                  className="w-24"
+                  required
+                />
+                <span className="text-sm text-[var(--color-muted-foreground)]">weeks</span>
+              </div>
+            </div>
+          )}
 
           {categories.length > 0 && (
             <div className="space-y-1.5">
