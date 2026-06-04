@@ -109,14 +109,11 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
 
   return (
     <div
-      className={`flex items-center gap-2.5 px-3 sm:px-4 py-3 ${isPending ? "opacity-50 pointer-events-none" : ""}`}
-      style={{
-        backgroundColor: isPaid
-          ? "#4caf5010"
-          : isOverdue
-          ? "#f4433610"
-          : undefined,
-      }}
+      className={`flex items-center gap-2.5 px-3 sm:px-4 py-3
+        ${isPending ? "opacity-50 pointer-events-none" : ""}
+        ${isPaid    ? "bg-green-500/10 dark:bg-green-500/[.06]" : ""}
+        ${isOverdue ? "bg-red-500/[.14] dark:bg-red-500/[.06]" : ""}
+      `}
     >
       {/* Avatar */}
       <div
