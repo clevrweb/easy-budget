@@ -83,7 +83,7 @@ export async function createRecurringBillAction(formData: FormData) {
   // Create the template
   const { data: template, error: templateError } = await supabase
     .from("recurring_templates")
-    .insert({ user_id: user.id, name, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, is_active: true })
+    .insert({ user_id: user.id, name, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_active: true })
     .select()
     .single();
 
@@ -162,6 +162,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   const categoryId  = (formData.get("category_id") as string) || null;
   const groupId     = (formData.get("group_id") as string) || null;
   const logoUrl     = (formData.get("logo_url") as string) || null;
+  const paymentMethod = (formData.get("payment_method") as string) || null;
   const frequency   = (formData.get("frequency") as string) || "monthly";
   const dueDay      = parseInt(formData.get("due_day") as string) || 1;
   const endsType    = (formData.get("ends_type") as string) || "never";
@@ -171,7 +172,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   // Update the template
   const { error: tplError } = await supabase
     .from("recurring_templates")
-    .update({ name, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay })
+    .update({ name, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod })
     .eq("id", templateId)
     .eq("user_id", user.id);
 
@@ -218,7 +219,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
       user_id: user.id, name, amount,
       due_date: billDate, status: "pending",
       category_id: categoryId, group_id: groupId,
-      logo_url: logoUrl,
+      logo_url: logoUrl, payment_method: paymentMethod,
       is_recurring: true, recurring_template_id: templateId,
     });
   }

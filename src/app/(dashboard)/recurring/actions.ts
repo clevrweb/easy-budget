@@ -17,6 +17,7 @@ export async function createTemplateAction(formData: FormData) {
     frequency: (formData.get("frequency") as string) || "monthly",
     category_id: (formData.get("category_id") as string) || null,
     group_id: (formData.get("group_id") as string) || null,
+    payment_method: (formData.get("payment_method") as string) || null,
     is_active: true,
   });
 
@@ -41,6 +42,7 @@ export async function updateTemplateAction(formData: FormData) {
       frequency: formData.get("frequency") as string,
       category_id: (formData.get("category_id") as string) || null,
       group_id: (formData.get("group_id") as string) || null,
+      payment_method: (formData.get("payment_method") as string) || null,
     })
     .eq("id", id)
     .eq("user_id", user.id);
@@ -130,6 +132,7 @@ export async function generateBillsForMonthAction(month: string) {
         amount: t.amount,
         due_date,
         status: "pending" as const,
+        payment_method: t.payment_method,
         is_recurring: true,
         notes: null,
         paid_at: null,

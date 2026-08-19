@@ -86,6 +86,7 @@ export interface RecurringTemplate {
   amount: number;
   due_day: number;
   frequency: RecurringFrequency;
+  payment_method: string | null;
   is_active: boolean;
   created_at: string;
 }

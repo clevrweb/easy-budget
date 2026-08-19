@@ -153,6 +153,16 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
             </div>
           )}
 
+          <div className="space-y-1.5">
+            <Label htmlFor="payment_method">Payment Method</Label>
+            <Input
+              id="payment_method"
+              name="payment_method"
+              placeholder="e.g., Bofa Checking"
+              defaultValue={template?.payment_method ?? ""}
+            />
+          </div>
+
           {categories.length > 0 && (
             <div className="space-y-1.5">
               <Label htmlFor="category_id">Category</Label>

@@ -48,6 +48,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const logoSetByPreset           = useRef(false);
   const [frequency, setFrequency] = useState("monthly");
   const [dueDay, setDueDay]       = useState(defaultDueDay);
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [startDate, setStartDate] = useState(bill.due_date);
   const [endsType, setEndsType]   = useState<EndsType>("never");
   const [endDate, setEndDate]     = useState("");
@@ -74,6 +75,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
       if (result?.template) {
         setFrequency(result.template.frequency);
         setDueDay(result.template.due_day);
+        setPaymentMethod(result.template.payment_method ?? "");
       }
       setLoading(false);
     });
@@ -155,6 +157,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
           <div className="space-y-1.5">
             <Label htmlFor="rs-amount">{tb.amountLabel}</Label>
             <Input id="rs-amount" name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" defaultValue={bill.amount} required />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="rs-payment">{tb.paymentMethodLabel}</Label>
+            <Input
+              id="rs-payment" name="payment_method" placeholder="e.g., Bofa Checking"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
