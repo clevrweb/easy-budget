@@ -1,15 +1,19 @@
 import { Topbar } from "@/components/layout/topbar";
 import { NotificationSettings } from "@/components/settings/notification-settings";
-import { getNotificationStatusAction } from "./actions";
+import { SharedAccessSection } from "@/components/settings/shared-access-section";
+import { AccountSwitcher } from "@/components/settings/account-switcher";
+import { getNotificationStatusAction, getSharedAccessDataAction } from "./actions";
 import { getServerDict } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 
 export default async function SettingsPage() {
-  const [{ enabled }, dict] = await Promise.all([
+  const [{ enabled }, dict, sharedAccess] = await Promise.all([
     getNotificationStatusAction(),
     getServerDict(),
+    getSharedAccessDataAction(),
   ]);
   const t = dict.settings;
+  const ta = dict.account;
 
   return (
     <>
@@ -29,6 +33,28 @@ export default async function SettingsPage() {
           </h2>
           <LanguageSwitcher label={t.languageDesc} updatedLabel={t.languageUpdated} />
         </div>
+
+        {sharedAccess && sharedAccess.accounts.length > 1 && (
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+              {ta.switchAccountLabel}
+            </h2>
+            <AccountSwitcher accounts={sharedAccess.accounts} activeAccountId={sharedAccess.accountId} />
+          </div>
+        )}
+
+        {sharedAccess && (
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+              {ta.sectionTitle}
+            </h2>
+            <SharedAccessSection
+              members={sharedAccess.members}
+              pendingInvites={sharedAccess.pendingInvites}
+              currentUserId={sharedAccess.currentUserId}
+            />
+          </div>
+        )}
       </main>
     </>
   );

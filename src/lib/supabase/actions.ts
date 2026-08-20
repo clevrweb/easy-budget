@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "./server";
+import { createAdminClient } from "./admin";
+import { ACCOUNT_COOKIE } from "./account";
 
 export async function loginAction(formData: FormData) {
   const supabase = await createClient();
@@ -47,11 +49,25 @@ export async function registerAction(formData: FormData) {
   if (error) redirect(`/register?error=${encodeURIComponent(error.message)}`);
 
   if (data.user) {
+    const fullName = (formData.get("full_name") as string) || "";
+
     await supabase.from("profiles").insert({
       user_id:   data.user.id,
-      full_name: (formData.get("full_name") as string) || "",
+      full_name: fullName,
       language:  lang,
     });
+
+    const admin = createAdminClient();
+    const { data: account, error: accountError } = await admin
+      .from("accounts")
+      .insert({ name: fullName || "My Budget", is_personal: true, created_by: data.user.id })
+      .select("id")
+      .single();
+
+    if (!accountError && account) {
+      await admin.from("account_members").insert({ account_id: account.id, user_id: data.user.id });
+    }
+
     const store = await cookies();
     store.set("lang", lang, { path: "/", maxAge: 60 * 60 * 24 * 365 });
   }
@@ -69,5 +85,6 @@ export async function signOutAction() {
   await supabase.auth.signOut();
   const store = await cookies();
   store.delete("lang");
+  store.delete(ACCOUNT_COOKIE);
   redirect("/login");
 }

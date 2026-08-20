@@ -2,14 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 import type { RecurringTemplate } from "@/types/database";
 
 export async function createTemplateAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { error } = await supabase.from("recurring_templates").insert({
+    account_id: accountId,
     user_id: user.id,
     name: formData.get("name") as string,
     amount: parseFloat(formData.get("amount") as string),
@@ -30,6 +34,8 @@ export async function updateTemplateAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const id = formData.get("id") as string;
 
@@ -45,7 +51,7 @@ export async function updateTemplateAction(formData: FormData) {
       payment_method: (formData.get("payment_method") as string) || null,
     })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/recurring");
@@ -56,12 +62,14 @@ export async function deleteTemplateAction(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { error } = await supabase
     .from("recurring_templates")
     .delete()
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/recurring");
@@ -72,12 +80,14 @@ export async function toggleTemplateActiveAction(id: string, isActive: boolean) 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { error } = await supabase
     .from("recurring_templates")
     .update({ is_active: isActive })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/recurring");
@@ -88,6 +98,8 @@ export async function generateBillsForMonthAction(month: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const [year, mon] = month.split("-").map(Number);
 
@@ -95,7 +107,7 @@ export async function generateBillsForMonthAction(month: string) {
   const { data: templates, error: tErr } = await supabase
     .from("recurring_templates")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("account_id", accountId)
     .eq("is_active", true);
 
   if (tErr) return { error: tErr.message };
@@ -108,7 +120,7 @@ export async function generateBillsForMonthAction(month: string) {
   const { data: existing } = await supabase
     .from("bills")
     .select("recurring_template_id")
-    .eq("user_id", user.id)
+    .eq("account_id", accountId)
     .eq("is_recurring", true)
     .gte("due_date", monthStart)
     .lte("due_date", monthEnd);
@@ -124,6 +136,7 @@ export async function generateBillsForMonthAction(month: string) {
       const day = Math.min(t.due_day, daysInMonth);
       const due_date = `${year}-${String(mon).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       return {
+        account_id: accountId,
         user_id: user.id,
         recurring_template_id: t.id,
         category_id: t.category_id,

@@ -30,10 +30,17 @@ export async function GET(request: Request) {
 
   await Promise.all(
     subscriptions.map(async ({ user_id, subscription }) => {
+      const { data: memberships } = await supabase
+        .from("account_members")
+        .select("account_id")
+        .eq("user_id", user_id);
+      const accountIds = (memberships ?? []).map((m) => m.account_id);
+      if (!accountIds.length) return;
+
       const { data: bills } = await supabase
         .from("bills")
         .select("name, amount")
-        .eq("user_id", user_id)
+        .in("account_id", accountIds)
         .eq("due_date", today)
         .eq("status", "pending");
 

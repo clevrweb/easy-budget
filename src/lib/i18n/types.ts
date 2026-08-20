@@ -239,4 +239,41 @@ export interface Dict {
     cancel: string;
     saving: string;
   };
+
+  account: {
+    sectionTitle: string;
+    sectionDesc: string;
+    inviteEmailLabel: string;
+    inviteEmailPlaceholder: string;
+    inviteButton: string;
+    inviteSending: string;
+    inviteSentNew: string;
+    inviteSentExisting: string;
+    inviteErrorGeneric: string;
+    inviteErrorAlreadyPending: string;
+    inviteErrorSelf: string;
+    inviteErrorInvalidEmail: string;
+    membersTitle: string;
+    memberYou: string;
+    pendingInvitesTitle: string;
+    revokeInvite: string;
+    revokeConfirm: string;
+    chooseAccountTitle: string;
+    chooseAccountSubtitle: string;
+    personalAccountLabel: string;
+    sharedAccountLabel: string;
+    switchAccountLabel: string;
+    currentAccountBadge: string;
+    pendingInviteBannerTitle: string;
+    acceptInvite: string;
+    declineInvite: string;
+    acceptingInvite: string;
+    decliningInvite: string;
+    setPasswordTitle: string;
+    setPasswordSubtitle: string;
+    setPasswordButton: string;
+    setPasswordSaving: string;
+    setPasswordInvalidLink: string;
+    backToLogin: string;
+  };
 }

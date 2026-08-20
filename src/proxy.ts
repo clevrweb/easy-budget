@@ -35,11 +35,12 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthRoute =
-    request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/register");
+  const pathname = request.nextUrl.pathname;
+  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isSetPassword = pathname.startsWith("/set-password");
+  const isChooseAccount = pathname.startsWith("/choose-account");
 
-  if (!user && !isAuthRoute && request.nextUrl.pathname !== "/") {
+  if (!user && !isAuthRoute && !isSetPassword && pathname !== "/") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -47,11 +48,32 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // Account gating: attach the active account cookie, or send the user to
+  // pick one if they belong to more than one account.
+  if (user && !isAuthRoute && !isSetPassword && !isChooseAccount) {
+    const { data: memberships } = await supabase
+      .from("account_members")
+      .select("account_id");
+    const accountIds = (memberships ?? []).map((m: { account_id: string }) => m.account_id);
+    const cookieId = request.cookies.get("account_id")?.value;
+
+    if (accountIds.length > 0 && (!cookieId || !accountIds.includes(cookieId))) {
+      if (accountIds.length === 1) {
+        supabaseResponse.cookies.set("account_id", accountIds[0], {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+        });
+      } else {
+        return NextResponse.redirect(new URL("/choose-account", request.url));
+      }
+    }
+  }
+
   return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

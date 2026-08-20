@@ -2,14 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 export async function createBillAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const status = (formData.get("status") as string) || "pending";
   const { error } = await supabase.from("bills").insert({
+    account_id: accountId,
     user_id: user.id,
     name: formData.get("name") as string,
     amount: parseFloat(formData.get("amount") as string),
@@ -34,6 +38,8 @@ export async function updateBillAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const id = formData.get("id") as string;
 
@@ -53,7 +59,7 @@ export async function updateBillAction(formData: FormData) {
       paid_at: status === "paid" ? new Date().toISOString() : null,
     })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/dashboard");
@@ -65,6 +71,8 @@ export async function createRecurringBillAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const name           = formData.get("name") as string;
   const amount         = parseFloat(formData.get("amount") as string);
@@ -83,7 +91,7 @@ export async function createRecurringBillAction(formData: FormData) {
   // Create the template
   const { data: template, error: templateError } = await supabase
     .from("recurring_templates")
-    .insert({ user_id: user.id, name, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_active: true })
+    .insert({ account_id: accountId, user_id: user.id, name, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_active: true })
     .select()
     .single();
 
@@ -116,7 +124,7 @@ export async function createRecurringBillAction(formData: FormData) {
     if (endsType === "date" && endDate && billDate > endDate) break;
 
     bills.push({
-      user_id: user.id, name, amount,
+      account_id: accountId, user_id: user.id, name, amount,
       due_date: billDate, status: "pending",
       payment_method: paymentMethod, category_id: categoryId,
       group_id: groupId, notes, is_recurring: true,
@@ -139,12 +147,14 @@ export async function getRecurringTemplateAction(templateId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { data, error } = await supabase
     .from("recurring_templates")
     .select("*")
     .eq("id", templateId)
-    .eq("user_id", user.id)
+    .eq("account_id", accountId)
     .single();
 
   if (error) return { error: error.message };
@@ -155,6 +165,8 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const templateId  = formData.get("template_id") as string;
   const name        = formData.get("name") as string;
@@ -174,7 +186,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
     .from("recurring_templates")
     .update({ name, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod })
     .eq("id", templateId)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (tplError) return { error: tplError.message };
 
@@ -184,7 +196,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
     .delete()
     .eq("recurring_template_id", templateId)
     .eq("status", "pending")
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (deleteError) return { error: deleteError.message };
 
@@ -216,7 +228,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
     if (endsType === "date" && endDate && billDate > endDate) break;
 
     bills.push({
-      user_id: user.id, name, amount,
+      account_id: accountId, user_id: user.id, name, amount,
       due_date: billDate, status: "pending",
       category_id: categoryId, group_id: groupId,
       logo_url: logoUrl, payment_method: paymentMethod,
@@ -239,9 +251,11 @@ export async function deleteRecurringSeriesAction(templateId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
-  await supabase.from("bills").delete().eq("recurring_template_id", templateId).eq("status", "pending").eq("user_id", user.id);
-  await supabase.from("recurring_templates").delete().eq("id", templateId).eq("user_id", user.id);
+  await supabase.from("bills").delete().eq("recurring_template_id", templateId).eq("status", "pending").eq("account_id", accountId);
+  await supabase.from("recurring_templates").delete().eq("id", templateId).eq("account_id", accountId);
 
   revalidatePath("/dashboard");
   revalidatePath("/bills");
@@ -253,12 +267,14 @@ export async function deleteBillAction(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { error } = await supabase
     .from("bills")
     .delete()
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/dashboard");
@@ -270,12 +286,14 @@ export async function markBillPaidAction(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { error } = await supabase
     .from("bills")
     .update({ status: "paid", paid_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/dashboard");
@@ -287,12 +305,14 @@ export async function markBillPendingAction(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
 
   const { error } = await supabase
     .from("bills")
     .update({ status: "pending", paid_at: null })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("account_id", accountId);
 
   if (error) return { error: error.message };
   revalidatePath("/dashboard");
