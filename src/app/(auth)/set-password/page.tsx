@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { completeInviteSignupAction } from "./actions";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export default function SetPasswordPage() {
     // than racing that with a one-shot getUser() call, listen for the auth
     // state change it triggers (falling back to an existing session, if
     // this effect re-runs after the hash was already consumed).
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setStatus(session?.user ? "ready" : "invalid");
     });
 
