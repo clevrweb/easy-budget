@@ -28,6 +28,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.3",
+    "resend": "^6.21.0",
     "tailwind-merge": "^3.3.0",
     "web-push": "^3.6.7"
   },

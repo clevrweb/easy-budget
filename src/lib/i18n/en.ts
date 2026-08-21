@@ -314,7 +314,7 @@ export const en: Dict = {
     inviteButton: "Send Invite",
     inviteSending: "Sending...",
     inviteSentNew: "Invite sent! They'll get an email to set up their account.",
-    inviteSentExisting: "This email already has an account — they'll see the invite next time they log in.",
+    inviteSentExisting: "This email already has an account — we sent them a note, and they'll also see the invite next time they log in.",
     inviteErrorGeneric: "Couldn't send the invite. Please try again.",
     inviteErrorAlreadyPending: "An invite to this email is already pending.",
     inviteErrorSelf: "You can't invite yourself.",
@@ -349,5 +349,16 @@ export const en: Dict = {
     description: "An unexpected error occurred. You can try again, or head back to your dashboard.",
     retryButton: "Try Again",
     homeButton: "Go to Dashboard",
+  },
+
+  email: {
+    inviteNewSubject: "{name} invited you to share a budget on Easy Budget",
+    inviteExistingSubject: "{name} invited you to share a budget",
+    inviteHeading: "You've been invited!",
+    inviteNewBody: "{name} invited you to share their budget on Easy Budget. Click below to set up your account and get started.",
+    inviteExistingBody: "{name} invited you to share their budget on Easy Budget. Log in to your existing account to accept.",
+    inviteNewButton: "Accept Invite",
+    inviteExistingButton: "Log In",
+    footer: "Easy Budget — Track bills. Master money.",
   },
 };

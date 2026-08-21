@@ -314,7 +314,7 @@ export const es: Dict = {
     inviteButton: "Enviar Invitación",
     inviteSending: "Enviando...",
     inviteSentNew: "¡Invitación enviada! Recibirán un correo para configurar su cuenta.",
-    inviteSentExisting: "Este correo ya tiene una cuenta — verán la invitación la próxima vez que inicien sesión.",
+    inviteSentExisting: "Este correo ya tiene una cuenta — le enviamos un aviso, y también verá la invitación la próxima vez que inicie sesión.",
     inviteErrorGeneric: "No se pudo enviar la invitación. Intenta de nuevo.",
     inviteErrorAlreadyPending: "Ya hay una invitación pendiente para este correo.",
     inviteErrorSelf: "No puedes invitarte a ti mismo.",
@@ -349,5 +349,16 @@ export const es: Dict = {
     description: "Ocurrió un error inesperado. Puedes intentar de nuevo o volver a tu panel.",
     retryButton: "Intentar de Nuevo",
     homeButton: "Ir al Panel",
+  },
+
+  email: {
+    inviteNewSubject: "{name} te invitó a compartir un presupuesto en Easy Budget",
+    inviteExistingSubject: "{name} te invitó a compartir un presupuesto",
+    inviteHeading: "¡Te han invitado!",
+    inviteNewBody: "{name} te invitó a compartir su presupuesto en Easy Budget. Haz clic abajo para configurar tu cuenta y comenzar.",
+    inviteExistingBody: "{name} te invitó a compartir su presupuesto en Easy Budget. Inicia sesión en tu cuenta existente para aceptar.",
+    inviteNewButton: "Aceptar Invitación",
+    inviteExistingButton: "Iniciar Sesión",
+    footer: "Easy Budget — Controla tus facturas. Domina tu dinero.",
   },
 };

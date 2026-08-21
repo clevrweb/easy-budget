@@ -349,4 +349,15 @@ export interface Dict {
     retryButton: string;
     homeButton: string;
   };
+
+  email: {
+    inviteNewSubject: string;
+    inviteExistingSubject: string;
+    inviteHeading: string;
+    inviteNewBody: string;
+    inviteExistingBody: string;
+    inviteNewButton: string;
+    inviteExistingButton: string;
+    footer: string;
+  };
 }

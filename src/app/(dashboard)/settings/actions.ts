@@ -6,6 +6,9 @@ import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getActiveAccountId, ACCOUNT_COOKIE } from "@/lib/supabase/account";
+import { getServerDict } from "@/lib/i18n/server";
+import { getResendClient, EMAIL_FROM } from "@/lib/email/resend";
+import { inviteNewUserEmail, inviteExistingUserEmail } from "@/lib/email/templates";
 
 export async function saveSubscriptionAction(subscription: object) {
   const supabase = await createClient();
@@ -114,15 +117,23 @@ export async function inviteToAccountAction(formData: FormData) {
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
 
-  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${origin}/set-password`,
-  });
+  const dict = await getServerDict();
+  const { data: inviterProfile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("user_id", user.id)
+    .single();
+  const inviterName = inviterProfile?.full_name || user.email || "Someone";
 
-  if (inviteError) {
-    const message = inviteError.message?.toLowerCase() ?? "";
-    const alreadyExists = message.includes("already been registered") || message.includes("already registered");
-    if (!alreadyExists) return { error: "generic" as const };
+  const resend = getResendClient();
 
+  // Check existence BEFORE calling generateLink. Unlike inviteUserByEmail,
+  // generateLink with type: "invite" does not error for an email that
+  // already has an account -- it silently re-generates a valid link for
+  // the existing user, so we can't rely on catching an error here.
+  const { data: alreadyExists } = await admin.rpc("email_exists", { check_email: email });
+
+  if (alreadyExists) {
     const { error: dbError } = await admin.from("account_invites").insert({
       account_id: accountId,
       email,
@@ -133,20 +144,44 @@ export async function inviteToAccountAction(formData: FormData) {
       if (dbError.code === "23505") return { error: "already_pending" as const };
       return { error: "generic" as const };
     }
+
+    const { subject, html } = inviteExistingUserEmail(dict, inviterName, `${origin}/login`);
+    await resend.emails.send({ from: EMAIL_FROM, to: email, subject, html }).catch((err) => {
+      console.error("Failed to send existing-user invite email:", err);
+    });
+
     revalidatePath("/settings");
     return { success: true, mode: "existing_user" as const };
   }
+
+  // generateLink (rather than inviteUserByEmail) creates the auth user the
+  // same way but returns the action link directly instead of dispatching
+  // Supabase's own email -- letting us send our own via Resend, and
+  // sidestepping Supabase's built-in email rate limit entirely.
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "invite",
+    email,
+    options: { redirectTo: `${origin}/set-password` },
+  });
+  if (linkError || !linkData) return { error: "generic" as const };
 
   const { error: dbError } = await admin.from("account_invites").insert({
     account_id: accountId,
     email,
     invited_by: user.id,
-    invited_user_id: inviteData.user.id,
+    invited_user_id: linkData.user.id,
     status: "pending",
   });
   if (dbError) {
     if (dbError.code === "23505") return { error: "already_pending" as const };
     return { error: "generic" as const };
+  }
+
+  const { subject, html } = inviteNewUserEmail(dict, inviterName, linkData.properties.action_link);
+  const { error: sendError } = await resend.emails.send({ from: EMAIL_FROM, to: email, subject, html });
+  if (sendError) {
+    console.error("Failed to send new-user invite email:", sendError);
+    return { error: "email_failed" as const };
   }
 
   revalidatePath("/settings");
