@@ -246,6 +246,18 @@ export interface Dict {
     pushTitle: string;
     pushBodySingular: string;
     pushBodyPlural: string;
+    dataTitle: string;
+    exportButton: string;
+    exportDesc: string;
+    dangerZoneTitle: string;
+    deleteAccountButton: string;
+    deleteAccountWarning: string;
+    deleteAccountSharedWarning: string;
+    deleteAccountConfirmLabel: string;
+    deleteAccountConfirmButton: string;
+    deletingAccount: string;
+    deleteAccountErrorMismatch: string;
+    deleteAccountErrorGeneric: string;
   };
 
   income: {
@@ -323,5 +335,12 @@ export interface Dict {
     setPasswordSaving: string;
     setPasswordInvalidLink: string;
     backToLogin: string;
+  };
+
+  errorPage: {
+    title: string;
+    description: string;
+    retryButton: string;
+    homeButton: string;
   };
 }

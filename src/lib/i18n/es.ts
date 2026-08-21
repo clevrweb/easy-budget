@@ -247,6 +247,18 @@ export const es: Dict = {
     pushTitle: "Easy Budget — Facturas que vencen hoy",
     pushBodySingular: "{name} — {amount} vence hoy",
     pushBodyPlural: "{count} facturas por {amount} vencen hoy",
+    dataTitle: "Tus Datos",
+    exportButton: "Exportar Mis Datos",
+    exportDesc: "Descarga todo lo de tu cuenta actual como un archivo JSON.",
+    dangerZoneTitle: "Zona de Peligro",
+    deleteAccountButton: "Eliminar Mi Cuenta",
+    deleteAccountWarning: "Esto elimina permanentemente tu acceso y perfil. Cualquier presupuesto personal al que solo tú tengas acceso se elimina con él — esto no se puede deshacer.",
+    deleteAccountSharedWarning: "Los presupuestos compartidos en los que participas quedan intactos para los demás miembros; tú solo serás removido de ellos.",
+    deleteAccountConfirmLabel: "Escribe tu correo para confirmar",
+    deleteAccountConfirmButton: "Eliminar Mi Cuenta Permanentemente",
+    deletingAccount: "Eliminando...",
+    deleteAccountErrorMismatch: "Eso no coincide con tu correo.",
+    deleteAccountErrorGeneric: "No se pudo eliminar tu cuenta. Intenta de nuevo.",
   },
 
   income: {
@@ -324,5 +336,12 @@ export const es: Dict = {
     setPasswordSaving: "Guardando...",
     setPasswordInvalidLink: "Este enlace de invitación no es válido o expiró.",
     backToLogin: "Volver al inicio de sesión",
+  },
+
+  errorPage: {
+    title: "Algo salió mal",
+    description: "Ocurrió un error inesperado. Puedes intentar de nuevo o volver a tu panel.",
+    retryButton: "Intentar de Nuevo",
+    homeButton: "Ir al Panel",
   },
 };

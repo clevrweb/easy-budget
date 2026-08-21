@@ -2,6 +2,8 @@ import { Topbar } from "@/components/layout/topbar";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { SharedAccessSection } from "@/components/settings/shared-access-section";
 import { AccountSwitcher } from "@/components/settings/account-switcher";
+import { DangerZoneSection } from "@/components/settings/danger-zone-section";
+import { ExportDataSection } from "@/components/settings/export-data-section";
 import { getNotificationStatusAction, getSharedAccessDataAction } from "./actions";
 import { getServerDict } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
@@ -55,6 +57,20 @@ export default async function SettingsPage() {
             />
           </div>
         )}
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+            {t.dataTitle}
+          </h2>
+          <ExportDataSection />
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-danger)] mb-3">
+            {t.dangerZoneTitle}
+          </h2>
+          <DangerZoneSection />
+        </div>
       </main>
     </>
   );

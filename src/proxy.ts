@@ -53,7 +53,8 @@ export async function proxy(request: NextRequest) {
   if (user && !isAuthRoute && !isSetPassword && !isChooseAccount) {
     const { data: memberships } = await supabase
       .from("account_members")
-      .select("account_id");
+      .select("account_id")
+      .eq("user_id", user.id);
     const accountIds = (memberships ?? []).map((m: { account_id: string }) => m.account_id);
     const cookieId = request.cookies.get("account_id")?.value;
 

@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getActiveAccountId } from "@/lib/supabase/account";
+import { getActiveAccountId, ACCOUNT_COOKIE } from "@/lib/supabase/account";
 
 export async function saveSubscriptionAction(subscription: object) {
   const supabase = await createClient();
@@ -169,4 +170,70 @@ export async function revokeInviteAction(inviteId: string) {
   if (error) return { error: error.message };
   revalidatePath("/settings");
   return { success: true };
+}
+
+export async function exportMyDataAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
+
+  const [{ data: bills }, { data: categories }, { data: groups }, { data: recurringTemplates }, { data: incomeSources }] =
+    await Promise.all([
+      supabase.from("bills").select("*").eq("account_id", accountId),
+      supabase.from("categories").select("*").eq("account_id", accountId),
+      supabase.from("groups").select("*").eq("account_id", accountId),
+      supabase.from("recurring_templates").select("*").eq("account_id", accountId),
+      supabase.from("income_sources").select("*").eq("account_id", accountId),
+    ]);
+
+  return {
+    exportedAt: new Date().toISOString(),
+    bills: bills ?? [],
+    categories: categories ?? [],
+    groups: groups ?? [],
+    recurringTemplates: recurringTemplates ?? [],
+    incomeSources: incomeSources ?? [],
+  };
+}
+
+export async function deleteMyAccountAction(confirmEmail: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !user.email) return { error: "not_authenticated" as const };
+  if (confirmEmail.trim().toLowerCase() !== user.email.toLowerCase()) {
+    return { error: "email_mismatch" as const };
+  }
+
+  const admin = createAdminClient();
+
+  // For every account this user belongs to, delete the account outright if
+  // they're the last remaining member -- otherwise it'd be orphaned data
+  // nobody could ever reach again. Accounts with other members are left
+  // alone; the user's own membership row disappears automatically when
+  // their auth user is deleted below (account_members.user_id cascades).
+  const { data: memberships } = await admin
+    .from("account_members")
+    .select("account_id")
+    .eq("user_id", user.id);
+
+  for (const membership of memberships ?? []) {
+    const { count } = await admin
+      .from("account_members")
+      .select("*", { count: "exact", head: true })
+      .eq("account_id", membership.account_id);
+    if ((count ?? 0) <= 1) {
+      await admin.from("accounts").delete().eq("id", membership.account_id);
+    }
+  }
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+  if (deleteError) return { error: "generic" as const };
+
+  await supabase.auth.signOut();
+  const store = await cookies();
+  store.delete("lang");
+  store.delete(ACCOUNT_COOKIE);
+  redirect("/login");
 }

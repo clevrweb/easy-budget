@@ -69,7 +69,7 @@ export interface Profile {
 export interface Category {
   id: string;
   account_id: string;
-  user_id: string;
+  user_id: string | null;
   name: string;
   color: string;
   icon: string | null;
@@ -79,7 +79,7 @@ export interface Category {
 export interface Bill {
   id: string;
   account_id: string;
-  user_id: string;
+  user_id: string | null;
   category_id: string | null;
   group_id: string | null;
   name: string;
@@ -98,7 +98,7 @@ export interface Bill {
 export interface RecurringTemplate {
   id: string;
   account_id: string;
-  user_id: string;
+  user_id: string | null;
   category_id: string | null;
   group_id: string | null;
   name: string;
@@ -113,7 +113,7 @@ export interface RecurringTemplate {
 export interface Group {
   id: string;
   account_id: string;
-  user_id: string;
+  user_id: string | null;
   name: string;
   color: string;
   created_at: string;
@@ -122,7 +122,7 @@ export interface Group {
 export interface IncomeSource {
   id: string;
   account_id: string;
-  user_id: string;
+  user_id: string | null;
   name: string;
   amount: number;
   frequency: IncomeFrequency;

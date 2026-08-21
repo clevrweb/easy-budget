@@ -247,6 +247,18 @@ export const en: Dict = {
     pushTitle: "Easy Budget — Bills Due Today",
     pushBodySingular: "{name} — {amount} due today",
     pushBodyPlural: "{count} bills totaling {amount} due today",
+    dataTitle: "Your Data",
+    exportButton: "Export My Data",
+    exportDesc: "Download everything in your current account as a JSON file.",
+    dangerZoneTitle: "Danger Zone",
+    deleteAccountButton: "Delete My Account",
+    deleteAccountWarning: "This permanently deletes your login and profile. Any personal budget only you have access to is deleted with it — this can't be undone.",
+    deleteAccountSharedWarning: "Shared budgets you're part of stay intact for the other members; you'll just be removed from them.",
+    deleteAccountConfirmLabel: "Type your email to confirm",
+    deleteAccountConfirmButton: "Permanently Delete My Account",
+    deletingAccount: "Deleting...",
+    deleteAccountErrorMismatch: "That doesn't match your email.",
+    deleteAccountErrorGeneric: "Couldn't delete your account. Please try again.",
   },
 
   income: {
@@ -324,5 +336,12 @@ export const en: Dict = {
     setPasswordSaving: "Saving...",
     setPasswordInvalidLink: "This invite link is invalid or has expired.",
     backToLogin: "Back to login",
+  },
+
+  errorPage: {
+    title: "Something went wrong",
+    description: "An unexpected error occurred. You can try again, or head back to your dashboard.",
+    retryButton: "Try Again",
+    homeButton: "Go to Dashboard",
   },
 };
