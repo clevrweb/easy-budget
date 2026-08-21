@@ -237,3 +237,28 @@ export async function deleteMyAccountAction(confirmEmail: string) {
   store.delete(ACCOUNT_COOKIE);
   redirect("/login");
 }
+
+export async function getDefaultViewAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return "month" as const;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("default_view")
+    .eq("user_id", user.id)
+    .single();
+
+  return (data?.default_view ?? "month") as "day" | "week" | "month";
+}
+
+export async function updateDefaultViewAction(view: "day" | "week" | "month") {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  await supabase.from("profiles").upsert({ user_id: user.id, default_view: view }, { onConflict: "user_id" });
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}

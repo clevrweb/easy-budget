@@ -2,6 +2,7 @@ export type BillStatus = "pending" | "paid" | "overdue";
 export type RecurringFrequency = "monthly" | "weekly" | "yearly";
 export type IncomeFrequency = "weekly" | "biweekly" | "twice_monthly" | "monthly";
 export type Language = "en" | "es";
+export type DefaultBillsView = "day" | "week" | "month";
 export type AccountInviteStatus = "pending" | "accepted" | "declined" | "revoked";
 
 export interface Database {
@@ -63,6 +64,7 @@ export interface Profile {
   user_id: string;
   full_name: string;
   language: Language;
+  default_view: DefaultBillsView;
   created_at: string;
 }
 

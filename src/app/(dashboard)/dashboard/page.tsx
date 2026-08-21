@@ -9,6 +9,15 @@ import { IncomeSection } from "@/components/income/income-section";
 import type { Bill, Category, Group, IncomeSource } from "@/types/database";
 import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
+import { getDefaultViewAction } from "@/app/(dashboard)/settings/actions";
+
+function getMondayOf(d: Date) {
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(d);
+  mon.setDate(diff);
+  return mon.toISOString().split("T")[0];
+}
 
 function getDateRange(view: ViewMode, date: string): { start: string; end: string } | null {
   if (view === "all") return null;
@@ -33,19 +42,22 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string; groupBy?: string }>;
 }) {
-  const [{ view: rawView, date: rawDate, status: rawStatus, q = "", groupBy: rawGroupBy }, dict] = await Promise.all([
+  const [{ view: rawView, date: rawDate, status: rawStatus, q = "", groupBy: rawGroupBy }, dict, defaultView] = await Promise.all([
     searchParams,
     getServerDict(),
+    getDefaultViewAction(),
   ]);
 
-  const view    = (["day", "week", "month", "all"].includes(rawView ?? "") ? rawView : "month") as ViewMode;
+  const view    = (rawView && ["day", "week", "month", "all"].includes(rawView) ? rawView : defaultView) as ViewMode;
   const status  = (["all", "pending", "paid", "overdue"].includes(rawStatus ?? "") ? rawStatus : "all") as StatusFilter;
   const groupBy = (rawGroupBy === "day" ? "day" : "group") as GroupBy;
   const now    = new Date();
 
   const defaultDate = view === "month"
     ? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-    : now.toISOString().split("T")[0];
+    : view === "week"
+      ? getMondayOf(now)
+      : now.toISOString().split("T")[0];
   const date  = rawDate ?? defaultDate;
   const today = now.toISOString().split("T")[0];
 

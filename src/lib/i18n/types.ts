@@ -243,6 +243,12 @@ export interface Dict {
     language: string;
     languageDesc: string;
     languageUpdated: string;
+    defaultViewLabel: string;
+    defaultViewDesc: string;
+    defaultViewUpdated: string;
+    defaultViewToday: string;
+    defaultViewWeek: string;
+    defaultViewMonth: string;
     pushTitle: string;
     pushBodySingular: string;
     pushBodyPlural: string;

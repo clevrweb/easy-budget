@@ -4,15 +4,17 @@ import { SharedAccessSection } from "@/components/settings/shared-access-section
 import { AccountSwitcher } from "@/components/settings/account-switcher";
 import { DangerZoneSection } from "@/components/settings/danger-zone-section";
 import { ExportDataSection } from "@/components/settings/export-data-section";
-import { getNotificationStatusAction, getSharedAccessDataAction } from "./actions";
+import { DefaultViewSwitcher } from "@/components/settings/default-view-switcher";
+import { getNotificationStatusAction, getSharedAccessDataAction, getDefaultViewAction } from "./actions";
 import { getServerDict } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 
 export default async function SettingsPage() {
-  const [{ enabled }, dict, sharedAccess] = await Promise.all([
+  const [{ enabled }, dict, sharedAccess, defaultView] = await Promise.all([
     getNotificationStatusAction(),
     getServerDict(),
     getSharedAccessDataAction(),
+    getDefaultViewAction(),
   ]);
   const t = dict.settings;
   const ta = dict.account;
@@ -34,6 +36,13 @@ export default async function SettingsPage() {
             {t.language}
           </h2>
           <LanguageSwitcher label={t.languageDesc} updatedLabel={t.languageUpdated} />
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+            {t.defaultViewLabel}
+          </h2>
+          <DefaultViewSwitcher initialView={defaultView} />
         </div>
 
         {sharedAccess && sharedAccess.accounts.length > 1 && (

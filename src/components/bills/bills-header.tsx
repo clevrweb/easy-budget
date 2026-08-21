@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Calendar, X } from "lucide-react";
 import { useDict } from "@/components/language-provider";
@@ -40,6 +40,7 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
   const [searchOpen, setSearchOpen]   = useState(!!search);
   const [filterOpen, setFilterOpen]   = useState(status !== "all");
   const [searchValue, setSearchValue] = useState(search);
+  const [isPending, startTransition]  = useTransition();
 
   const VIEWS: { label: string; value: ViewMode }[] = [
     { label: dict.bills.day,   value: "day"   },
@@ -67,14 +68,26 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
     if (s && s !== "all") params.set("status", s);
     if (q) params.set("q", q);
     if (v === "week" && g === "day") params.set("groupBy", "day");
-    router.push(`${basePath}?${params.toString()}`);
+    // Wrapped in startTransition so isPending accurately reflects the
+    // in-flight navigation. This also guards against a real race: goToPrev/
+    // goToNext/Today read `date` from props via closure, so firing another
+    // push before the previous one's re-render lands would compute the next
+    // date from a stale value -- e.g. clicking prev 3 times fast could all
+    // resolve to the same "date - 1" instead of accumulating, making the
+    // last click look like it did nothing. Disabling the nav buttons while
+    // isPending (below) prevents that.
+    startTransition(() => {
+      router.push(`${basePath}?${params.toString()}`);
+    });
   }
 
   function changeView(v: ViewMode) {
+    if (isPending) return;
     push({ view: v, date: todayDateFor(v), groupBy: "group" });
   }
 
   function goToPrev() {
+    if (isPending) return;
     if (view === "month") {
       const [y, m] = date.split("-").map(Number);
       const d = new Date(y, m - 2, 1);
@@ -91,6 +104,7 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
   }
 
   function goToNext() {
+    if (isPending) return;
     if (view === "month") {
       const [y, m] = date.split("-").map(Number);
       const d = new Date(y, m, 1);
@@ -135,7 +149,8 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
             <button
               key={v.value}
               onClick={() => changeView(v.value)}
-              className={`px-3.5 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+              disabled={isPending}
+              className={`px-3.5 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${
                 view === v.value
                   ? "text-[var(--color-primary)] font-semibold underline underline-offset-4"
                   : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
@@ -183,7 +198,8 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrev}
-            className="w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0"
+            disabled={isPending}
+            className="w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0 disabled:opacity-50"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -195,14 +211,16 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
 
           <button
             onClick={goToNext}
-            className="w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0"
+            disabled={isPending}
+            className="w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0 disabled:opacity-50"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
 
           <button
-            onClick={() => push({ date: todayDateFor(view) })}
-            className="h-8 px-3 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0"
+            onClick={() => { if (!isPending) push({ date: todayDateFor(view) }); }}
+            disabled={isPending}
+            className="h-8 px-3 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0 disabled:opacity-50"
           >
             {dict.bills.todayBtn}
           </button>
