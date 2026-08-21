@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getDict } from "@/lib/i18n";
 
 webpush.setVapidDetails(
   process.env.VAPID_EMAIL!,
@@ -46,25 +47,39 @@ export async function GET(request: Request) {
 
       if (!bills?.length) return;
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("language")
+        .eq("user_id", user_id)
+        .single();
+      const dict = getDict(profile?.language ?? "en");
+      const t = dict.settings;
+
       const total = bills.reduce((s, b) => s + b.amount, 0);
-      const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(total);
+      const formatted = new Intl.NumberFormat(dict.locale, { style: "currency", currency: "USD" }).format(total);
       const body =
         bills.length === 1
-          ? `${bills[0].name} — ${formatted} due today`
-          : `${bills.length} bills totaling ${formatted} due today`;
+          ? t.pushBodySingular.replace("{name}", bills[0].name).replace("{amount}", formatted)
+          : t.pushBodyPlural.replace("{count}", String(bills.length)).replace("{amount}", formatted);
 
       try {
         await webpush.sendNotification(
           subscription as webpush.PushSubscription,
           JSON.stringify({
-            title: "Easy Budget — Bills Due Today",
+            title: t.pushTitle,
             body,
             url: "/dashboard",
           })
         );
         sent++;
-      } catch {
-        await supabase.from("push_subscriptions").delete().eq("user_id", user_id);
+      } catch (err) {
+        // Only remove the subscription when the push service confirms it's
+        // gone (404/410) -- a transient error (network blip, 5xx) shouldn't
+        // silently and permanently disable the user's notifications.
+        const statusCode = (err as { statusCode?: number }).statusCode;
+        if (statusCode === 404 || statusCode === 410) {
+          await supabase.from("push_subscriptions").delete().eq("user_id", user_id);
+        }
       }
     })
   );

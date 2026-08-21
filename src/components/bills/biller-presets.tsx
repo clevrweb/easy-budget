@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useDict } from "@/components/language-provider";
+import type { Dict } from "@/lib/i18n/types";
 
 const AVATAR_COLORS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
@@ -19,9 +21,20 @@ interface Biller {
   domain: string;
 }
 
-const CATEGORIES: { label: string; billers: Biller[] }[] = [
+type BillerCategoryKey = "streaming" | "finance" | "utilities" | "other";
+
+function billerCategoryLabel(t: Dict["bills"], key: BillerCategoryKey): string {
+  return {
+    streaming: t.billerCategoryStreaming,
+    finance: t.billerCategoryFinance,
+    utilities: t.billerCategoryUtilities,
+    other: t.billerCategoryOther,
+  }[key];
+}
+
+const CATEGORIES: { key: BillerCategoryKey; billers: Biller[] }[] = [
   {
-    label: "Streaming",
+    key: "streaming",
     billers: [
       { name: "Netflix",         domain: "netflix.com" },
       { name: "Spotify",         domain: "spotify.com" },
@@ -36,7 +49,7 @@ const CATEGORIES: { label: string; billers: Biller[] }[] = [
     ],
   },
   {
-    label: "Finance",
+    key: "finance",
     billers: [
       { name: "American Express", domain: "americanexpress.com" },
       { name: "Chase",            domain: "chase.com" },
@@ -47,7 +60,7 @@ const CATEGORIES: { label: string; billers: Biller[] }[] = [
     ],
   },
   {
-    label: "Utilities",
+    key: "utilities",
     billers: [
       { name: "AT&T",    domain: "att.com" },
       { name: "Verizon", domain: "verizon.com" },
@@ -56,7 +69,7 @@ const CATEGORIES: { label: string; billers: Biller[] }[] = [
     ],
   },
   {
-    label: "Other",
+    key: "other",
     billers: [
       { name: "Adobe",         domain: "adobe.com" },
       { name: "Microsoft 365", domain: "microsoft.com" },
@@ -133,6 +146,7 @@ interface BillerPresetsProps {
 }
 
 export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
+  const dict = useDict();
   const [activeTab, setActiveTab] = useState(0);
   const current = CATEGORIES[activeTab];
 
@@ -147,7 +161,7 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
       <div className="flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
         {CATEGORIES.map((cat, i) => (
           <button
-            key={cat.label}
+            key={cat.key}
             type="button"
             onClick={() => setActiveTab(i)}
             className="px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0"
@@ -158,7 +172,7 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
               color: activeTab === i ? "var(--color-primary)" : "var(--color-muted-foreground)",
             }}
           >
-            {cat.label}
+            {billerCategoryLabel(dict.bills, cat.key)}
           </button>
         ))}
       </div>
@@ -194,6 +208,7 @@ interface CompanyLogoSearchProps {
 }
 
 export function CompanyLogoSearch({ logoUrl, onSelect }: CompanyLogoSearchProps) {
+  const dict = useDict();
   const [query, setQuery]         = useState("");
   const [results, setResults]     = useState<SearchResult[]>([]);
   const [showDrop, setShowDrop]   = useState(false);
@@ -238,7 +253,7 @@ export function CompanyLogoSearch({ logoUrl, onSelect }: CompanyLogoSearchProps)
     <div ref={containerRef} className="relative flex items-center gap-2">
       <div className="relative flex-1">
         <Input
-          placeholder="Search company for logo…"
+          placeholder={dict.bills.searchCompanyPlaceholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Escape") { setShowDrop(false); setQuery(""); } }}

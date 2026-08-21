@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   TrendingUp,
+  Repeat,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/supabase/actions";
@@ -28,6 +29,7 @@ export function Sidebar() {
     { href: "/income",     label: dict.nav.income,     icon: TrendingUp },
     { href: "/categories", label: dict.nav.categories, icon: Tag },
     { href: "/groups",     label: dict.nav.groups,     icon: Users },
+    { href: "/recurring",  label: dict.nav.recurring,  icon: Repeat },
     { href: "/reports",    label: dict.nav.reports,    icon: BarChart2 },
     { href: "/settings",   label: dict.nav.settings,   icon: Settings },
   ];

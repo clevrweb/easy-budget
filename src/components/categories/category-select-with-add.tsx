@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createCategoryAction } from "@/app/(dashboard)/categories/actions";
 import type { Category } from "@/types/database";
+import { useDict } from "@/components/language-provider";
 
 const COLOR_PRESETS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
@@ -29,6 +30,10 @@ export function CategorySelectWithAdd({
   name = "category_id",
   id = "category_id",
 }: CategorySelectWithAddProps) {
+  const dict = useDict();
+  const t = dict.categories;
+  const tb = dict.bills;
+  const tc = dict.common;
   const [categories, setCategories] = useState(initialCategories);
   const [selected, setSelected]     = useState(defaultValue);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -73,7 +78,7 @@ export function CategorySelectWithAdd({
           onChange={(e) => setSelected(e.target.value)}
           className={selectCls}
         >
-          <option value="">No category</option>
+          <option value="">{tb.noCategory}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
@@ -82,7 +87,7 @@ export function CategorySelectWithAdd({
         <button
           type="button"
           onClick={openDialog}
-          title="Add new category"
+          title={t.quickAddTooltip}
           className="shrink-0 px-1 flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -93,7 +98,7 @@ export function CategorySelectWithAdd({
       {dialogOpen && (
         <div className="absolute left-0 right-0 top-0 z-50 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] shadow-xl p-3 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[var(--color-foreground)]">New Category</span>
+            <span className="text-xs font-semibold text-[var(--color-foreground)]">{t.quickAddTitle}</span>
             <button
               type="button"
               onClick={() => setDialogOpen(false)}
@@ -110,7 +115,7 @@ export function CategorySelectWithAdd({
           <div className="space-y-3">
             <Input
               id="qac-name"
-              placeholder="Category name"
+              placeholder={t.quickAddNamePlaceholder}
               value={catName}
               onChange={(e) => setCatName(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } }}
@@ -136,16 +141,16 @@ export function CategorySelectWithAdd({
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
                 className="w-6 h-6 rounded-md cursor-pointer border border-[var(--color-border)] p-0.5 bg-[var(--color-card)]"
-                title="Custom color"
+                title={t.customColorTooltip}
               />
             </div>
 
             <div className="flex gap-2">
               <Button type="button" className="flex-1 h-8 text-xs" disabled={isPending || !catName.trim()} onClick={handleAdd}>
-                {isPending ? "Saving..." : "Add"}
+                {isPending ? tc.saving : t.addButton}
               </Button>
               <Button type="button" variant="outline" className="h-8 text-xs" onClick={() => setDialogOpen(false)}>
-                Cancel
+                {tc.cancel}
               </Button>
             </div>
           </div>

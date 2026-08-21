@@ -15,12 +15,7 @@ import {
 import { createTemplateAction, updateTemplateAction } from "@/app/(dashboard)/recurring/actions";
 import type { RecurringTemplate, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
-
-const FREQUENCIES = [
-  { value: "monthly", label: "Monthly" },
-  { value: "weekly", label: "Weekly" },
-  { value: "yearly", label: "Yearly" },
-];
+import { useDict } from "@/components/language-provider";
 
 interface TemplateFormProps {
   template?: RecurringTemplate;
@@ -30,6 +25,17 @@ interface TemplateFormProps {
 }
 
 export function TemplateForm({ template, categories, groups, trigger }: TemplateFormProps) {
+  const dict = useDict();
+  const t = dict.recurring;
+  const tb = dict.bills;
+  const tc = dict.common;
+
+  const FREQUENCIES = [
+    { value: "monthly", label: t.monthly },
+    { value: "weekly", label: t.weekly },
+    { value: "yearly", label: t.yearly },
+  ];
+
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -55,13 +61,13 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
         {trigger ?? (
           <Button>
             <Plus className="w-4 h-4" />
-            Add Template
+            {t.addTemplate}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Template" : "Add Recurring Template"}</DialogTitle>
+          <DialogTitle>{isEdit ? t.editTemplate : t.addRecurringTemplate}</DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -74,18 +80,18 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
           {isEdit && <input type="hidden" name="id" value={template.id} />}
 
           <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{tb.nameLabel}</Label>
             <Input
               id="name"
               name="name"
-              placeholder="e.g. Netflix, Rent, Insurance"
+              placeholder={t.namePlaceholderTemplate}
               defaultValue={template?.name}
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">{tb.amountLabel}</Label>
             <Input
               id="amount"
               name="amount"
@@ -99,7 +105,7 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="frequency">Frequency</Label>
+            <Label htmlFor="frequency">{t.frequency}</Label>
             <select
               id="frequency"
               name="frequency"
@@ -120,7 +126,7 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
 
           {frequency === "monthly" || frequency === "yearly" ? (
             <div className="space-y-1.5">
-              <Label htmlFor="due_day">Due Day</Label>
+              <Label htmlFor="due_day">{t.dueDayLabel}</Label>
               <Input
                 id="due_day"
                 name="due_day"
@@ -135,7 +141,7 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label htmlFor="due_day">Repeat every</Label>
+              <Label htmlFor="due_day">{t.repeatEveryLabel}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="due_day"
@@ -148,13 +154,13 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
                   className="w-24"
                   required
                 />
-                <span className="text-sm text-[var(--color-muted-foreground)]">weeks</span>
+                <span className="text-sm text-[var(--color-muted-foreground)]">{t.weekIntervalUnit}</span>
               </div>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="payment_method">Payment Method</Label>
+            <Label htmlFor="payment_method">{tb.paymentMethodLabel}</Label>
             <Input
               id="payment_method"
               name="payment_method"
@@ -165,14 +171,14 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
 
           {categories.length > 0 && (
             <div className="space-y-1.5">
-              <Label htmlFor="category_id">Category</Label>
+              <Label htmlFor="category_id">{tb.categoryLabel}</Label>
               <select
                 id="category_id"
                 name="category_id"
                 defaultValue={template?.category_id ?? ""}
                 className="flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
               >
-                <option value="">No category</option>
+                <option value="">{tb.noCategory}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -182,14 +188,14 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
 
           {groups.length > 0 && (
             <div className="space-y-1.5">
-              <Label htmlFor="group_id">Group</Label>
+              <Label htmlFor="group_id">{tb.groupLabel}</Label>
               <select
                 id="group_id"
                 name="group_id"
                 defaultValue={template?.group_id ?? ""}
                 className="flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
               >
-                <option value="">No group</option>
+                <option value="">{tb.noGroup}</option>
                 {groups.map((g) => (
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
@@ -199,10 +205,10 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Template"}
+              {isPending ? tc.saving : isEdit ? tb.saveChanges : t.addTemplate}
             </Button>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{tc.cancel}</Button>
             </DialogClose>
           </div>
         </form>

@@ -22,6 +22,12 @@ export interface Dict {
     createOneLink: string;
     passwordMismatch: string;
     checkEmail: string;
+    errorInvalidCredentials: string;
+    errorUserExists: string;
+    errorEmailNotConfirmed: string;
+    errorWeakPassword: string;
+    errorRateLimit: string;
+    errorGeneric: string;
   };
 
   nav: {
@@ -36,6 +42,7 @@ export interface Dict {
     income: string;
     signOut: string;
     back: string;
+    more: string;
   };
 
   dashboard: {
@@ -63,6 +70,7 @@ export interface Dict {
     statusLabel: string;
     paymentMethodLabel: string;
     categoryLabel: string;
+    noCategory: string;
     notesLabel: string;
     notesPlaceholder: string;
     addBill: string;
@@ -92,6 +100,11 @@ export interface Dict {
     confirmDelete: string;
     editBill: string;
     saveChanges: string;
+    billerCategoryStreaming: string;
+    billerCategoryFinance: string;
+    billerCategoryUtilities: string;
+    billerCategoryOther: string;
+    searchCompanyPlaceholder: string;
   };
 
   recurring: {
@@ -136,6 +149,32 @@ export interface Dict {
     loading: string;
     updateSeries: string;
     neverShort: string;
+
+    // Standalone Recurring Templates page (/recurring)
+    title: string;
+    addTemplate: string;
+    editTemplate: string;
+    addRecurringTemplate: string;
+    namePlaceholderTemplate: string;
+    dueDayLabel: string;
+    repeatEveryLabel: string;
+    active: string;
+    inactive: string;
+    monthlyTotalLabel: string;
+    noTemplates: string;
+    noTemplatesHint: string;
+    deactivate: string;
+    activate: string;
+    editTemplateTitle: string;
+    deleteTemplateTitle: string;
+    confirmDeleteTemplate: string;
+    everyNWeeks: string;
+    dueOn: string;
+    generating: string;
+    generateForMonth: string;
+    allBillsExist: string;
+    generatedSuccessSingular: string;
+    generatedSuccessPlural: string;
   };
 
   categories: {
@@ -152,6 +191,11 @@ export interface Dict {
     saveChanges: string;
     cancel: string;
     confirmDelete: string;
+    quickAddTitle: string;
+    quickAddNamePlaceholder: string;
+    quickAddTooltip: string;
+    addButton: string;
+    customColorTooltip: string;
     billSingular: string;
     billPlural: string;
   };
@@ -199,6 +243,9 @@ export interface Dict {
     language: string;
     languageDesc: string;
     languageUpdated: string;
+    pushTitle: string;
+    pushBodySingular: string;
+    pushBodyPlural: string;
   };
 
   income: {
@@ -269,6 +316,7 @@ export interface Dict {
     declineInvite: string;
     acceptingInvite: string;
     decliningInvite: string;
+    respondInviteError: string;
     setPasswordTitle: string;
     setPasswordSubtitle: string;
     setPasswordButton: string;

@@ -5,6 +5,9 @@ import { cookies } from "next/headers";
 import { createClient } from "./server";
 import { createAdminClient } from "./admin";
 import { ACCOUNT_COOKIE } from "./account";
+import { getDict } from "@/lib/i18n";
+import { getServerDict } from "@/lib/i18n/server";
+import { translateAuthError } from "@/lib/i18n/auth-errors";
 
 export async function loginAction(formData: FormData) {
   const supabase = await createClient();
@@ -14,7 +17,10 @@ export async function loginAction(formData: FormData) {
     password: formData.get("password") as string,
   });
 
-  if (error) redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  if (error) {
+    const dict = await getServerDict();
+    redirect(`/login?error=${encodeURIComponent(translateAuthError(dict, error))}`);
+  }
 
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
@@ -36,9 +42,10 @@ export async function registerAction(formData: FormData) {
   const password        = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
   const lang            = (formData.get("language") as string) || "en";
+  const dict            = getDict(lang);
 
   if (password !== confirmPassword) {
-    redirect(`/register?error=${encodeURIComponent(lang === "es" ? "Las contraseñas no coinciden" : "Passwords do not match")}`);
+    redirect(`/register?error=${encodeURIComponent(dict.auth.passwordMismatch)}`);
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -46,7 +53,7 @@ export async function registerAction(formData: FormData) {
     password,
   });
 
-  if (error) redirect(`/register?error=${encodeURIComponent(error.message)}`);
+  if (error) redirect(`/register?error=${encodeURIComponent(translateAuthError(dict, error))}`);
 
   if (data.user) {
     const fullName = (formData.get("full_name") as string) || "";
@@ -74,10 +81,7 @@ export async function registerAction(formData: FormData) {
 
   if (data.session) redirect("/dashboard");
 
-  const msg = lang === "es"
-    ? "Revisa tu correo para confirmar tu cuenta"
-    : "Check your email to confirm your account";
-  redirect(`/register?message=${encodeURIComponent(msg)}`);
+  redirect(`/register?message=${encodeURIComponent(dict.auth.checkEmail)}`);
 }
 
 export async function signOutAction() {
