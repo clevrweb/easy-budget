@@ -36,8 +36,12 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isSetPassword = pathname.startsWith("/set-password");
+  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
+  // Hash-token pages: the invite/recovery link's session is established
+  // client-side from the URL fragment, which the server can't see on the
+  // first request, so these must never bounce to /login for lack of a
+  // server-visible session yet.
+  const isSetPassword = pathname.startsWith("/set-password") || pathname.startsWith("/reset-password");
   const isChooseAccount = pathname.startsWith("/choose-account");
 
   if (!user && !isAuthRoute && !isSetPassword && pathname !== "/") {

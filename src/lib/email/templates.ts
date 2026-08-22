@@ -58,3 +58,11 @@ export function inviteExistingUserEmail(dict: Dict, inviterName: string, loginLi
     html: baseLayout(t.inviteHeading, t.inviteExistingBody.replace("{name}", inviterName), t.inviteExistingButton, loginLink, t.footer),
   };
 }
+
+export function passwordResetEmail(dict: Dict, actionLink: string) {
+  const t = dict.email;
+  return {
+    subject: t.passwordResetSubject,
+    html: baseLayout(t.passwordResetHeading, t.passwordResetBody, t.passwordResetButton, actionLink, t.footer),
+  };
+}

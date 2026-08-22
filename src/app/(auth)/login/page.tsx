@@ -64,7 +64,15 @@ export default async function LoginPage({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">{t.password}</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">{t.password}</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-[var(--color-primary)] hover:underline"
+                >
+                  {t.forgotPasswordLink}
+                </Link>
+              </div>
               <Input
                 id="password"
                 name="password"

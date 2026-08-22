@@ -1,13 +1,15 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { createClient } from "./server";
 import { createAdminClient } from "./admin";
 import { ACCOUNT_COOKIE } from "./account";
 import { getDict } from "@/lib/i18n";
 import { getServerDict } from "@/lib/i18n/server";
 import { translateAuthError } from "@/lib/i18n/auth-errors";
+import { getResendClient, EMAIL_FROM } from "@/lib/email/resend";
+import { passwordResetEmail } from "@/lib/email/templates";
 
 export async function loginAction(formData: FormData) {
   const supabase = await createClient();
@@ -82,6 +84,39 @@ export async function registerAction(formData: FormData) {
   if (data.session) redirect("/dashboard");
 
   redirect(`/register?message=${encodeURIComponent(dict.auth.checkEmail)}`);
+}
+
+export async function requestPasswordResetAction(formData: FormData) {
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const dict = await getServerDict();
+
+  // Always the same response regardless of whether the email exists, to
+  // avoid leaking which addresses have accounts.
+  if (!email || !email.includes("@")) return { success: true };
+
+  const admin = createAdminClient();
+  const { data: exists } = await admin.rpc("email_exists", { check_email: email });
+  if (!exists) return { success: true };
+
+  const headerList = await headers();
+  const host = headerList.get("host");
+  const protocol = host?.startsWith("localhost") ? "http" : "https";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
+
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: { redirectTo: `${origin}/reset-password` },
+  });
+  if (linkError || !linkData) return { success: true };
+
+  const resend = getResendClient();
+  const { subject, html } = passwordResetEmail(dict, linkData.properties.action_link);
+  await resend.emails.send({ from: EMAIL_FROM, to: email, subject, html }).catch((err) => {
+    console.error("Failed to send password reset email:", err);
+  });
+
+  return { success: true };
 }
 
 export async function signOutAction() {

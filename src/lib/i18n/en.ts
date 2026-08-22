@@ -30,6 +30,16 @@ export const en: Dict = {
     errorWeakPassword: "That password is too weak — try a longer or more complex one",
     errorRateLimit: "Too many attempts. Please try again in a few minutes",
     errorGeneric: "Something went wrong. Please try again",
+    forgotPasswordLink: "Forgot password?",
+    forgotPasswordTitle: "Reset your password",
+    forgotPasswordSubtitle: "Enter your email and we'll send you a link to reset your password.",
+    forgotPasswordButton: "Send Reset Link",
+    forgotPasswordSending: "Sending...",
+    forgotPasswordSent: "If an account exists for that email, we've sent a password reset link.",
+    resetPasswordTitle: "Set a new password",
+    resetPasswordSubtitle: "Enter your new password below.",
+    resetPasswordButton: "Update Password",
+    resetPasswordInvalidLink: "This password reset link is invalid or has expired.",
   },
 
   nav: {
@@ -359,6 +369,10 @@ export const en: Dict = {
     inviteExistingBody: "{name} invited you to share their budget on Easy Budget. Log in to your existing account to accept.",
     inviteNewButton: "Accept Invite",
     inviteExistingButton: "Log In",
+    passwordResetSubject: "Reset your Easy Budget password",
+    passwordResetHeading: "Reset your password",
+    passwordResetBody: "We received a request to reset your password. Click below to choose a new one. If you didn't request this, you can safely ignore this email.",
+    passwordResetButton: "Reset Password",
     footer: "Easy Budget — Track bills. Master money.",
   },
 };

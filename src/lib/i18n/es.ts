@@ -30,6 +30,16 @@ export const es: Dict = {
     errorWeakPassword: "Esa contraseña es muy débil — prueba una más larga o compleja",
     errorRateLimit: "Demasiados intentos. Intenta de nuevo en unos minutos",
     errorGeneric: "Algo salió mal. Intenta de nuevo",
+    forgotPasswordLink: "¿Olvidaste tu contraseña?",
+    forgotPasswordTitle: "Restablece tu contraseña",
+    forgotPasswordSubtitle: "Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.",
+    forgotPasswordButton: "Enviar Enlace",
+    forgotPasswordSending: "Enviando...",
+    forgotPasswordSent: "Si existe una cuenta con ese correo, enviamos un enlace para restablecer la contraseña.",
+    resetPasswordTitle: "Establece una nueva contraseña",
+    resetPasswordSubtitle: "Ingresa tu nueva contraseña abajo.",
+    resetPasswordButton: "Actualizar Contraseña",
+    resetPasswordInvalidLink: "Este enlace para restablecer la contraseña no es válido o expiró.",
   },
 
   nav: {
@@ -359,6 +369,10 @@ export const es: Dict = {
     inviteExistingBody: "{name} te invitó a compartir su presupuesto en Easy Budget. Inicia sesión en tu cuenta existente para aceptar.",
     inviteNewButton: "Aceptar Invitación",
     inviteExistingButton: "Iniciar Sesión",
+    passwordResetSubject: "Restablece tu contraseña de Easy Budget",
+    passwordResetHeading: "Restablece tu contraseña",
+    passwordResetBody: "Recibimos una solicitud para restablecer tu contraseña. Haz clic abajo para elegir una nueva. Si no solicitaste esto, puedes ignorar este correo con seguridad.",
+    passwordResetButton: "Restablecer Contraseña",
     footer: "Easy Budget — Controla tus facturas. Domina tu dinero.",
   },
 };

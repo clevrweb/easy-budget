@@ -28,6 +28,16 @@ export interface Dict {
     errorWeakPassword: string;
     errorRateLimit: string;
     errorGeneric: string;
+    forgotPasswordLink: string;
+    forgotPasswordTitle: string;
+    forgotPasswordSubtitle: string;
+    forgotPasswordButton: string;
+    forgotPasswordSending: string;
+    forgotPasswordSent: string;
+    resetPasswordTitle: string;
+    resetPasswordSubtitle: string;
+    resetPasswordButton: string;
+    resetPasswordInvalidLink: string;
   };
 
   nav: {
@@ -358,6 +368,10 @@ export interface Dict {
     inviteExistingBody: string;
     inviteNewButton: string;
     inviteExistingButton: string;
+    passwordResetSubject: string;
+    passwordResetHeading: string;
+    passwordResetBody: string;
+    passwordResetButton: string;
     footer: string;
   };
 }
