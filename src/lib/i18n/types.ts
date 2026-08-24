@@ -396,9 +396,9 @@ export interface Dict {
     resendFromEmailPlaceholder: string;
     birdSectionTitle: string;
     birdSectionDesc: string;
-    birdAccessKeyLabel: string;
-    birdWorkspaceIdLabel: string;
-    birdChannelIdLabel: string;
+    birdApiKeyLabel: string;
+    birdFromLabel: string;
+    birdFromPlaceholder: string;
     saveButton: string;
     saving: string;
     saved: string;

@@ -8,17 +8,15 @@ import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 
 interface BirdConfigFormProps {
-  initialAccessKey: string;
-  initialWorkspaceId: string;
-  initialChannelId: string;
+  initialApiKey: string;
+  initialFrom: string;
 }
 
-export function BirdConfigForm({ initialAccessKey, initialWorkspaceId, initialChannelId }: BirdConfigFormProps) {
+export function BirdConfigForm({ initialApiKey, initialFrom }: BirdConfigFormProps) {
   const dict = useDict();
   const t = dict.admin;
-  const [accessKey, setAccessKey] = useState(initialAccessKey);
-  const [workspaceId, setWorkspaceId] = useState(initialWorkspaceId);
-  const [channelId, setChannelId] = useState(initialChannelId);
+  const [apiKey, setApiKey] = useState(initialApiKey);
+  const [from, setFrom] = useState(initialFrom);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
@@ -26,9 +24,8 @@ export function BirdConfigForm({ initialAccessKey, initialWorkspaceId, initialCh
     e.preventDefault();
     setSaved(false);
     const formData = new FormData();
-    formData.set("accessKey", accessKey);
-    formData.set("workspaceId", workspaceId);
-    formData.set("channelId", channelId);
+    formData.set("apiKey", apiKey);
+    formData.set("from", from);
     startTransition(async () => {
       await saveBirdConfigAction(formData);
       setSaved(true);
@@ -40,22 +37,24 @@ export function BirdConfigForm({ initialAccessKey, initialWorkspaceId, initialCh
       <p className="text-xs text-[var(--color-muted-foreground)]">{t.birdSectionDesc}</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="bird-access-key">{t.birdAccessKeyLabel}</Label>
+          <Label htmlFor="bird-api-key">{t.birdApiKeyLabel}</Label>
           <Input
-            id="bird-access-key"
+            id="bird-api-key"
             type="password"
-            value={accessKey}
-            onChange={(e) => setAccessKey(e.target.value)}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="bk_xxxxxxxxxxxxxxxxxxxx"
             autoComplete="off"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="bird-workspace-id">{t.birdWorkspaceIdLabel}</Label>
-          <Input id="bird-workspace-id" value={workspaceId} onChange={(e) => setWorkspaceId(e.target.value)} />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="bird-channel-id">{t.birdChannelIdLabel}</Label>
-          <Input id="bird-channel-id" value={channelId} onChange={(e) => setChannelId(e.target.value)} />
+          <Label htmlFor="bird-from">{t.birdFromLabel}</Label>
+          <Input
+            id="bird-from"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            placeholder={t.birdFromPlaceholder}
+          />
         </div>
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={isPending}>

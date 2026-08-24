@@ -37,11 +37,7 @@ export default async function AdminPage() {
           <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
             {t.birdSectionTitle}
           </h2>
-          <BirdConfigForm
-            initialAccessKey={config.bird.accessKey}
-            initialWorkspaceId={config.bird.workspaceId}
-            initialChannelId={config.bird.channelId}
-          />
+          <BirdConfigForm initialApiKey={config.bird.apiKey} initialFrom={config.bird.from} />
         </div>
 
         <div>

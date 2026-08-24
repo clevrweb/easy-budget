@@ -11,9 +11,8 @@ interface ResendConfigShape {
 }
 
 interface BirdConfigShape {
-  accessKey?: string;
-  workspaceId?: string;
-  channelId?: string;
+  apiKey?: string;
+  from?: string;
 }
 
 export async function getAdminConfigAction() {
@@ -24,11 +23,7 @@ export async function getAdminConfigAction() {
   ]);
   return {
     resend: { apiKey: resend?.apiKey ?? "", fromEmail: resend?.fromEmail ?? "" },
-    bird: {
-      accessKey: bird?.accessKey ?? "",
-      workspaceId: bird?.workspaceId ?? "",
-      channelId: bird?.channelId ?? "",
-    },
+    bird: { apiKey: bird?.apiKey ?? "", from: bird?.from ?? "" },
   };
 }
 
@@ -46,11 +41,10 @@ export async function saveResendConfigAction(formData: FormData) {
 
 export async function saveBirdConfigAction(formData: FormData) {
   await requireSuperadmin();
-  const accessKey = ((formData.get("accessKey") as string) || "").trim();
-  const workspaceId = ((formData.get("workspaceId") as string) || "").trim();
-  const channelId = ((formData.get("channelId") as string) || "").trim();
+  const apiKey = ((formData.get("apiKey") as string) || "").trim();
+  const from = ((formData.get("from") as string) || "").trim();
 
-  const { error } = await setAppConfig("bird", { accessKey, workspaceId, channelId });
+  const { error } = await setAppConfig("bird", { apiKey, from });
   if (error) return { error };
 
   revalidatePath("/admin");
