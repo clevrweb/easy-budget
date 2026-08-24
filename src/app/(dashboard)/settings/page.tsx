@@ -5,16 +5,23 @@ import { AccountSwitcher } from "@/components/settings/account-switcher";
 import { DangerZoneSection } from "@/components/settings/danger-zone-section";
 import { ExportDataSection } from "@/components/settings/export-data-section";
 import { DefaultViewSwitcher } from "@/components/settings/default-view-switcher";
-import { getNotificationStatusAction, getSharedAccessDataAction, getDefaultViewAction } from "./actions";
+import { NotificationChannelSettings } from "@/components/settings/notification-channel-settings";
+import {
+  getNotificationStatusAction,
+  getSharedAccessDataAction,
+  getDefaultViewAction,
+  getNotificationPrefsAction,
+} from "./actions";
 import { getServerDict } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 
 export default async function SettingsPage() {
-  const [{ enabled }, dict, sharedAccess, defaultView] = await Promise.all([
+  const [{ enabled }, dict, sharedAccess, defaultView, notificationPrefs] = await Promise.all([
     getNotificationStatusAction(),
     getServerDict(),
     getSharedAccessDataAction(),
     getDefaultViewAction(),
+    getNotificationPrefsAction(),
   ]);
   const t = dict.settings;
   const ta = dict.account;
@@ -43,6 +50,16 @@ export default async function SettingsPage() {
             {t.defaultViewLabel}
           </h2>
           <DefaultViewSwitcher initialView={defaultView} />
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+            {t.notificationChannelLabel}
+          </h2>
+          <NotificationChannelSettings
+            initialChannel={notificationPrefs.channel}
+            initialPhoneNumber={notificationPrefs.phoneNumber}
+          />
         </div>
 
         {sharedAccess && sharedAccess.accounts.length > 1 && (

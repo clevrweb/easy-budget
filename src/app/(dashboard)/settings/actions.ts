@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getActiveAccountId, ACCOUNT_COOKIE } from "@/lib/supabase/account";
 import { getServerDict } from "@/lib/i18n/server";
-import { getResendClient, EMAIL_FROM } from "@/lib/email/resend";
+import { getResendClient, getEmailFrom } from "@/lib/email/resend";
 import { inviteNewUserEmail, inviteExistingUserEmail } from "@/lib/email/templates";
 
 export async function saveSubscriptionAction(subscription: object) {
@@ -125,7 +125,7 @@ export async function inviteToAccountAction(formData: FormData) {
     .single();
   const inviterName = inviterProfile?.full_name || user.email || "Someone";
 
-  const resend = getResendClient();
+  const [resend, from] = await Promise.all([getResendClient(), getEmailFrom()]);
 
   // Check existence BEFORE calling generateLink. Unlike inviteUserByEmail,
   // generateLink with type: "invite" does not error for an email that
@@ -146,7 +146,7 @@ export async function inviteToAccountAction(formData: FormData) {
     }
 
     const { subject, html } = inviteExistingUserEmail(dict, inviterName, `${origin}/login`);
-    await resend.emails.send({ from: EMAIL_FROM, to: email, subject, html }).catch((err) => {
+    await resend.emails.send({ from, to: email, subject, html }).catch((err) => {
       console.error("Failed to send existing-user invite email:", err);
     });
 
@@ -178,7 +178,7 @@ export async function inviteToAccountAction(formData: FormData) {
   }
 
   const { subject, html } = inviteNewUserEmail(dict, inviterName, linkData.properties.action_link);
-  const { error: sendError } = await resend.emails.send({ from: EMAIL_FROM, to: email, subject, html });
+  const { error: sendError } = await resend.emails.send({ from, to: email, subject, html });
   if (sendError) {
     console.error("Failed to send new-user invite email:", sendError);
     return { error: "email_failed" as const };
@@ -295,5 +295,44 @@ export async function updateDefaultViewAction(view: "day" | "week" | "month") {
   await supabase.from("profiles").upsert({ user_id: user.id, default_view: view }, { onConflict: "user_id" });
 
   revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function getNotificationPrefsAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { channel: "push" as const, phoneNumber: "" };
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("notification_channel, phone_number")
+    .eq("user_id", user.id)
+    .single();
+
+  return {
+    channel: (data?.notification_channel ?? "push") as "push" | "email" | "sms",
+    phoneNumber: data?.phone_number ?? "",
+  };
+}
+
+export async function updateNotificationChannelAction(channel: "push" | "email" | "sms") {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  await supabase.from("profiles").upsert({ user_id: user.id, notification_channel: channel }, { onConflict: "user_id" });
+  revalidatePath("/settings");
+  return { success: true };
+}
+
+export async function updatePhoneNumberAction(phoneNumber: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  await supabase
+    .from("profiles")
+    .upsert({ user_id: user.id, phone_number: phoneNumber.trim() || null }, { onConflict: "user_id" });
+  revalidatePath("/settings");
   return { success: true };
 }

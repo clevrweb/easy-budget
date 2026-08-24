@@ -4,6 +4,7 @@ export type IncomeFrequency = "weekly" | "biweekly" | "twice_monthly" | "monthly
 export type Language = "en" | "es";
 export type DefaultBillsView = "day" | "week" | "month";
 export type AccountInviteStatus = "pending" | "accepted" | "declined" | "revoked";
+export type NotificationChannel = "push" | "email" | "sms";
 
 export interface Database {
   public: {
@@ -65,6 +66,9 @@ export interface Profile {
   full_name: string;
   language: Language;
   default_view: DefaultBillsView;
+  is_superadmin: boolean;
+  phone_number: string | null;
+  notification_channel: NotificationChannel;
   created_at: string;
 }
 

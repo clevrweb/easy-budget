@@ -8,7 +8,7 @@ import { ACCOUNT_COOKIE } from "./account";
 import { getDict } from "@/lib/i18n";
 import { getServerDict } from "@/lib/i18n/server";
 import { translateAuthError } from "@/lib/i18n/auth-errors";
-import { getResendClient, EMAIL_FROM } from "@/lib/email/resend";
+import { getResendClient, getEmailFrom } from "@/lib/email/resend";
 import { passwordResetEmail } from "@/lib/email/templates";
 
 export async function loginAction(formData: FormData) {
@@ -28,11 +28,13 @@ export async function loginAction(formData: FormData) {
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("language")
+      .select("language, is_superadmin")
       .eq("user_id", user.id)
       .single();
     const store = await cookies();
     store.set("lang", profile?.language ?? "en", { path: "/", maxAge: 60 * 60 * 24 * 365 });
+
+    if (profile?.is_superadmin) redirect("/admin");
   }
 
   redirect("/dashboard");
@@ -110,9 +112,9 @@ export async function requestPasswordResetAction(formData: FormData) {
   });
   if (linkError || !linkData) return { success: true };
 
-  const resend = getResendClient();
+  const [resend, from] = await Promise.all([getResendClient(), getEmailFrom()]);
   const { subject, html } = passwordResetEmail(dict, linkData.properties.action_link);
-  await resend.emails.send({ from: EMAIL_FROM, to: email, subject, html }).catch((err) => {
+  await resend.emails.send({ from, to: email, subject, html }).catch((err) => {
     console.error("Failed to send password reset email:", err);
   });
 

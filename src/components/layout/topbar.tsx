@@ -34,7 +34,7 @@ export function Topbar({ title, children, backHref }: TopbarProps) {
                 <path d="M16 6L10 12H13V21H10L16 27L22 21H19V12H22L16 6Z" fill="white" />
               </svg>
             </div>
-            <span className="font-bold text-sm text-[var(--color-foreground)]">Easy Budget</span>
+            <span className="font-bold text-sm text-[var(--color-foreground)]">Budget Whisperer</span>
           </div>
         </>
       )}

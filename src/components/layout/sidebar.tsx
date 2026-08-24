@@ -38,7 +38,7 @@ export function Sidebar() {
     <aside className="flex flex-col w-64 min-h-screen bg-[var(--color-sidebar)] border-r border-[var(--color-border)] shrink-0">
       {/* Logo */}
       <div className="flex items-center justify-center px-6 py-4 border-b border-[var(--color-border)]">
-        <Image src={logo} alt="Easy Budget" width={120} height={120} className="w-28 h-auto" priority />
+        <Image src={logo} alt="Budget Whisperer" width={120} height={120} className="w-28 h-auto" priority />
       </div>
 
       {/* Nav */}

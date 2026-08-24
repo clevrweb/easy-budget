@@ -35,7 +35,7 @@ export default async function ChooseAccountPage() {
                 <path d="M16 6L10 12H13V21H10L16 27L22 21H19V12H22L16 6Z" fill="white" />
               </svg>
             </div>
-            <span className="text-2xl font-bold text-[var(--color-foreground)]">Easy Budget</span>
+            <span className="text-2xl font-bold text-[var(--color-foreground)]">Budget Whisperer</span>
           </div>
           <h1 className="text-xl font-semibold text-[var(--color-foreground)] mb-1">{t.chooseAccountTitle}</h1>
           <p className="text-[var(--color-muted-foreground)] text-sm">{t.chooseAccountSubtitle}</p>

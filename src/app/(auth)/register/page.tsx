@@ -26,7 +26,7 @@ export default async function RegisterPage({
               </svg>
             </div>
             <span className="text-2xl font-bold text-[var(--color-foreground)]">
-              Easy Budget
+              Budget Whisperer
             </span>
           </div>
           <p className="text-[var(--color-muted-foreground)] text-sm">

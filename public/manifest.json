@@ -1,6 +1,6 @@
 {
-  "name": "Easy Budget",
-  "short_name": "EasyBudget",
+  "name": "Budget Whisperer",
+  "short_name": "BudgetWhisperer",
   "id": "/dashboard",
   "description": "A simple, powerful bill tracking and budget management app.",
   "start_url": "/dashboard",

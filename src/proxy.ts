@@ -43,18 +43,36 @@ export async function proxy(request: NextRequest) {
   // server-visible session yet.
   const isSetPassword = pathname.startsWith("/set-password") || pathname.startsWith("/reset-password");
   const isChooseAccount = pathname.startsWith("/choose-account");
+  const isAdminRoute = pathname.startsWith("/admin");
 
   if (!user && !isAuthRoute && !isSetPassword && pathname !== "/") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  let isSuperadmin = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_superadmin")
+      .eq("user_id", user.id)
+      .single();
+    isSuperadmin = profile?.is_superadmin ?? false;
+  }
+
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL(isSuperadmin ? "/admin" : "/dashboard", request.url));
+  }
+
+  // Superadmin accounts are admin-only -- they have no budget account of
+  // their own, so keep them confined to /admin instead of falling through
+  // to the regular app (which assumes account membership everywhere).
+  if (user && isSuperadmin && !isAdminRoute && !isSetPassword) {
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   // Account gating: attach the active account cookie, or send the user to
   // pick one if they belong to more than one account.
-  if (user && !isAuthRoute && !isSetPassword && !isChooseAccount) {
+  if (user && !isSuperadmin && !isAuthRoute && !isSetPassword && !isChooseAccount) {
     const { data: memberships } = await supabase
       .from("account_members")
       .select("account_id")

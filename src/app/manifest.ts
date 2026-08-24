@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Easy Budget",
-    short_name: "EasyBudget",
+    name: "Budget Whisperer",
+    short_name: "BudgetWhisperer",
     description: "A simple, powerful bill tracking and budget management app.",
     start_url: "/dashboard",
     display: "standalone",

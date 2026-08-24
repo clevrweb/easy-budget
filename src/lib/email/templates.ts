@@ -11,7 +11,7 @@ function baseLayout(heading: string, body: string, buttonLabel: string, buttonHr
             <tr>
               <td style="padding:32px 32px 0 32px;text-align:center;">
                 <div style="display:inline-flex;align-items:center;gap:8px;">
-                  <span style="font-size:20px;font-weight:700;color:#0f172a;">Easy Budget</span>
+                  <span style="font-size:20px;font-weight:700;color:#0f172a;">Budget Whisperer</span>
                 </div>
               </td>
             </tr>
@@ -64,5 +64,13 @@ export function passwordResetEmail(dict: Dict, actionLink: string) {
   return {
     subject: t.passwordResetSubject,
     html: baseLayout(t.passwordResetHeading, t.passwordResetBody, t.passwordResetButton, actionLink, t.footer),
+  };
+}
+
+export function billReminderEmail(dict: Dict, body: string, dashboardLink: string) {
+  const t = dict.email;
+  return {
+    subject: t.billReminderSubject,
+    html: baseLayout(t.billReminderHeading, body, t.billReminderButton, dashboardLink, t.footer),
   };
 }

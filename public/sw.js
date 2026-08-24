@@ -44,7 +44,7 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {
-    title: "Easy Budget",
+    title: "Budget Whisperer",
     body: "You have bills due today!",
   };
   event.waitUntil(

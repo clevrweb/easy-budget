@@ -274,6 +274,15 @@ export interface Dict {
     deletingAccount: string;
     deleteAccountErrorMismatch: string;
     deleteAccountErrorGeneric: string;
+    notificationChannelLabel: string;
+    notificationChannelDesc: string;
+    notificationChannelUpdated: string;
+    channelPush: string;
+    channelEmail: string;
+    channelSms: string;
+    phoneNumberLabel: string;
+    phoneNumberPlaceholder: string;
+    phoneNumberDesc: string;
   };
 
   income: {
@@ -373,5 +382,31 @@ export interface Dict {
     passwordResetBody: string;
     passwordResetButton: string;
     footer: string;
+    billReminderSubject: string;
+    billReminderHeading: string;
+    billReminderButton: string;
+  };
+
+  admin: {
+    title: string;
+    resendSectionTitle: string;
+    resendSectionDesc: string;
+    resendApiKeyLabel: string;
+    resendFromEmailLabel: string;
+    resendFromEmailPlaceholder: string;
+    birdSectionTitle: string;
+    birdSectionDesc: string;
+    birdAccessKeyLabel: string;
+    birdWorkspaceIdLabel: string;
+    birdChannelIdLabel: string;
+    saveButton: string;
+    saving: string;
+    saved: string;
+    testSmsSectionTitle: string;
+    testSmsSectionDesc: string;
+    testSmsPhoneLabel: string;
+    testSmsButton: string;
+    testSmsSending: string;
+    testSmsSuccess: string;
   };
 }

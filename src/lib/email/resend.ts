@@ -1,7 +1,20 @@
 import { Resend } from "resend";
+import { getAppConfig } from "@/lib/config/app-config";
 
-export function getResendClient() {
-  return new Resend(process.env.RESEND_API_KEY!);
+interface ResendConfig {
+  apiKey?: string;
+  fromEmail?: string;
 }
 
-export const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || "Easy Budget <noreply@israelthieme.com>";
+const DEFAULT_FROM = "Budget Whisperer <noreply@budgetwhisperer.com>";
+
+export async function getResendClient() {
+  const config = await getAppConfig<ResendConfig>("resend");
+  const apiKey = config?.apiKey || process.env.RESEND_API_KEY;
+  return new Resend(apiKey);
+}
+
+export async function getEmailFrom() {
+  const config = await getAppConfig<ResendConfig>("resend");
+  return config?.fromEmail || process.env.RESEND_FROM_EMAIL || DEFAULT_FROM;
+}

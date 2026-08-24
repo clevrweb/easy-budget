@@ -21,7 +21,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
               <path d="M16 6L10 12H13V21H10L16 27L22 21H19V12H22L16 6Z" fill="white" />
             </svg>
           </div>
-          <span className="text-2xl font-bold text-[var(--color-foreground)]">Easy Budget</span>
+          <span className="text-2xl font-bold text-[var(--color-foreground)]">Budget Whisperer</span>
         </div>
 
         <div className="bg-[var(--color-card)] rounded-2xl shadow-[var(--shadow-card)] border border-[var(--color-border)] p-8">
