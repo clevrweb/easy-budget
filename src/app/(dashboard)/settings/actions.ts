@@ -207,6 +207,27 @@ export async function revokeInviteAction(inviteId: string) {
   return { success: true };
 }
 
+export async function removeMemberAction(memberUserId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  if (memberUserId === user.id) return { error: "self" as const };
+
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("account_members")
+    .delete()
+    .eq("account_id", accountId)
+    .eq("user_id", memberUserId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/settings");
+  return { success: true };
+}
+
 export async function exportMyDataAction() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

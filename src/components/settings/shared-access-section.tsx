@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { inviteToAccountAction, revokeInviteAction } from "@/app/(dashboard)/settings/actions";
+import { inviteToAccountAction, revokeInviteAction, removeMemberAction } from "@/app/(dashboard)/settings/actions";
 import { useDict } from "@/components/language-provider";
 
 interface Member {
@@ -25,13 +25,15 @@ interface SharedAccessSectionProps {
   currentUserId: string;
 }
 
-export function SharedAccessSection({ members, pendingInvites, currentUserId }: SharedAccessSectionProps) {
+export function SharedAccessSection({ members: initialMembers, pendingInvites: initialPendingInvites, currentUserId }: SharedAccessSectionProps) {
   const dict = useDict();
   const t = dict.account;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [members, setMembers] = useState(initialMembers);
+  const [pendingInvites, setPendingInvites] = useState(initialPendingInvites);
 
   function handleInvite() {
     setMessage(null);
@@ -63,8 +65,20 @@ export function SharedAccessSection({ members, pendingInvites, currentUserId }: 
   function handleRevoke(inviteId: string) {
     if (!confirm(t.revokeConfirm)) return;
     startTransition(async () => {
-      await revokeInviteAction(inviteId);
-      router.refresh();
+      const result = await revokeInviteAction(inviteId);
+      if (!result?.error) {
+        setPendingInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
+      }
+    });
+  }
+
+  function handleRemoveMember(userId: string) {
+    if (!confirm(t.removeMemberConfirm)) return;
+    startTransition(async () => {
+      const result = await removeMemberAction(userId);
+      if (!result?.error) {
+        setMembers((prev) => prev.filter((m) => m.userId !== userId));
+      }
     });
   }
 
@@ -76,12 +90,24 @@ export function SharedAccessSection({ members, pendingInvites, currentUserId }: 
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">{t.membersTitle}</p>
         <ul className="space-y-1">
           {members.map((m) => (
-            <li key={m.userId} className="text-sm text-[var(--color-foreground)] flex items-center gap-2">
-              {m.email}
-              {m.userId === currentUserId && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-muted)] text-[var(--color-muted-foreground)]">
-                  {t.memberYou}
-                </span>
+            <li key={m.userId} className="text-sm text-[var(--color-foreground)] flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                {m.email}
+                {m.userId === currentUserId && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-muted)] text-[var(--color-muted-foreground)]">
+                    {t.memberYou}
+                  </span>
+                )}
+              </span>
+              {m.userId !== currentUserId && (
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => handleRemoveMember(m.userId)}
+                  className="text-xs font-medium text-[var(--color-danger)] hover:underline disabled:opacity-40"
+                >
+                  {t.removeMember}
+                </button>
               )}
             </li>
           ))}

@@ -340,6 +340,8 @@ export interface Dict {
     inviteErrorInvalidEmail: string;
     membersTitle: string;
     memberYou: string;
+    removeMember: string;
+    removeMemberConfirm: string;
     pendingInvitesTitle: string;
     revokeInvite: string;
     revokeConfirm: string;

@@ -341,6 +341,8 @@ export const es: Dict = {
     inviteErrorInvalidEmail: "Ingresa un correo electrónico válido.",
     membersTitle: "Miembros",
     memberYou: "Tú",
+    removeMember: "Quitar",
+    removeMemberConfirm: "¿Quitar a esta persona del presupuesto compartido? Perderá el acceso de inmediato.",
     pendingInvitesTitle: "Invitaciones Pendientes",
     revokeInvite: "Revocar",
     revokeConfirm: "¿Revocar esta invitación?",
