@@ -23,6 +23,11 @@ export async function selectAccountAction(accountId: string) {
 
   const store = await cookies();
   store.set(ACCOUNT_COOKIE, accountId, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+
+  // Without this, Next's client-side router cache can keep serving the
+  // previously-visited /dashboard render (the old account's data) after the
+  // cookie changes, since switching accounts doesn't change the URL.
+  revalidatePath("/", "layout");
   redirect("/dashboard");
 }
 

@@ -4,6 +4,7 @@ import { GroupForm } from "@/components/groups/group-form";
 import { GroupCard } from "@/components/groups/group-card";
 import type { Group } from "@/types/database";
 import { getServerDict } from "@/lib/i18n/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 export default async function GroupsPage() {
   const [supabase, dict] = await Promise.all([
@@ -12,9 +13,13 @@ export default async function GroupsPage() {
   ]);
   const t = dict.groups;
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
+
   const { data: groups } = await supabase
     .from("groups")
     .select("*, bills(count)")
+    .eq("account_id", accountId ?? "")
     .order("name");
 
   const allGroups = (groups ?? []) as (Group & { bills: { count: number }[] })[];

@@ -5,6 +5,7 @@ import { CategoryCard } from "@/components/categories/category-card";
 import { seedDefaultCategoriesAction } from "./actions";
 import type { Category } from "@/types/database";
 import { getServerDict } from "@/lib/i18n/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 export default async function CategoriesPage() {
   const [supabase, dict] = await Promise.all([
@@ -13,9 +14,13 @@ export default async function CategoriesPage() {
   ]);
   const t = dict.categories;
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
+
   const { data: categories } = await supabase
     .from("categories")
     .select("*, bills(count)")
+    .eq("account_id", accountId ?? "")
     .order("name");
 
   const allCategories = (categories ?? []) as (Category & { bills: { count: number }[] })[];

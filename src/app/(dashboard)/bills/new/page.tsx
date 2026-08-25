@@ -3,14 +3,18 @@ import { Topbar } from "@/components/layout/topbar";
 import { AddBillForm } from "@/components/bills/add-bill-form";
 import type { Category, Group } from "@/types/database";
 import { getServerDict } from "@/lib/i18n/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 export default async function NewBillPage() {
   const supabase = await createClient();
   const dict = await getServerDict();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
+
   const [{ data: categories }, { data: groups }] = await Promise.all([
-    supabase.from("categories").select("*").order("name"),
-    supabase.from("groups").select("*").order("name"),
+    supabase.from("categories").select("*").eq("account_id", accountId ?? "").order("name"),
+    supabase.from("groups").select("*").eq("account_id", accountId ?? "").order("name"),
   ]);
 
   return (

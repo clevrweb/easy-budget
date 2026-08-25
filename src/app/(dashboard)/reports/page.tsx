@@ -8,6 +8,7 @@ import type { Bill, Category } from "@/types/database";
 import type { MonthlyDataPoint } from "@/components/reports/monthly-chart";
 import type { CategoryDataPoint } from "@/components/reports/category-chart";
 import { getServerDict } from "@/lib/i18n/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 const FALLBACK_COLORS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
@@ -47,10 +48,12 @@ export default async function ReportsPage({
   const today = now.toISOString().split("T")[0];
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
 
   const [{ data: bills }, { data: categories }] = await Promise.all([
-    supabase.from("bills").select("*").gte("due_date", rangeStart).lte("due_date", rangeEnd),
-    supabase.from("categories").select("*"),
+    supabase.from("bills").select("*").eq("account_id", accountId ?? "").gte("due_date", rangeStart).lte("due_date", rangeEnd),
+    supabase.from("categories").select("*").eq("account_id", accountId ?? ""),
   ]);
 
   const allBills = (bills ?? []) as Bill[];

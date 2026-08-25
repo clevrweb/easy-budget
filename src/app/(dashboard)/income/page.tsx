@@ -4,15 +4,20 @@ import { IncomeForm } from "@/components/income/income-form";
 import { IncomeRow } from "@/components/income/income-row";
 import { formatCurrency } from "@/lib/utils";
 import { getServerDict } from "@/lib/i18n/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 import type { IncomeSource } from "@/types/database";
 
 export default async function IncomePage() {
   const [supabase, dict] = await Promise.all([createClient(), getServerDict()]);
   const t = dict.income;
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
+
   const { data } = await supabase
     .from("income_sources")
     .select("*")
+    .eq("account_id", accountId ?? "")
     .order("created_at");
 
   const sources = (data ?? []) as IncomeSource[];

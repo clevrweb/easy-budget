@@ -10,6 +10,7 @@ import type { Bill, Category, Group, IncomeSource } from "@/types/database";
 import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
 import { getDefaultViewAction } from "@/app/(dashboard)/settings/actions";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 function getMondayOf(d: Date) {
   const day = d.getDay();
@@ -62,6 +63,8 @@ export default async function DashboardPage({
   const today = now.toISOString().split("T")[0];
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
 
   // Summary: current month bills + prior overdue
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
@@ -76,11 +79,11 @@ export default async function DashboardPage({
     { data: groups },
     { data: incomeSources },
   ] = await Promise.all([
-    supabase.from("bills").select("*").gte("due_date", monthStart).lte("due_date", monthEnd).order("due_date"),
-    supabase.from("bills").select("*").lt("due_date", monthStart).eq("status", "pending"),
-    supabase.from("categories").select("*").order("name"),
-    supabase.from("groups").select("*").order("name"),
-    supabase.from("income_sources").select("*").eq("is_active", true),
+    supabase.from("bills").select("*").eq("account_id", accountId ?? "").gte("due_date", monthStart).lte("due_date", monthEnd).order("due_date"),
+    supabase.from("bills").select("*").eq("account_id", accountId ?? "").lt("due_date", monthStart).eq("status", "pending"),
+    supabase.from("categories").select("*").eq("account_id", accountId ?? "").order("name"),
+    supabase.from("groups").select("*").eq("account_id", accountId ?? "").order("name"),
+    supabase.from("income_sources").select("*").eq("account_id", accountId ?? "").eq("is_active", true),
   ]);
 
   const allCurrentBills = [...(monthBills ?? []), ...(overdueBills ?? [])] as Bill[];
@@ -96,7 +99,7 @@ export default async function DashboardPage({
 
   // Bills list: filtered by view/date/status/q
   const range = getDateRange(view, date);
-  let billsQuery = supabase.from("bills").select("*").order("due_date");
+  let billsQuery = supabase.from("bills").select("*").eq("account_id", accountId ?? "").order("due_date");
   if (range)  billsQuery = billsQuery.gte("due_date", range.start).lte("due_date", range.end);
   if (q)      billsQuery = billsQuery.ilike("name", `%${q}%`);
   const { data: filteredBillsRaw } = await billsQuery;

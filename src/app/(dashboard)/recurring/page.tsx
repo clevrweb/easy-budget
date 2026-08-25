@@ -7,6 +7,7 @@ import { MonthPicker } from "@/components/ui/month-picker";
 import { formatCurrency } from "@/lib/utils";
 import type { RecurringTemplate, Category, Group } from "@/types/database";
 import { getServerDict } from "@/lib/i18n/server";
+import { getActiveAccountId } from "@/lib/supabase/account";
 
 export default async function RecurringPage({
   searchParams,
@@ -27,11 +28,13 @@ export default async function RecurringPage({
   });
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
 
   const [{ data: templates }, { data: categories }, { data: groups }] = await Promise.all([
-    supabase.from("recurring_templates").select("*").order("name"),
-    supabase.from("categories").select("*").order("name"),
-    supabase.from("groups").select("*").order("name"),
+    supabase.from("recurring_templates").select("*").eq("account_id", accountId ?? "").order("name"),
+    supabase.from("categories").select("*").eq("account_id", accountId ?? "").order("name"),
+    supabase.from("groups").select("*").eq("account_id", accountId ?? "").order("name"),
   ]);
 
   const allTemplates = (templates ?? []) as RecurringTemplate[];
