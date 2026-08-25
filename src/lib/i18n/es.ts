@@ -55,6 +55,7 @@ export const es: Dict = {
     signOut: "Cerrar sesión",
     back: "Atrás",
     more: "Más",
+    switchBudget: "Cambiar Presupuesto",
   },
 
   dashboard: {
@@ -345,8 +346,11 @@ export const es: Dict = {
     revokeConfirm: "¿Revocar esta invitación?",
     chooseAccountTitle: "Elige una cuenta",
     chooseAccountSubtitle: "Tienes acceso a más de un presupuesto. Elige cuál usar.",
-    personalAccountLabel: "Mi Presupuesto",
-    sharedAccountLabel: "Presupuesto Compartido",
+    typePersonal: "Personal",
+    typeShared: "Compartido",
+    renameBudget: "Renombrar",
+    renameSave: "Guardar",
+    renameUpdated: "Presupuesto renombrado",
     switchAccountLabel: "Cambiar Cuenta",
     currentAccountBadge: "Actual",
     pendingInviteBannerTitle: "Te invitaron a compartir un presupuesto",

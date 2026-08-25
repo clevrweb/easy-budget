@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { selectAccountAction } from "@/lib/supabase/account-actions";
+import { ACCOUNT_COOKIE } from "@/lib/supabase/account";
 import { getServerDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 
@@ -14,6 +16,9 @@ export default async function ChooseAccountPage() {
 
   const dict = await getServerDict();
   const t = dict.account;
+
+  const store = await cookies();
+  const activeAccountId = store.get(ACCOUNT_COOKIE)?.value;
 
   const { data: memberships } = await supabase
     .from("account_members")
@@ -42,18 +47,29 @@ export default async function ChooseAccountPage() {
         </div>
 
         <div className="space-y-3">
-          {accounts.map((account) => (
-            <form key={account.id} action={selectAccountAction.bind(null, account.id)}>
-              <button
-                type="submit"
-                className="w-full text-left bg-[var(--color-card)] rounded-2xl shadow-[var(--shadow-card)] border border-[var(--color-border)] p-5 hover:border-[var(--color-primary)] transition-colors"
-              >
-                <p className="font-semibold text-[var(--color-foreground)]">
-                  {account.is_personal ? t.personalAccountLabel : account.name || t.sharedAccountLabel}
-                </p>
-              </button>
-            </form>
-          ))}
+          {accounts.map((account) => {
+            const isCurrent = account.id === activeAccountId;
+            return (
+              <form key={account.id} action={selectAccountAction.bind(null, account.id)}>
+                <button
+                  type="submit"
+                  className="w-full text-left bg-[var(--color-card)] rounded-2xl shadow-[var(--shadow-card)] border border-[var(--color-border)] p-5 hover:border-[var(--color-primary)] transition-colors flex items-center justify-between gap-3"
+                >
+                  <span>
+                    <span className="font-semibold text-[var(--color-foreground)]">{account.name}</span>
+                    <span className="block text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mt-0.5">
+                      {account.is_personal ? t.typePersonal : t.typeShared}
+                    </span>
+                  </span>
+                  {isCurrent && (
+                    <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-primary)] text-white">
+                      {t.currentAccountBadge}
+                    </span>
+                  )}
+                </button>
+              </form>
+            );
+          })}
         </div>
       </div>
     </div>

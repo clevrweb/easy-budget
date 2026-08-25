@@ -35,6 +35,22 @@ export async function loginAction(formData: FormData) {
     store.set("lang", profile?.language ?? "en", { path: "/", maxAge: 60 * 60 * 24 * 365 });
 
     if (profile?.is_superadmin) redirect("/admin");
+
+    // proxy.ts also gates this, but a redirect() inside a Server Action can
+    // land on /dashboard without middleware re-evaluating account selection
+    // (a soft-navigation quirk) -- so decide it here too, where it's certain
+    // to run.
+    const { data: memberships } = await supabase
+      .from("account_members")
+      .select("account_id")
+      .eq("user_id", user.id);
+    const accountIds = (memberships ?? []).map((m) => m.account_id);
+
+    if (accountIds.length === 1) {
+      store.set(ACCOUNT_COOKIE, accountIds[0], { path: "/", maxAge: 60 * 60 * 24 * 365 });
+    } else if (accountIds.length > 1) {
+      redirect("/choose-account");
+    }
   }
 
   redirect("/dashboard");

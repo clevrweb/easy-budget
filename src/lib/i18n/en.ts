@@ -55,6 +55,7 @@ export const en: Dict = {
     signOut: "Sign Out",
     back: "Back",
     more: "More",
+    switchBudget: "Switch Budget",
   },
 
   dashboard: {
@@ -345,8 +346,11 @@ export const en: Dict = {
     revokeConfirm: "Revoke this invite?",
     chooseAccountTitle: "Choose an account",
     chooseAccountSubtitle: "You have access to more than one budget. Pick which one to use.",
-    personalAccountLabel: "My Budget",
-    sharedAccountLabel: "Shared Budget",
+    typePersonal: "Personal",
+    typeShared: "Shared",
+    renameBudget: "Rename",
+    renameSave: "Save",
+    renameUpdated: "Budget renamed",
     switchAccountLabel: "Switch Account",
     currentAccountBadge: "Current",
     pendingInviteBannerTitle: "You've been invited to share a budget",

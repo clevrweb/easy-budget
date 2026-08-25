@@ -13,12 +13,17 @@ import {
   LogOut,
   TrendingUp,
   Repeat,
+  ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/supabase/actions";
 import { useDict } from "@/components/language-provider";
 
-export function Sidebar() {
+interface SidebarProps {
+  hasMultipleAccounts?: boolean;
+}
+
+export function Sidebar({ hasMultipleAccounts }: SidebarProps) {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const logo = resolvedTheme === "dark" ? "/logo-transparent.png" : "/logo.jpg";
@@ -31,6 +36,9 @@ export function Sidebar() {
     { href: "/groups",     label: dict.nav.groups,     icon: Users },
     { href: "/recurring",  label: dict.nav.recurring,  icon: Repeat },
     { href: "/reports",    label: dict.nav.reports,    icon: BarChart2 },
+    ...(hasMultipleAccounts
+      ? [{ href: "/choose-account", label: dict.nav.switchBudget, icon: ArrowLeftRight }]
+      : []),
     { href: "/settings",   label: dict.nav.settings,   icon: Settings },
   ];
 

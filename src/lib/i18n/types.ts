@@ -53,6 +53,7 @@ export interface Dict {
     signOut: string;
     back: string;
     more: string;
+    switchBudget: string;
   };
 
   dashboard: {
@@ -344,10 +345,13 @@ export interface Dict {
     revokeConfirm: string;
     chooseAccountTitle: string;
     chooseAccountSubtitle: string;
-    personalAccountLabel: string;
-    sharedAccountLabel: string;
+    typePersonal: string;
+    typeShared: string;
     switchAccountLabel: string;
     currentAccountBadge: string;
+    renameBudget: string;
+    renameSave: string;
+    renameUpdated: string;
     pendingInviteBannerTitle: string;
     acceptInvite: string;
     declineInvite: string;

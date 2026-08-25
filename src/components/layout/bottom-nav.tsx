@@ -4,11 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BarChart2, Tag, TrendingUp, Settings, MoreHorizontal, Users, Repeat } from "lucide-react";
+import { LayoutDashboard, BarChart2, Tag, TrendingUp, Settings, MoreHorizontal, Users, Repeat, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 
-export function BottomNav() {
+interface BottomNavProps {
+  hasMultipleAccounts?: boolean;
+}
+
+export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
   const pathname = usePathname();
   const dict = useDict();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -26,6 +30,9 @@ export function BottomNav() {
   const moreItems = [
     { href: "/groups",    label: dict.nav.groups,    icon: Users },
     { href: "/recurring", label: dict.nav.recurring, icon: Repeat },
+    ...(hasMultipleAccounts
+      ? [{ href: "/choose-account", label: dict.nav.switchBudget, icon: ArrowLeftRight }]
+      : []),
   ];
   const isMoreActive = moreItems.some((item) => pathname.startsWith(item.href));
 

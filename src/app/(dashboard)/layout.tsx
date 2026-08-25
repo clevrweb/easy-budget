@@ -27,11 +27,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
     accounts: Array.isArray(row.accounts) ? (row.accounts[0] ?? null) : row.accounts,
   }));
 
+  const { data: memberships } = user
+    ? await supabase.from("account_members").select("account_id").eq("user_id", user.id)
+    : { data: null };
+  const hasMultipleAccounts = (memberships?.length ?? 0) > 1;
+
   return (
     <div className="flex min-h-screen bg-[var(--color-background)]">
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
-        <Sidebar />
+        <Sidebar hasMultipleAccounts={hasMultipleAccounts} />
       </div>
 
       {/* Main content — extra bottom padding on mobile for bottom nav */}
@@ -43,7 +48,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       {/* Mobile bottom nav */}
-      <BottomNav />
+      <BottomNav hasMultipleAccounts={hasMultipleAccounts} />
     </div>
   );
 }
