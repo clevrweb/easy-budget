@@ -30,7 +30,7 @@ export async function IncomeSection({ incomeSources, billsTotal, range }: Income
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Income header row */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-emerald-500/10 border-b border-[var(--color-border)]">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-emerald-500/10 dark:bg-emerald-500/20 border-b border-[var(--color-border)]">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
@@ -56,7 +56,7 @@ export async function IncomeSection({ incomeSources, billsTotal, range }: Income
         <div className="divide-y divide-[var(--color-border)]">
           {grouped.map(({ source, count, total }) => (
             <div key={source.id} className="flex items-center gap-3 px-4 py-2.5">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
