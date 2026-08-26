@@ -226,6 +226,15 @@ export const en: Dict = {
     confirmDelete: "Bills in this group will become ungrouped.",
     billSingular: "bill",
     billPlural: "bills",
+    manageBills: "Add Bills",
+    addBillsTitle: "Add bills to {name}",
+    addBillsDesc: "Pick any bills or recurring templates to include in this group.",
+    oneTimeBillsLabel: "Bills",
+    recurringTemplatesLabel: "Recurring Templates",
+    noAssignableBills: "No ungrouped bills or templates to add.",
+    doneButton: "Done",
+    skipButton: "Skip for now",
+    assigning: "Saving...",
   },
 
   reports: {

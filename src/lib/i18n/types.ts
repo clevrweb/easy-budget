@@ -225,6 +225,15 @@ export interface Dict {
     confirmDelete: string;
     billSingular: string;
     billPlural: string;
+    manageBills: string;
+    addBillsTitle: string;
+    addBillsDesc: string;
+    oneTimeBillsLabel: string;
+    recurringTemplatesLabel: string;
+    noAssignableBills: string;
+    doneButton: string;
+    skipButton: string;
+    assigning: string;
   };
 
   reports: {

@@ -11,16 +11,20 @@ export async function createGroupAction(formData: FormData) {
   const accountId = await getActiveAccountId(supabase, user.id);
   if (!accountId) return { error: "No account selected" };
 
-  const { error } = await supabase.from("groups").insert({
-    account_id: accountId,
-    user_id: user.id,
-    name: formData.get("name") as string,
-    color: (formData.get("color") as string) || "#4f46e5",
-  });
+  const { data, error } = await supabase
+    .from("groups")
+    .insert({
+      account_id: accountId,
+      user_id: user.id,
+      name: formData.get("name") as string,
+      color: (formData.get("color") as string) || "#4f46e5",
+    })
+    .select("id")
+    .single();
 
   if (error) return { error: error.message };
   revalidatePath("/groups");
-  return { success: true };
+  return { success: true, id: data.id };
 }
 
 export async function updateGroupAction(formData: FormData) {
@@ -41,6 +45,75 @@ export async function updateGroupAction(formData: FormData) {
 
   if (error) return { error: error.message };
   revalidatePath("/groups");
+  return { success: true };
+}
+
+export async function getAssignableBillsAction(groupId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { bills: [], templates: [] };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { bills: [], templates: [] };
+
+  // Only offer ungrouped items plus whatever's already in this group --
+  // reassigning something out of a *different* group isn't this picker's job.
+  const [{ data: bills }, { data: templates }] = await Promise.all([
+    supabase
+      .from("bills")
+      .select("id, name, amount, due_date, is_recurring, group_id")
+      .eq("account_id", accountId)
+      .or(`group_id.is.null,group_id.eq.${groupId}`)
+      .order("due_date", { ascending: false }),
+    supabase
+      .from("recurring_templates")
+      .select("id, name, amount, frequency, group_id")
+      .eq("account_id", accountId)
+      .or(`group_id.is.null,group_id.eq.${groupId}`)
+      .order("name"),
+  ]);
+
+  return { bills: bills ?? [], templates: templates ?? [] };
+}
+
+export async function assignBillsToGroupAction(groupId: string, billIds: string[], templateIds: string[]) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
+
+  const [{ data: currentBills }, { data: currentTemplates }] = await Promise.all([
+    supabase.from("bills").select("id").eq("group_id", groupId).eq("account_id", accountId),
+    supabase.from("recurring_templates").select("id").eq("group_id", groupId).eq("account_id", accountId),
+  ]);
+
+  const billsToRemove = (currentBills ?? []).map((b) => b.id).filter((id) => !billIds.includes(id));
+  const templatesToRemove = (currentTemplates ?? []).map((t) => t.id).filter((id) => !templateIds.includes(id));
+
+  // Removals and additions must run sequentially, not raced via Promise.all,
+  // since "clear everyone currently in this group" and "add the checked ones"
+  // touch overlapping rows and would otherwise be order-dependent.
+  if (billsToRemove.length) {
+    const { error } = await supabase.from("bills").update({ group_id: null }).in("id", billsToRemove).eq("account_id", accountId);
+    if (error) return { error: error.message };
+  }
+  if (billIds.length) {
+    const { error } = await supabase.from("bills").update({ group_id: groupId }).in("id", billIds).eq("account_id", accountId);
+    if (error) return { error: error.message };
+  }
+  if (templatesToRemove.length) {
+    const { error } = await supabase.from("recurring_templates").update({ group_id: null }).in("id", templatesToRemove).eq("account_id", accountId);
+    if (error) return { error: error.message };
+  }
+  if (templateIds.length) {
+    const { error } = await supabase.from("recurring_templates").update({ group_id: groupId }).in("id", templateIds).eq("account_id", accountId);
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/groups");
+  revalidatePath("/dashboard");
+  revalidatePath("/bills");
+  revalidatePath("/recurring");
   return { success: true };
 }
 

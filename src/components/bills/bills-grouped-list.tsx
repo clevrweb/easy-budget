@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import { formatCurrency } from "@/lib/utils";
 import { BillRow } from "./bill-row";
 import { useDict } from "@/components/language-provider";
@@ -25,6 +26,8 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 
 export function BillsGroupedList({ bills, categories, groups, groupBy = "group" }: BillsGroupedListProps) {
   const dict = useDict();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   if (bills.length === 0) {
     return (
@@ -92,8 +95,8 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
                   const color = group?.color ?? "#94a3b8";
                   const rgb = hexToRgb(color);
                   const bgStyle = rgb
-                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.08)` }
-                    : { backgroundColor: "#94a3b814" };
+                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},${isDark ? 0.22 : 0.08})` }
+                    : { backgroundColor: isDark ? "#94a3b833" : "#94a3b814" };
 
                   return (
                     <div key={groupId ?? "__ungrouped__"}>
@@ -147,8 +150,8 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
         const color = group?.color ?? "#94a3b8";
         const rgb = hexToRgb(color);
         const bgStyle = rgb
-          ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},0.06)` }
-          : { backgroundColor: "#94a3b810" };
+          ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},${isDark ? 0.2 : 0.06})` }
+          : { backgroundColor: isDark ? "#94a3b830" : "#94a3b810" };
 
         const billWord = groupBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
 

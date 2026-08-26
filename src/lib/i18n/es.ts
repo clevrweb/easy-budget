@@ -226,6 +226,15 @@ export const es: Dict = {
     confirmDelete: "Las facturas de este grupo quedarán sin grupo.",
     billSingular: "factura",
     billPlural: "facturas",
+    manageBills: "Agregar Facturas",
+    addBillsTitle: "Agregar facturas a {name}",
+    addBillsDesc: "Elige las facturas o plantillas recurrentes que quieres incluir en este grupo.",
+    oneTimeBillsLabel: "Facturas",
+    recurringTemplatesLabel: "Plantillas Recurrentes",
+    noAssignableBills: "No hay facturas ni plantillas sin grupo para agregar.",
+    doneButton: "Listo",
+    skipButton: "Omitir por ahora",
+    assigning: "Guardando...",
   },
 
   reports: {

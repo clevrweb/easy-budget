@@ -1,11 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { deleteGroupAction } from "@/app/(dashboard)/groups/actions";
 import { GroupForm } from "./group-form";
+import { GroupBillsPicker } from "./group-bills-picker";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useDict } from "@/components/language-provider";
 import type { Group } from "@/types/database";
-import { Pencil, Trash2, Users } from "lucide-react";
+import { Pencil, Trash2, Users, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface GroupCardProps {
@@ -15,6 +17,7 @@ interface GroupCardProps {
 
 export function GroupCard({ group, billCount }: GroupCardProps) {
   const [isPending, startTransition] = useTransition();
+  const [addBillsOpen, setAddBillsOpen] = useState(false);
   const dict = useDict();
 
   function handleDelete() {
@@ -44,6 +47,19 @@ export function GroupCard({ group, billCount }: GroupCardProps) {
       <div className="flex items-center gap-2">
         <div className="w-4 h-4 rounded-md shrink-0" style={{ backgroundColor: group.color }} />
         <span className="text-xs font-mono text-[var(--color-muted-foreground)]">{group.color}</span>
+      </div>
+
+      <div className="flex gap-2">
+        <Dialog open={addBillsOpen} onOpenChange={setAddBillsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="flex-1 text-xs">
+              <ListPlus className="w-3.5 h-3.5" /> {dict.groups.manageBills}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <GroupBillsPicker groupId={group.id} groupName={group.name} onDone={() => setAddBillsOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex gap-2 mt-auto pt-1 border-t border-[var(--color-border)]">
