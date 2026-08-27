@@ -30,7 +30,10 @@ export async function IncomeSection({ incomeSources, billsTotal, range }: Income
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Income header row */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-emerald-500/10 dark:bg-emerald-500/20 border-b border-[var(--color-border)]">
+      <div
+        className="flex items-center justify-between pl-3 pr-4 py-2.5 border-b border-[var(--color-border)]"
+        style={{ borderLeft: "4px solid #10b981" }}
+      >
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">

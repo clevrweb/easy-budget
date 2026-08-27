@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { formatCurrency } from "@/lib/utils";
 import { BillRow } from "./bill-row";
 import { useDict } from "@/components/language-provider";
@@ -14,20 +13,8 @@ interface BillsGroupedListProps {
   groupBy?: GroupBy;
 }
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const clean = hex.replace("#", "");
-  if (clean.length !== 6) return null;
-  return {
-    r: parseInt(clean.slice(0, 2), 16),
-    g: parseInt(clean.slice(2, 4), 16),
-    b: parseInt(clean.slice(4, 6), 16),
-  };
-}
-
 export function BillsGroupedList({ bills, categories, groups, groupBy = "group" }: BillsGroupedListProps) {
   const dict = useDict();
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
 
   if (bills.length === 0) {
     return (
@@ -93,19 +80,15 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
                   const group = groupId ? groups.find((g) => g.id === groupId) : null;
                   const groupTotal = groupBills.reduce((s, b) => s + b.amount, 0);
                   const color = group?.color ?? "#94a3b8";
-                  const rgb = hexToRgb(color);
-                  const bgStyle = rgb
-                    ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},${isDark ? 0.22 : 0.08})` }
-                    : { backgroundColor: isDark ? "#94a3b833" : "#94a3b814" };
 
                   return (
                     <div key={groupId ?? "__ungrouped__"}>
                       <div
-                        className="flex items-center justify-between pl-3 pr-4 py-1.5"
-                        style={{ ...bgStyle, borderLeft: `3px solid ${color}` }}
+                        className="flex items-center justify-between pl-3 pr-4 py-1.5 border-b border-[var(--color-border)]"
+                        style={{ borderLeft: `3px solid ${color}` }}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-[var(--color-foreground)]">
+                          <span className="text-xs font-semibold" style={{ color }}>
                             {group?.name ?? dict.bills.ungrouped}
                           </span>
                         </div>
@@ -148,19 +131,17 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
         const group = groupId ? groups.find((g) => g.id === groupId) : null;
         const total = groupBills.reduce((s, b) => s + b.amount, 0);
         const color = group?.color ?? "#94a3b8";
-        const rgb = hexToRgb(color);
-        const bgStyle = rgb
-          ? { backgroundColor: `rgba(${rgb.r},${rgb.g},${rgb.b},${isDark ? 0.2 : 0.06})` }
-          : { backgroundColor: isDark ? "#94a3b830" : "#94a3b810" };
-
         const billWord = groupBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
 
         return (
           <div key={groupId ?? "__ungrouped__"} className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-t-lg overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2.5" style={bgStyle}>
+            <div
+              className="flex items-center justify-between pl-3 pr-4 py-2.5 border-b border-[var(--color-border)]"
+              style={{ borderLeft: `4px solid ${color}` }}
+            >
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                <span className="text-sm font-semibold text-[var(--color-foreground)]">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                <span className="text-sm font-semibold" style={{ color }}>
                   {group?.name ?? dict.bills.ungrouped}
                 </span>
                 <span className="text-xs text-[var(--color-muted-foreground)]">
