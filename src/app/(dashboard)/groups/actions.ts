@@ -57,11 +57,16 @@ export async function getAssignableBillsAction(groupId: string) {
 
   // Only offer ungrouped items plus whatever's already in this group --
   // reassigning something out of a *different* group isn't this picker's job.
+  // Bills generated from a recurring template are excluded here (is_recurring
+  // = false only) -- those are represented by their template instead, so
+  // assigning the template covers all of its generated bills at once rather
+  // than listing every individual monthly instance.
   const [{ data: bills }, { data: templates }] = await Promise.all([
     supabase
       .from("bills")
       .select("id, name, amount, due_date, is_recurring, group_id")
       .eq("account_id", accountId)
+      .eq("is_recurring", false)
       .or(`group_id.is.null,group_id.eq.${groupId}`)
       .order("due_date", { ascending: false }),
     supabase
