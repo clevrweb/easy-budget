@@ -115,6 +115,28 @@ export async function assignBillsToGroupAction(groupId: string, billIds: string[
     if (error) return { error: error.message };
   }
 
+  // A template's group only steers bills generated *after* this point unless
+  // we also cascade it to bills already generated from that template -- so
+  // do that here. Removal only touches bills still sitting in this exact
+  // group, so a bill someone manually moved elsewhere isn't clobbered.
+  if (templatesToRemove.length) {
+    const { error } = await supabase
+      .from("bills")
+      .update({ group_id: null })
+      .in("recurring_template_id", templatesToRemove)
+      .eq("group_id", groupId)
+      .eq("account_id", accountId);
+    if (error) return { error: error.message };
+  }
+  if (templateIds.length) {
+    const { error } = await supabase
+      .from("bills")
+      .update({ group_id: groupId })
+      .in("recurring_template_id", templateIds)
+      .eq("account_id", accountId);
+    if (error) return { error: error.message };
+  }
+
   revalidatePath("/groups");
   revalidatePath("/dashboard");
   revalidatePath("/bills");
