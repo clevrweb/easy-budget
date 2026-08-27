@@ -428,6 +428,7 @@ export interface Dict {
 
   debts: {
     title: string;
+    description: string;
     addDebt: string;
     editDebt: string;
     nameLabel: string;

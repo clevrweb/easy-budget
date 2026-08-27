@@ -42,6 +42,8 @@ export function DebtsPageClient({ initialDebts, initialExtraPayment, initialPlan
       </Topbar>
 
       <main className="flex-1 p-4 md:p-6 space-y-5">
+        <p className="text-sm text-[var(--color-muted-foreground)] max-w-2xl">{t.description}</p>
+
         <DebtPlanOverview plan={plan} extraMonthlyPayment={extraPayment} onExtraSaved={refresh} />
 
         {debts.length === 0 ? (

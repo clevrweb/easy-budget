@@ -56,7 +56,7 @@ export const es: Dict = {
     back: "Atrás",
     more: "Más",
     switchBudget: "Cambiar Presupuesto",
-    debts: "Deudas",
+    debts: "Plan Bola de Nieve",
   },
 
   dashboard: {
@@ -428,7 +428,8 @@ export const es: Dict = {
   },
 
   debts: {
-    title: "Bola de Nieve de Deudas",
+    title: "Plan Bola de Nieve",
+    description: "El método bola de nieve paga primero tu deuda más pequeña mientras haces los pagos mínimos en las demás. Una vez que se liquida, ese pago se suma a la siguiente deuda más pequeña — generando impulso hasta que estés libre de deudas.",
     addDebt: "Agregar Deuda",
     editDebt: "Editar Deuda",
     nameLabel: "Nombre del Acreedor",

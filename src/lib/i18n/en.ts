@@ -56,7 +56,7 @@ export const en: Dict = {
     back: "Back",
     more: "More",
     switchBudget: "Switch Budget",
-    debts: "Debts",
+    debts: "Snowball Plan",
   },
 
   dashboard: {
@@ -428,7 +428,8 @@ export const en: Dict = {
   },
 
   debts: {
-    title: "Debt Snowball",
+    title: "Snowball Plan",
+    description: "The snowball method pays off your smallest debt first while making minimum payments on everything else. Once it's gone, that payment rolls into the next-smallest debt too — building momentum until you're debt-free.",
     addDebt: "Add Debt",
     editDebt: "Edit Debt",
     nameLabel: "Creditor Name",
