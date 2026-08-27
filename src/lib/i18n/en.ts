@@ -232,6 +232,7 @@ export const en: Dict = {
     addBillsDesc: "Pick any bills or recurring templates to include in this group.",
     oneTimeBillsLabel: "Bills",
     recurringTemplatesLabel: "Recurring Templates",
+    selectAll: "Select All",
     noAssignableBills: "No ungrouped bills or templates to add.",
     doneButton: "Done",
     skipButton: "Skip for now",

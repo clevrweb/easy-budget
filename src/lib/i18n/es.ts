@@ -232,6 +232,7 @@ export const es: Dict = {
     addBillsDesc: "Elige las facturas o plantillas recurrentes que quieres incluir en este grupo.",
     oneTimeBillsLabel: "Facturas",
     recurringTemplatesLabel: "Plantillas Recurrentes",
+    selectAll: "Seleccionar Todo",
     noAssignableBills: "No hay facturas ni plantillas sin grupo para agregar.",
     doneButton: "Listo",
     skipButton: "Omitir por ahora",

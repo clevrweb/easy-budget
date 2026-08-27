@@ -69,6 +69,19 @@ export function GroupBillsPicker({ groupId, groupName, onDone }: GroupBillsPicke
     });
   }
 
+  const allTemplatesSelected = templates.length > 0 && templates.every((tpl) => selectedTemplateIds.has(tpl.id));
+  const someTemplatesSelected = templates.some((tpl) => selectedTemplateIds.has(tpl.id));
+  const allBillsSelected = bills.length > 0 && bills.every((b) => selectedBillIds.has(b.id));
+  const someBillsSelected = bills.some((b) => selectedBillIds.has(b.id));
+
+  function toggleAllTemplates() {
+    setSelectedTemplateIds(allTemplatesSelected ? new Set() : new Set(templates.map((tpl) => tpl.id)));
+  }
+
+  function toggleAllBills() {
+    setSelectedBillIds(allBillsSelected ? new Set() : new Set(bills.map((b) => b.id)));
+  }
+
   function handleSave() {
     startTransition(async () => {
       await assignBillsToGroupAction(groupId, Array.from(selectedBillIds), Array.from(selectedTemplateIds));
@@ -93,9 +106,21 @@ export function GroupBillsPicker({ groupId, groupName, onDone }: GroupBillsPicke
         <div className="max-h-96 overflow-y-auto space-y-4">
           {templates.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
-                {t.recurringTemplatesLabel}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                  {t.recurringTemplatesLabel}
+                </p>
+                <label className="flex items-center gap-1.5 text-xs text-[var(--color-muted-foreground)] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allTemplatesSelected}
+                    ref={(el) => { if (el) el.indeterminate = someTemplatesSelected && !allTemplatesSelected; }}
+                    onChange={toggleAllTemplates}
+                    className="w-3.5 h-3.5 rounded accent-[var(--color-primary)]"
+                  />
+                  {t.selectAll}
+                </label>
+              </div>
               <div className="space-y-1">
                 {templates.map((tpl) => (
                   <label
@@ -121,9 +146,21 @@ export function GroupBillsPicker({ groupId, groupName, onDone }: GroupBillsPicke
 
           {bills.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
-                {t.oneTimeBillsLabel}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                  {t.oneTimeBillsLabel}
+                </p>
+                <label className="flex items-center gap-1.5 text-xs text-[var(--color-muted-foreground)] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allBillsSelected}
+                    ref={(el) => { if (el) el.indeterminate = someBillsSelected && !allBillsSelected; }}
+                    onChange={toggleAllBills}
+                    className="w-3.5 h-3.5 rounded accent-[var(--color-primary)]"
+                  />
+                  {t.selectAll}
+                </label>
+              </div>
               <div className="space-y-1">
                 {bills.map((bill) => (
                   <label

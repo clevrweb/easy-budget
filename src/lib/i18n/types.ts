@@ -231,6 +231,7 @@ export interface Dict {
     addBillsDesc: string;
     oneTimeBillsLabel: string;
     recurringTemplatesLabel: string;
+    selectAll: string;
     noAssignableBills: string;
     doneButton: string;
     skipButton: string;
