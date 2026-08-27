@@ -1,6 +1,7 @@
 "use client";
 
 import { ExtraPaymentForm } from "./extra-payment-form";
+import { DebtPayoffChart } from "./debt-payoff-chart";
 import { useDict } from "@/components/language-provider";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { SnowballPlan } from "@/lib/debt-snowball";
@@ -35,6 +36,8 @@ export function DebtPlanOverview({ plan, extraMonthlyPayment, onExtraSaved }: De
       </div>
 
       <ExtraPaymentForm initialValue={extraMonthlyPayment} onSaved={onExtraSaved} />
+
+      <DebtPayoffChart plan={plan} />
 
       {plan.debts.length > 0 && (
         <div className="space-y-1.5">
