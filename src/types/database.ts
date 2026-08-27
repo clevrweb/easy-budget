@@ -54,6 +54,16 @@ export interface Database {
         Insert: Omit<AccountInvite, "id" | "created_at" | "responded_at">;
         Update: Partial<Omit<AccountInvite, "id" | "created_at">>;
       };
+      debts: {
+        Row: Debt;
+        Insert: Omit<Debt, "id" | "created_at">;
+        Update: Partial<Omit<Debt, "id" | "created_at">>;
+      };
+      debt_settings: {
+        Row: DebtSettings;
+        Insert: DebtSettings;
+        Update: Partial<Omit<DebtSettings, "account_id">>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -161,4 +171,22 @@ export interface AccountInvite {
   status: AccountInviteStatus;
   created_at: string;
   responded_at: string | null;
+}
+
+export interface Debt {
+  id: string;
+  account_id: string;
+  user_id: string | null;
+  name: string;
+  balance: number;
+  interest_rate: number;
+  minimum_payment: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface DebtSettings {
+  account_id: string;
+  extra_monthly_payment: number;
+  updated_at: string;
 }

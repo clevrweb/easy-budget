@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   TrendingUp,
+  TrendingDown,
   Repeat,
   ArrowLeftRight,
 } from "lucide-react";
@@ -35,6 +36,7 @@ export function Sidebar({ hasMultipleAccounts }: SidebarProps) {
     { href: "/categories", label: dict.nav.categories, icon: Tag },
     { href: "/groups",     label: dict.nav.groups,     icon: Users },
     { href: "/recurring",  label: dict.nav.recurring,  icon: Repeat },
+    { href: "/debts",      label: dict.nav.debts,      icon: TrendingDown },
     { href: "/reports",    label: dict.nav.reports,    icon: BarChart2 },
     ...(hasMultipleAccounts
       ? [{ href: "/choose-account", label: dict.nav.switchBudget, icon: ArrowLeftRight }]

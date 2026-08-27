@@ -54,6 +54,7 @@ export interface Dict {
     back: string;
     more: string;
     switchBudget: string;
+    debts: string;
   };
 
   dashboard: {
@@ -423,5 +424,35 @@ export interface Dict {
     testSmsButton: string;
     testSmsSending: string;
     testSmsSuccess: string;
+  };
+
+  debts: {
+    title: string;
+    addDebt: string;
+    editDebt: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    balanceLabel: string;
+    interestRateLabel: string;
+    minimumPaymentLabel: string;
+    extraPaymentLabel: string;
+    extraPaymentDesc: string;
+    saveExtra: string;
+    noDebts: string;
+    noDebtsDesc: string;
+    saveChanges: string;
+    confirmDelete: string;
+    monthsToPayoff: string;
+    debtFreeBy: string;
+    totalInterestLabel: string;
+    totalDebtLabel: string;
+    timelineTitle: string;
+    addAsBillTitle: string;
+    addAsBillDesc: string;
+    dueDayLabel: string;
+    addBillButton: string;
+    skipButton: string;
+    capWarning: string;
+    payoffOrderPrefix: string;
   };
 }
