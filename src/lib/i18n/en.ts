@@ -119,6 +119,13 @@ export const en: Dict = {
     billerCategoryUtilities: "Utilities",
     billerCategoryOther: "Other",
     searchCompanyPlaceholder: "Search company for logo…",
+    partial: "Partial",
+    recordPayment: "Record Payment...",
+    payDialogTitle: "Record a payment",
+    paymentAmountLabel: "Payment amount",
+    remainingLabel: "Remaining",
+    paidSoFarLabel: "Paid so far",
+    confirmPayment: "Confirm Payment",
   },
 
   recurring: {

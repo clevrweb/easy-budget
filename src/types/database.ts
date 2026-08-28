@@ -100,6 +100,7 @@ export interface Bill {
   group_id: string | null;
   name: string;
   amount: number;
+  amount_paid: number;
   due_date: string;
   status: BillStatus;
   payment_method: string | null;

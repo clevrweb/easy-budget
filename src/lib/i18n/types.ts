@@ -117,6 +117,13 @@ export interface Dict {
     billerCategoryUtilities: string;
     billerCategoryOther: string;
     searchCompanyPlaceholder: string;
+    partial: string;
+    recordPayment: string;
+    payDialogTitle: string;
+    paymentAmountLabel: string;
+    remainingLabel: string;
+    paidSoFarLabel: string;
+    confirmPayment: string;
   };
 
   recurring: {

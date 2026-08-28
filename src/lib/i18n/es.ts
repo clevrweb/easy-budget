@@ -119,6 +119,13 @@ export const es: Dict = {
     billerCategoryUtilities: "Servicios",
     billerCategoryOther: "Otros",
     searchCompanyPlaceholder: "Buscar empresa para el logo…",
+    partial: "Parcial",
+    recordPayment: "Registrar Pago...",
+    payDialogTitle: "Registrar un pago",
+    paymentAmountLabel: "Monto del pago",
+    remainingLabel: "Restante",
+    paidSoFarLabel: "Pagado hasta ahora",
+    confirmPayment: "Confirmar Pago",
   },
 
   recurring: {

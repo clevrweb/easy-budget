@@ -2,11 +2,14 @@
 
 import { useTransition, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, CircleDollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction } from "@/app/(dashboard)/bills/actions";
+import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction, payBillAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
 import { RecurringSeriesForm } from "./recurring-series-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
 
@@ -34,13 +37,19 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [choiceOpen, setChoiceOpen]           = useState(false);
   const [seriesEditOpen, setSeriesEditOpen]   = useState(false);
   const [deleteChoiceOpen, setDeleteChoiceOpen] = useState(false);
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [payAmount, setPayAmount] = useState("");
+  const [payError, setPayError] = useState<string | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef   = useRef<HTMLDivElement>(null);
   const dict = useDict();
 
-  const today     = new Date().toISOString().split("T")[0];
-  const isOverdue = bill.status === "pending" && bill.due_date < today;
-  const isPaid    = bill.status === "paid";
+  const today       = new Date().toISOString().split("T")[0];
+  const isOverdue   = bill.status === "pending" && bill.due_date < today;
+  const isPaid      = bill.status === "paid";
+  const amountPaid  = bill.amount_paid ?? 0;
+  const remaining   = Math.max(0, bill.amount - amountPaid);
+  const isPartial   = !isPaid && amountPaid > 0 && amountPaid < bill.amount;
 
   const category      = categories.find((c) => c.id === bill.category_id);
   const group         = groups.find((g) => g.id === bill.group_id);
@@ -58,11 +67,13 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   };
 
   const effectiveStatus = isOverdue ? "overdue" : bill.status;
-  const cfg = {
-    paid:    { label: statusLabel.paid,    bg: "var(--badge-paid-bg)",    color: "var(--badge-paid-fg)"    },
-    pending: { label: statusLabel.pending, bg: "var(--badge-pending-bg)", color: "var(--badge-pending-fg)" },
-    overdue: { label: statusLabel.overdue, bg: "var(--badge-overdue-bg)", color: "var(--badge-overdue-fg)" },
-  }[effectiveStatus] ?? { label: bill.status, bg: "#94a3b822", color: "#475569" };
+  const cfg = isPartial
+    ? { label: dict.bills.partial, bg: "#f59e0b33", color: "#b45309" }
+    : {
+        paid:    { label: statusLabel.paid,    bg: "var(--badge-paid-bg)",    color: "var(--badge-paid-fg)"    },
+        pending: { label: statusLabel.pending, bg: "var(--badge-pending-bg)", color: "var(--badge-pending-fg)" },
+        overdue: { label: statusLabel.overdue, bg: "var(--badge-overdue-bg)", color: "var(--badge-overdue-fg)" },
+      }[effectiveStatus] ?? { label: bill.status, bg: "#94a3b822", color: "#475569" };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -103,6 +114,23 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   function handleDeleteSeries() {
     setDeleteChoiceOpen(false);
     startTransition(async () => { await deleteRecurringSeriesAction(bill.recurring_template_id!); });
+  }
+
+  function openPayDialog() {
+    setMenuOpen(false);
+    setPayError(null);
+    setPayAmount(remaining.toFixed(2));
+    setPayDialogOpen(true);
+  }
+
+  function handleConfirmPayment() {
+    const amount = parseFloat(payAmount);
+    if (!amount || amount <= 0) { setPayError(dict.bills.paymentAmountLabel); return; }
+    startTransition(async () => {
+      const result = await payBillAction(bill.id, amount);
+      if (result?.error) { setPayError(result.error); return; }
+      setPayDialogOpen(false);
+    });
   }
 
   const color = avatarColor(bill.name);
@@ -159,9 +187,20 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
 
       {/* Right-side group */}
       <div className="flex items-center gap-1.5 shrink-0">
-        <span className="font-bold text-sm text-[var(--color-foreground)] tabular-nums">
-          {formatCurrency(bill.amount)}
-        </span>
+        {isPartial ? (
+          <span className="text-right leading-tight">
+            <span className="block font-bold text-sm text-[var(--color-foreground)] tabular-nums">
+              {formatCurrency(remaining)}
+            </span>
+            <span className="block text-[10px] text-[var(--color-muted-foreground)] tabular-nums">
+              {dict.bills.paidSoFarLabel} {formatCurrency(amountPaid)}
+            </span>
+          </span>
+        ) : (
+          <span className="font-bold text-sm text-[var(--color-foreground)] tabular-nums">
+            {formatCurrency(bill.amount)}
+          </span>
+        )}
 
         {!isPaid ? (
           <button
@@ -207,6 +246,15 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
             <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
             {dict.common.edit}
           </button>
+          {!isPaid && (
+            <button
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
+              onClick={openPayDialog}
+            >
+              <CircleDollarSign className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
+              {dict.bills.recordPayment}
+            </button>
+          )}
           <button
             onClick={handleDelete}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
@@ -220,6 +268,42 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
 
       {/* Edit dialog */}
       <BillForm bill={bill} categories={categories} groups={groups} open={editOpen} onOpenChange={setEditOpen} />
+
+      {/* Record payment dialog */}
+      {payDialogOpen && createPortal(
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40" onClick={() => setPayDialogOpen(false)}>
+          <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl shadow-2xl p-5 mx-4 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">{dict.bills.payDialogTitle}</p>
+            <p className="text-xs text-[var(--color-muted-foreground)] mb-4">
+              {dict.bills.remainingLabel}: {formatCurrency(remaining)}
+              {amountPaid > 0 && ` · ${dict.bills.paidSoFarLabel} ${formatCurrency(amountPaid)}`}
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor={`pay-amount-${bill.id}`}>{dict.bills.paymentAmountLabel}</Label>
+              <Input
+                id={`pay-amount-${bill.id}`}
+                type="number"
+                step="0.01"
+                min="0"
+                max={remaining}
+                value={payAmount}
+                onChange={(e) => setPayAmount(e.target.value)}
+                autoFocus
+              />
+            </div>
+            {payError && <p className="text-xs text-[var(--color-danger)] mt-2">{payError}</p>}
+            <div className="flex gap-3 mt-4">
+              <Button type="button" className="flex-1" onClick={handleConfirmPayment} disabled={isPending}>
+                {dict.bills.confirmPayment}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setPayDialogOpen(false)}>
+                {dict.bills.cancel}
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Recurring choice dialog */}
       {choiceOpen && createPortal(

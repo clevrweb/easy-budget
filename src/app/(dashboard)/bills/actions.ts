@@ -289,9 +289,17 @@ export async function markBillPaidAction(id: string) {
   const accountId = await getActiveAccountId(supabase, user.id);
   if (!accountId) return { error: "No account selected" };
 
+  const { data: bill, error: fetchError } = await supabase
+    .from("bills")
+    .select("amount")
+    .eq("id", id)
+    .eq("account_id", accountId)
+    .single();
+  if (fetchError || !bill) return { error: fetchError?.message ?? "Bill not found" };
+
   const { error } = await supabase
     .from("bills")
-    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .update({ status: "paid", paid_at: new Date().toISOString(), amount_paid: bill.amount })
     .eq("id", id)
     .eq("account_id", accountId);
 
@@ -310,7 +318,7 @@ export async function markBillPendingAction(id: string) {
 
   const { error } = await supabase
     .from("bills")
-    .update({ status: "pending", paid_at: null })
+    .update({ status: "pending", paid_at: null, amount_paid: 0 })
     .eq("id", id)
     .eq("account_id", accountId);
 
@@ -318,4 +326,39 @@ export async function markBillPendingAction(id: string) {
   revalidatePath("/dashboard");
   revalidatePath("/bills");
   return { success: true };
+}
+
+export async function payBillAction(id: string, amount: number) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
+
+  const { data: bill, error: fetchError } = await supabase
+    .from("bills")
+    .select("amount, amount_paid")
+    .eq("id", id)
+    .eq("account_id", accountId)
+    .single();
+  if (fetchError || !bill) return { error: fetchError?.message ?? "Bill not found" };
+
+  const paymentAmount = Math.max(0, amount);
+  const newAmountPaid = Math.min(bill.amount, (bill.amount_paid ?? 0) + paymentAmount);
+  const isFullyPaid = newAmountPaid >= bill.amount;
+
+  const { error } = await supabase
+    .from("bills")
+    .update({
+      amount_paid: newAmountPaid,
+      status: isFullyPaid ? "paid" : "pending",
+      paid_at: isFullyPaid ? new Date().toISOString() : null,
+    })
+    .eq("id", id)
+    .eq("account_id", accountId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard");
+  revalidatePath("/bills");
+  return { success: true, fullyPaid: isFullyPaid, remaining: bill.amount - newAmountPaid };
 }
