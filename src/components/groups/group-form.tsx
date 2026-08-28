@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { createGroupAction, updateGroupAction } from "@/app/(dashboard)/groups/actions";
 import { GroupBillsPicker } from "./group-bills-picker";
 import { useDict } from "@/components/language-provider";
+import { GROUP_ICONS } from "@/lib/group-icons";
 import type { Group } from "@/types/database";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 const COLOR_PRESETS = [
   "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
@@ -26,6 +27,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [color, setColor] = useState(group?.color ?? "#4f46e5");
+  const [icon, setIcon] = useState<string | null>(group?.icon ?? null);
   const [isPending, startTransition] = useTransition();
   const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string } | null>(null);
   const isEdit = !!group;
@@ -36,6 +38,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
     setOpen(o);
     if (!o) {
       setColor(group?.color ?? "#4f46e5");
+      setIcon(group?.icon ?? null);
       setCreatedGroup(null);
     }
   }
@@ -43,6 +46,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   async function handleSubmit(formData: FormData) {
     setError(null);
     formData.set("color", color);
+    formData.set("icon", icon ?? "");
     startTransition(async () => {
       if (isEdit) {
         const result = await updateGroupAction(formData);
@@ -113,6 +117,38 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
                 <div className="flex items-center gap-2 mt-1">
                   <div className="w-5 h-5 rounded-md" style={{ backgroundColor: color }} />
                   <span className="text-xs text-[var(--color-muted-foreground)] font-mono">{color}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t.iconLabel}</Label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIcon(null)}
+                    title={t.noIcon}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center border transition-colors"
+                    style={{
+                      borderColor: icon === null ? "var(--color-primary)" : "var(--color-border)",
+                      backgroundColor: icon === null ? "var(--color-primary)" : "transparent",
+                    }}
+                  >
+                    <X className={`w-4 h-4 ${icon === null ? "text-white" : "text-[var(--color-muted-foreground)]"}`} />
+                  </button>
+                  {Object.entries(GROUP_ICONS).map(([key, Icon]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setIcon(key)}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border transition-colors"
+                      style={{
+                        borderColor: icon === key ? color : "var(--color-border)",
+                        backgroundColor: icon === key ? color : "transparent",
+                      }}
+                    >
+                      <Icon className={`w-4 h-4 ${icon === key ? "text-white" : "text-[var(--color-muted-foreground)]"}`} />
+                    </button>
+                  ))}
                 </div>
               </div>
 

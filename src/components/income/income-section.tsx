@@ -30,26 +30,23 @@ export async function IncomeSection({ incomeSources, billsTotal, range }: Income
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Income header row */}
-      <div
-        className="flex items-center justify-between pl-3 pr-4 py-2.5 border-b border-[var(--color-border)]"
-        style={{ borderLeft: "4px solid #10b981" }}
-      >
+      <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+          <TrendingUp className="w-4 h-4 text-white" />
+          <span className="text-xs font-bold text-white uppercase tracking-wider">
             {t.incomeSectionTitle}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+          <span className="text-sm font-bold text-white tabular-nums">
             +{formatCurrency(incomeTotal)}
           </span>
           <Link
             href="/income"
-            className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center hover:bg-emerald-500/40 transition-colors"
+            className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
             title={t.addIncome}
           >
-            <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Plus className="w-3.5 h-3.5 text-white" />
           </Link>
         </div>
       </div>

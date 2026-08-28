@@ -132,6 +132,7 @@ export interface Group {
   user_id: string | null;
   name: string;
   color: string;
+  icon: string | null;
   created_at: string;
 }
 

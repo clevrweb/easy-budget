@@ -219,6 +219,8 @@ export const es: Dict = {
     editGroup: "Editar grupo",
     nameLabel: "Nombre",
     colorLabel: "Color",
+    iconLabel: "Ícono",
+    noIcon: "Sin ícono",
     noGroups: "Sin grupos",
     noGroupsDesc: "Los grupos te permiten agrupar facturas — p.ej. Hogar, Negocio.",
     saving: "Guardando...",

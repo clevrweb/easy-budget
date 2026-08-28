@@ -6,6 +6,7 @@ import { GroupForm } from "./group-form";
 import { GroupBillsPicker } from "./group-bills-picker";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useDict } from "@/components/language-provider";
+import { getGroupIcon } from "@/lib/group-icons";
 import type { Group } from "@/types/database";
 import { Pencil, Trash2, Users, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function GroupCard({ group, billCount }: GroupCardProps) {
   }
 
   const billWord = billCount === 1 ? dict.groups.billSingular : dict.groups.billPlural;
+  const Icon = getGroupIcon(group.icon) ?? Users;
 
   return (
     <div className={`bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 flex flex-col gap-4 hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
@@ -34,7 +36,7 @@ export function GroupCard({ group, billCount }: GroupCardProps) {
           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: group.color + "22", border: `2px solid ${group.color}` }}
         >
-          <Users className="w-4 h-4" style={{ color: group.color }} />
+          <Icon className="w-4 h-4" style={{ color: group.color }} />
         </div>
         <div className="min-w-0">
           <p className="font-semibold text-sm text-[var(--color-foreground)] truncate">{group.name}</p>

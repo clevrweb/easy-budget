@@ -218,6 +218,8 @@ export interface Dict {
     editGroup: string;
     nameLabel: string;
     colorLabel: string;
+    iconLabel: string;
+    noIcon: string;
     noGroups: string;
     noGroupsDesc: string;
     saving: string;

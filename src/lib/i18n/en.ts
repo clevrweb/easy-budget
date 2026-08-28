@@ -219,6 +219,8 @@ export const en: Dict = {
     editGroup: "Edit Group",
     nameLabel: "Name",
     colorLabel: "Color",
+    iconLabel: "Icon",
+    noIcon: "No icon",
     noGroups: "No groups yet",
     noGroupsDesc: "Groups let you bundle bills together — e.g. Household, Business.",
     saving: "Saving...",
