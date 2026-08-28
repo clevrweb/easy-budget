@@ -43,7 +43,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group" 
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Bills header row */}
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500">
         <Receipt className="w-4 h-4 text-white" />
         <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.title}</span>
       </div>
