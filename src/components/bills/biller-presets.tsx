@@ -16,6 +16,29 @@ function avatarColor(name: string) {
   return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 }
 
+// Clearbit's logo/autocomplete APIs are dead (logo.clearbit.com no longer
+// resolves; autocomplete.clearbit.com returns null logos for every query).
+// unavatar.io is a free drop-in replacement: it proxies favicons/logos from
+// several sources and, with fallback=false, 404s cleanly when nothing is
+// found so the existing <img onError> letter-avatar fallback still works.
+function logoUrlForDomain(domain: string): string {
+  return `https://unavatar.io/${domain}?fallback=false`;
+}
+
+function guessDomain(name: string): string {
+  return `${name.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "")}.com`;
+}
+
+async function logoUrlIfExists(domain: string): Promise<string | null> {
+  const url = logoUrlForDomain(domain);
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    return res.ok ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 interface Biller {
   name: string;
   domain: string;
@@ -87,7 +110,7 @@ interface BillerChipProps {
 }
 
 function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
-  const logoUrl = `https://logo.clearbit.com/${biller.domain}`;
+  const logoUrl = logoUrlForDomain(biller.domain);
   const color   = avatarColor(biller.name);
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -128,16 +151,9 @@ function BillerChip({ biller, selected, onSelect }: BillerChipProps) {
 }
 
 export async function fetchBillerLogo(name: string): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(name)}`
-    );
-    const data = await res.json() as { name: string; domain: string; logo: string }[];
-    if (!data?.[0]?.logo) return null;
-    return data[0].logo;
-  } catch {
-    return null;
-  }
+  const domain = guessDomain(name);
+  if (domain === ".com") return null;
+  return logoUrlIfExists(domain);
 }
 
 interface BillerPresetsProps {
@@ -151,8 +167,7 @@ export function BillerPresets({ selectedName, onSelect }: BillerPresetsProps) {
   const current = CATEGORIES[activeTab];
 
   function handleSelect(biller: Biller) {
-    const logoUrl = `https://logo.clearbit.com/${biller.domain}`;
-    onSelect(biller.name, logoUrl);
+    onSelect(biller.name, logoUrlForDomain(biller.domain));
   }
 
   return (
@@ -217,18 +232,16 @@ export function CompanyLogoSearch({ logoUrl, onSelect }: CompanyLogoSearchProps)
   useEffect(() => {
     if (query.length < 2) { setResults([]); setShowDrop(false); return; }
     const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(query)}`
-        );
-        const data = await res.json() as { name: string; domain: string; logo: string }[];
-        const next = data.slice(0, 7).map(({ name, logo }) => ({ name, logo }));
-        setResults(next);
-        setShowDrop(next.length > 0);
-      } catch {
+      const domain = guessDomain(query);
+      const url = domain === ".com" ? null : await logoUrlIfExists(domain);
+      if (url) {
+        setResults([{ name: query, logo: url }]);
+        setShowDrop(true);
+      } else {
         setResults([]);
+        setShowDrop(false);
       }
-    }, 300);
+    }, 400);
     return () => clearTimeout(timer);
   }, [query]);
 
