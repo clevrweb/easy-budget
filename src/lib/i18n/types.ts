@@ -114,10 +114,6 @@ export interface Dict {
     confirmDelete: string;
     editBill: string;
     saveChanges: string;
-    billerCategoryStreaming: string;
-    billerCategoryFinance: string;
-    billerCategoryUtilities: string;
-    billerCategoryOther: string;
     partial: string;
     recordPayment: string;
     payDialogTitle: string;

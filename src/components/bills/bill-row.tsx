@@ -133,7 +133,8 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
     });
   }
 
-  const color = avatarColor(bill.name);
+  const avatarSource = bill.creditor || bill.name;
+  const color = avatarColor(avatarSource);
 
   return (
     <div
@@ -156,11 +157,11 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
             onError={(e) => {
               e.currentTarget.style.display = "none";
               e.currentTarget.parentElement!.style.backgroundColor = color;
-              e.currentTarget.parentElement!.textContent = bill.name[0].toUpperCase();
+              e.currentTarget.parentElement!.textContent = avatarSource[0].toUpperCase();
             }}
           />
         ) : (
-          bill.name[0].toUpperCase()
+          avatarSource[0].toUpperCase()
         )}
       </div>
 

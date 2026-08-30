@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets, fetchBillerLogo } from "./biller-presets";
+import { fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
@@ -34,20 +34,13 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const [billName, setBillName]   = useState("");
   const [creditor, setCreditor]   = useState("");
   const [logoUrl, setLogoUrl]     = useState<string | null>(null);
-  const logoSetByPreset           = useRef(false);
-
-  function handlePresetSelect(name: string, url: string | null) {
-    logoSetByPreset.current = true;
-    setBillName(name);
-    setLogoUrl(url);
-  }
 
   useEffect(() => {
     const lookupName = creditor.trim() || billName;
-    if (lookupName.length < 3 || logoSetByPreset.current) return;
+    if (lookupName.length < 3) { setLogoUrl(null); return; }
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(lookupName);
-      if (url) setLogoUrl(url);
+      setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
   }, [billName, creditor]);
@@ -82,12 +75,11 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="space-y-1.5">
         <Label htmlFor="name">{t.nameLabel}</Label>
-        <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
         <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
         <Input
           id="name" name="name" placeholder={t.namePlaceholder} required autoFocus
           value={billName}
-          onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+          onChange={(e) => setBillName(e.target.value)}
         />
       </div>
 
@@ -96,7 +88,7 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
         <Input
           id="creditor" name="creditor" placeholder={t.creditorPlaceholder}
           value={creditor}
-          onChange={(e) => { logoSetByPreset.current = false; setCreditor(e.target.value); }}
+          onChange={(e) => setCreditor(e.target.value)}
         />
       </div>
 

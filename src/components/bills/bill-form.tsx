@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets, fetchBillerLogo } from "./biller-presets";
+import { fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
@@ -50,20 +50,16 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const [billName, setBillName]   = useState(bill?.name ?? "");
   const [creditor, setCreditor]   = useState(bill?.creditor ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill?.logo_url ?? null);
-  const logoSetByPreset           = useRef(false);
+  // Skips the very first auto-fetch run after the dialog (re)opens, so simply
+  // viewing an existing bill doesn't overwrite its already-confirmed logo.
+  const skipAutoFetch             = useRef(true);
   const [dueDate, setDueDate]     = useState(bill?.due_date ?? todayStr);
   const [dueDay, setDueDay]       = useState(now.getDate());
-
-  function handlePresetSelect(name: string, url: string | null) {
-    logoSetByPreset.current = true;
-    setBillName(name);
-    setLogoUrl(url);
-  }
 
   // Reset all controlled state when dialog opens so edits always show fresh bill data
   useEffect(() => {
     if (!open) return;
-    logoSetByPreset.current = true;
+    skipAutoFetch.current = true;
     setBillName(bill?.name ?? "");
     setCreditor(bill?.creditor ?? "");
     setLogoUrl(bill?.logo_url ?? null);
@@ -73,11 +69,12 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   }, [open]);
 
   useEffect(() => {
+    if (skipAutoFetch.current) { skipAutoFetch.current = false; return; }
     const lookupName = creditor.trim() || billName;
-    if (lookupName.length < 3 || logoSetByPreset.current) return;
+    if (lookupName.length < 3) { setLogoUrl(null); return; }
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(lookupName);
-      if (url) setLogoUrl(url);
+      setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
   }, [billName, creditor]);
@@ -129,12 +126,11 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
           <div className="space-y-1.5">
             <Label htmlFor="bf-name">{t.nameLabel}</Label>
-            <BillerPresets selectedName={billName} onSelect={handlePresetSelect} />
             <input type="hidden" name="logo_url" value={logoUrl ?? ""} />
             <Input
               id="bf-name" name="name" placeholder={t.namePlaceholder} required
               value={billName}
-              onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+              onChange={(e) => setBillName(e.target.value)}
             />
           </div>
 
@@ -143,7 +139,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             <Input
               id="bf-creditor" name="creditor" placeholder={t.creditorPlaceholder}
               value={creditor}
-              onChange={(e) => { logoSetByPreset.current = false; setCreditor(e.target.value); }}
+              onChange={(e) => setCreditor(e.target.value)}
             />
           </div>
 

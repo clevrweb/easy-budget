@@ -46,7 +46,10 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const [billName, setBillName]   = useState(bill.name);
   const [creditor, setCreditor]   = useState(bill.creditor ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill.logo_url ?? null);
-  const logoSetByPreset           = useRef(false);
+  // Skips the next auto-fetch run right after a reset (dialog open, or the
+  // template finishing its async load), so restoring known values doesn't
+  // overwrite an already-confirmed logo.
+  const skipAutoFetch             = useRef(false);
   const [frequency, setFrequency] = useState("monthly");
   const [dueDay, setDueDay]       = useState(defaultDueDay);
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -58,7 +61,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   // Reset to bill's current values each time the dialog opens
   useEffect(() => {
     if (!open) return;
-    logoSetByPreset.current = true;
+    skipAutoFetch.current = true;
     setBillName(bill.name);
     setCreditor(bill.creditor ?? "");
     setLogoUrl(bill.logo_url ?? null);
@@ -73,6 +76,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   useEffect(() => {
     if (!open || !bill.recurring_template_id) return;
     setLoading(true);
+    skipAutoFetch.current = true;
     getRecurringTemplateAction(bill.recurring_template_id).then((result) => {
       if (result?.template) {
         setFrequency(result.template.frequency);
@@ -85,11 +89,12 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   }, [open, bill.recurring_template_id]);
 
   useEffect(() => {
+    if (skipAutoFetch.current) { skipAutoFetch.current = false; return; }
     const lookupName = creditor.trim() || billName;
-    if (lookupName.length < 3 || logoSetByPreset.current) return;
+    if (lookupName.length < 3) { setLogoUrl(null); return; }
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(lookupName);
-      if (url) setLogoUrl(url);
+      setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
   }, [billName, creditor]);
@@ -150,7 +155,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             <Input
               id="rs-name" name="name" placeholder={tb.namePlaceholder} required
               value={billName}
-              onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
+              onChange={(e) => setBillName(e.target.value)}
             />
           </div>
 
@@ -159,7 +164,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             <Input
               id="rs-creditor" name="creditor" placeholder={tb.creditorPlaceholder}
               value={creditor}
-              onChange={(e) => { logoSetByPreset.current = false; setCreditor(e.target.value); }}
+              onChange={(e) => setCreditor(e.target.value)}
             />
           </div>
 
