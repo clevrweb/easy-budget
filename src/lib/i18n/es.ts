@@ -120,7 +120,6 @@ export const es: Dict = {
     billerCategoryFinance: "Finanzas",
     billerCategoryUtilities: "Servicios",
     billerCategoryOther: "Otros",
-    searchCompanyPlaceholder: "Buscar empresa para el logo…",
     partial: "Parcial",
     recordPayment: "Registrar Pago...",
     payDialogTitle: "Registrar un pago",

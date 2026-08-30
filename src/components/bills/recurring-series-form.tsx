@@ -12,7 +12,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
-import { CompanyLogoSearch, fetchBillerLogo } from "./biller-presets";
+import { fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import type { EndsType } from "./recurring-section";
@@ -151,10 +151,6 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
               id="rs-name" name="name" placeholder={tb.namePlaceholder} required
               value={billName}
               onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
-            />
-            <CompanyLogoSearch
-              logoUrl={logoUrl}
-              onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
             />
           </div>
 

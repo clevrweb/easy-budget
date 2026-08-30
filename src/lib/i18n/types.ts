@@ -118,7 +118,6 @@ export interface Dict {
     billerCategoryFinance: string;
     billerCategoryUtilities: string;
     billerCategoryOther: string;
-    searchCompanyPlaceholder: string;
     partial: string;
     recordPayment: string;
     payDialogTitle: string;

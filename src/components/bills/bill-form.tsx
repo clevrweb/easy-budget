@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { BillerPresets, CompanyLogoSearch, fetchBillerLogo } from "./biller-presets";
+import { BillerPresets, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
@@ -135,10 +135,6 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
               id="bf-name" name="name" placeholder={t.namePlaceholder} required
               value={billName}
               onChange={(e) => { logoSetByPreset.current = false; setBillName(e.target.value); }}
-            />
-            <CompanyLogoSearch
-              logoUrl={logoUrl}
-              onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
             />
           </div>
 
