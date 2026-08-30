@@ -76,6 +76,11 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
         <p className={`font-medium text-sm truncate ${template.is_active ? "text-[var(--color-foreground)]" : "text-[var(--color-muted-foreground)] line-through"}`}>
           {template.name}
         </p>
+        {template.creditor && (
+          <p className="text-xs text-[var(--color-muted-foreground)] truncate">
+            {template.creditor}
+          </p>
+        )}
         <p className="text-xs text-[var(--color-muted-foreground)]">
           {frequencyLabel(t, template.frequency, template.due_day)}{dueSuffix}
         </p>

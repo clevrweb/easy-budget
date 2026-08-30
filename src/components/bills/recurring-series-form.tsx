@@ -44,6 +44,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
   const defaultDueDay = new Date(bill.due_date + "T00:00:00").getDate();
   const [billName, setBillName]   = useState(bill.name);
+  const [creditor, setCreditor]   = useState(bill.creditor ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill.logo_url ?? null);
   const logoSetByPreset           = useRef(false);
   const [frequency, setFrequency] = useState("monthly");
@@ -59,6 +60,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
     if (!open) return;
     logoSetByPreset.current = true;
     setBillName(bill.name);
+    setCreditor(bill.creditor ?? "");
     setLogoUrl(bill.logo_url ?? null);
     setStartDate(bill.due_date);
     setEndsType("never");
@@ -76,19 +78,21 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         setFrequency(result.template.frequency);
         setDueDay(result.template.due_day);
         setPaymentMethod(result.template.payment_method ?? "");
+        setCreditor(result.template.creditor ?? "");
       }
       setLoading(false);
     });
   }, [open, bill.recurring_template_id]);
 
   useEffect(() => {
-    if (billName.length < 3 || logoSetByPreset.current) return;
+    const lookupName = creditor.trim() || billName;
+    if (lookupName.length < 3 || logoSetByPreset.current) return;
     const timer = setTimeout(async () => {
-      const url = await fetchBillerLogo(billName);
+      const url = await fetchBillerLogo(lookupName);
       if (url) setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
-  }, [billName]);
+  }, [billName, creditor]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -151,6 +155,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             <CompanyLogoSearch
               logoUrl={logoUrl}
               onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="rs-creditor">{tb.creditorLabel}</Label>
+            <Input
+              id="rs-creditor" name="creditor" placeholder={tb.creditorPlaceholder}
+              value={creditor}
+              onChange={(e) => { logoSetByPreset.current = false; setCreditor(e.target.value); }}
             />
           </div>
 

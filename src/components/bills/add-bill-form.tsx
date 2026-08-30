@@ -32,6 +32,7 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const todayStr = today.toISOString().split("T")[0];
 
   const [billName, setBillName]   = useState("");
+  const [creditor, setCreditor]   = useState("");
   const [logoUrl, setLogoUrl]     = useState<string | null>(null);
   const logoSetByPreset           = useRef(false);
 
@@ -42,13 +43,14 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   }
 
   useEffect(() => {
-    if (billName.length < 3 || logoSetByPreset.current) return;
+    const lookupName = creditor.trim() || billName;
+    if (lookupName.length < 3 || logoSetByPreset.current) return;
     const timer = setTimeout(async () => {
-      const url = await fetchBillerLogo(billName);
+      const url = await fetchBillerLogo(lookupName);
       if (url) setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
-  }, [billName]);
+  }, [billName, creditor]);
 
   // Recurring state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -90,6 +92,15 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
         <CompanyLogoSearch
           logoUrl={logoUrl}
           onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="creditor">{t.creditorLabel}</Label>
+        <Input
+          id="creditor" name="creditor" placeholder={t.creditorPlaceholder}
+          value={creditor}
+          onChange={(e) => { logoSetByPreset.current = false; setCreditor(e.target.value); }}
         />
       </div>
 

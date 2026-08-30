@@ -91,6 +91,16 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
           </div>
 
           <div className="space-y-1.5">
+            <Label htmlFor="creditor">{tb.creditorLabel}</Label>
+            <Input
+              id="creditor"
+              name="creditor"
+              placeholder={tb.creditorPlaceholder}
+              defaultValue={template?.creditor ?? ""}
+            />
+          </div>
+
+          <div className="space-y-1.5">
             <Label htmlFor="amount">{tb.amountLabel}</Label>
             <Input
               id="amount"

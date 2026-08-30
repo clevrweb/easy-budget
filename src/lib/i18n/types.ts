@@ -75,6 +75,8 @@ export interface Dict {
     title: string;
     nameLabel: string;
     namePlaceholder: string;
+    creditorLabel: string;
+    creditorPlaceholder: string;
     amountLabel: string;
     dueDateLabel: string;
     groupLabel: string;

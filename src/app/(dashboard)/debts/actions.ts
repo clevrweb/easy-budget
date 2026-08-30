@@ -127,6 +127,7 @@ export async function createRecurringBillForDebtAction(debtId: string, dueDay: n
       account_id: accountId,
       user_id: user.id,
       name: debt.name,
+      creditor: null,
       amount: debt.minimum_payment,
       due_day: dueDay,
       frequency: "monthly",

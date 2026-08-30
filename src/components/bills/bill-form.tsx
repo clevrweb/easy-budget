@@ -48,6 +48,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const todayStr = now.toISOString().split("T")[0];
 
   const [billName, setBillName]   = useState(bill?.name ?? "");
+  const [creditor, setCreditor]   = useState(bill?.creditor ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill?.logo_url ?? null);
   const logoSetByPreset           = useRef(false);
   const [dueDate, setDueDate]     = useState(bill?.due_date ?? todayStr);
@@ -64,6 +65,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
     if (!open) return;
     logoSetByPreset.current = true;
     setBillName(bill?.name ?? "");
+    setCreditor(bill?.creditor ?? "");
     setLogoUrl(bill?.logo_url ?? null);
     setDueDate(bill?.due_date ?? todayStr);
     setError(null);
@@ -71,13 +73,14 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   }, [open]);
 
   useEffect(() => {
-    if (billName.length < 3 || logoSetByPreset.current) return;
+    const lookupName = creditor.trim() || billName;
+    if (lookupName.length < 3 || logoSetByPreset.current) return;
     const timer = setTimeout(async () => {
-      const url = await fetchBillerLogo(billName);
+      const url = await fetchBillerLogo(lookupName);
       if (url) setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
-  }, [billName]);
+  }, [billName, creditor]);
 
   // Recurring state (only for create)
   const [isRecurring, setIsRecurring] = useState(false);
@@ -136,6 +139,15 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
             <CompanyLogoSearch
               logoUrl={logoUrl}
               onSelect={(url) => { logoSetByPreset.current = url !== null; setLogoUrl(url); }}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="bf-creditor">{t.creditorLabel}</Label>
+            <Input
+              id="bf-creditor" name="creditor" placeholder={t.creditorPlaceholder}
+              value={creditor}
+              onChange={(e) => { logoSetByPreset.current = false; setCreditor(e.target.value); }}
             />
           </div>
 

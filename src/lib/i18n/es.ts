@@ -77,6 +77,8 @@ export const es: Dict = {
     title: "Facturas",
     nameLabel: "Nombre de la factura",
     namePlaceholder: "p.ej., Electricidad",
+    creditorLabel: "Acreedor (opcional)",
+    creditorPlaceholder: "p.ej., State Farm",
     amountLabel: "Monto (USD)",
     dueDateLabel: "Fecha de vencimiento",
     groupLabel: "Grupo",

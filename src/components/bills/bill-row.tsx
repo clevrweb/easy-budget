@@ -169,6 +169,11 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         <p className="font-semibold text-sm text-[var(--color-foreground)] truncate leading-tight">
           {bill.name}
         </p>
+        {bill.creditor && (
+          <p className="text-xs text-[var(--color-muted-foreground)] truncate leading-tight">
+            {bill.creditor}
+          </p>
+        )}
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-xs text-[var(--color-muted-foreground)] shrink-0">{dateStr}</span>
           <span

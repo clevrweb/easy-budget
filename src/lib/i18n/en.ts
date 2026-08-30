@@ -77,6 +77,8 @@ export const en: Dict = {
     title: "Bills",
     nameLabel: "Bill Name",
     namePlaceholder: "e.g., Electricity",
+    creditorLabel: "Creditor (optional)",
+    creditorPlaceholder: "e.g., State Farm",
     amountLabel: "Amount (USD)",
     dueDateLabel: "Due Date",
     groupLabel: "Group",
