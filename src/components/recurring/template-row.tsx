@@ -81,8 +81,16 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
             {template.creditor}
           </p>
         )}
-        <p className="text-xs text-[var(--color-muted-foreground)]">
-          {frequencyLabel(t, template.frequency, template.due_day)}{dueSuffix}
+        <p className="text-xs text-[var(--color-muted-foreground)] flex items-center gap-1.5">
+          <span>{frequencyLabel(t, template.frequency, template.due_day)}{dueSuffix}</span>
+          {template.is_autopay && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-primary) 15%, transparent)", color: "var(--color-primary)" }}
+            >
+              {dict.bills.autopayLabel}
+            </span>
+          )}
         </p>
       </div>
 

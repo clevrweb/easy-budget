@@ -83,6 +83,9 @@ export interface Dict {
     noGroup: string;
     statusLabel: string;
     paymentMethodLabel: string;
+    autopayLabel: string;
+    autopayHint: string;
+    autopayRequiresPaymentMethod: string;
     categoryLabel: string;
     noCategory: string;
     notesLabel: string;

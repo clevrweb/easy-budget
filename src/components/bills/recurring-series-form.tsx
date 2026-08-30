@@ -53,6 +53,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
   const [frequency, setFrequency] = useState("monthly");
   const [dueDay, setDueDay]       = useState(defaultDueDay);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [isAutopay, setIsAutopay] = useState(bill.is_autopay);
   const [startDate, setStartDate] = useState(bill.due_date);
   const [endsType, setEndsType]   = useState<EndsType>("never");
   const [endDate, setEndDate]     = useState("");
@@ -65,6 +66,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
     setBillName(bill.name);
     setCreditor(bill.creditor ?? "");
     setLogoUrl(bill.logo_url ?? null);
+    setIsAutopay(bill.is_autopay);
     setStartDate(bill.due_date);
     setEndsType("never");
     setEndDate("");
@@ -83,6 +85,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         setDueDay(result.template.due_day);
         setPaymentMethod(result.template.payment_method ?? "");
         setCreditor(result.template.creditor ?? "");
+        setIsAutopay(result.template.is_autopay);
       }
       setLoading(false);
     });
@@ -101,6 +104,10 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    if (formData.get("is_autopay") === "on" && !paymentMethod.trim()) {
+      setError(tb.autopayRequiresPaymentMethod);
+      return;
+    }
     startTransition(async () => {
       const result = await updateRecurringSeriesAction(formData);
       if (result?.error) setError(result.error);
@@ -174,13 +181,28 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="rs-payment">{tb.paymentMethodLabel}</Label>
+            <Label htmlFor="rs-payment">
+              {tb.paymentMethodLabel}{isAutopay ? " *" : ""}
+            </Label>
             <Input
               id="rs-payment" name="payment_method" placeholder="e.g., Bofa Checking"
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             />
           </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox" id="rs-autopay" name="is_autopay"
+              checked={isAutopay}
+              onChange={(e) => setIsAutopay(e.target.checked)}
+              className="w-4 h-4 rounded accent-[var(--color-primary)]"
+            />
+            <span className="text-sm text-[var(--color-foreground)]">{tb.autopayLabel}</span>
+          </label>
+          {isAutopay && (
+            <p className="text-xs text-[var(--color-muted-foreground)] -mt-2">{tb.autopayHint}</p>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

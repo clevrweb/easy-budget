@@ -183,6 +183,14 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
           >
             {cfg.label}
           </span>
+          {bill.is_autopay && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-primary) 15%, transparent)", color: "var(--color-primary)" }}
+            >
+              {dict.bills.autopayLabel}
+            </span>
+          )}
           {metaLabel && (
             <span className="text-xs text-[var(--color-muted-foreground)] truncate hidden sm:inline">
               · {metaLabel}

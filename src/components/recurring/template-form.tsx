@@ -41,10 +41,16 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
   const [isPending, startTransition] = useTransition();
   const [frequency, setFrequency] = useState<string>(template?.frequency ?? "monthly");
   const [dueDay, setDueDay] = useState(template?.due_day ?? 1);
+  const [isAutopay, setIsAutopay] = useState(template?.is_autopay ?? false);
   const isEdit = !!template;
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    const paymentMethod = (formData.get("payment_method") as string) ?? "";
+    if (formData.get("is_autopay") === "on" && !paymentMethod.trim()) {
+      setError(tb.autopayRequiresPaymentMethod);
+      return;
+    }
     startTransition(async () => {
       const result = isEdit
         ? await updateTemplateAction(formData)
@@ -170,7 +176,9 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="payment_method">{tb.paymentMethodLabel}</Label>
+            <Label htmlFor="payment_method">
+              {tb.paymentMethodLabel}{isAutopay ? " *" : ""}
+            </Label>
             <Input
               id="payment_method"
               name="payment_method"
@@ -178,6 +186,19 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
               defaultValue={template?.payment_method ?? ""}
             />
           </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox" id="template-autopay" name="is_autopay"
+              checked={isAutopay}
+              onChange={(e) => setIsAutopay(e.target.checked)}
+              className="w-4 h-4 rounded accent-[var(--color-primary)]"
+            />
+            <span className="text-sm text-[var(--color-foreground)]">{tb.autopayLabel}</span>
+          </label>
+          {isAutopay && (
+            <p className="text-xs text-[var(--color-muted-foreground)] -mt-2">{tb.autopayHint}</p>
+          )}
 
           {categories.length > 0 && (
             <div className="space-y-1.5">

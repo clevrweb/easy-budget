@@ -55,6 +55,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const skipAutoFetch             = useRef(true);
   const [dueDate, setDueDate]     = useState(bill?.due_date ?? todayStr);
   const [dueDay, setDueDay]       = useState(now.getDate());
+  const [isAutopay, setIsAutopay] = useState(bill?.is_autopay ?? false);
 
   // Reset all controlled state when dialog opens so edits always show fresh bill data
   useEffect(() => {
@@ -64,6 +65,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
     setCreditor(bill?.creditor ?? "");
     setLogoUrl(bill?.logo_url ?? null);
     setDueDate(bill?.due_date ?? todayStr);
+    setIsAutopay(bill?.is_autopay ?? false);
     setError(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -88,6 +90,11 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    const paymentMethod = (formData.get("payment_method") as string) ?? "";
+    if (formData.get("is_autopay") === "on" && !paymentMethod.trim()) {
+      setError(t.autopayRequiresPaymentMethod);
+      return;
+    }
     startTransition(async () => {
       let result;
       if (isEdit)           result = await updateBillAction(formData);
@@ -182,7 +189,9 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="bf-payment">{t.paymentMethodLabel}</Label>
+              <Label htmlFor="bf-payment">
+                {t.paymentMethodLabel}{isAutopay ? " *" : ""}
+              </Label>
               <Input id="bf-payment" name="payment_method" placeholder="e.g., Bofa Checking" defaultValue={bill?.payment_method ?? ""} />
             </div>
             <div className="space-y-1.5">
@@ -195,6 +204,19 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
               />
             </div>
           </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox" id="bf-autopay" name="is_autopay"
+              checked={isAutopay}
+              onChange={(e) => setIsAutopay(e.target.checked)}
+              className="w-4 h-4 rounded accent-[var(--color-primary)]"
+            />
+            <span className="text-sm text-[var(--color-foreground)]">{t.autopayLabel}</span>
+          </label>
+          {isAutopay && (
+            <p className="text-xs text-[var(--color-muted-foreground)] -mt-2">{t.autopayHint}</p>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="bf-notes">{t.notesLabel}</Label>

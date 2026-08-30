@@ -34,6 +34,7 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const [billName, setBillName]   = useState("");
   const [creditor, setCreditor]   = useState("");
   const [logoUrl, setLogoUrl]     = useState<string | null>(null);
+  const [isAutopay, setIsAutopay] = useState(false);
 
   useEffect(() => {
     const lookupName = creditor.trim() || billName;
@@ -56,6 +57,11 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    const paymentMethod = (formData.get("payment_method") as string) ?? "";
+    if (formData.get("is_autopay") === "on" && !paymentMethod.trim()) {
+      setError(t.autopayRequiresPaymentMethod);
+      return;
+    }
     startTransition(async () => {
       const result = isRecurring
         ? await createRecurringBillAction(formData)
@@ -129,7 +135,9 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="payment_method">{t.paymentMethodLabel}</Label>
+          <Label htmlFor="payment_method">
+            {t.paymentMethodLabel}{isAutopay ? " *" : ""}
+          </Label>
           <Input id="payment_method" name="payment_method" placeholder="e.g., Bofa Checking" />
         </div>
         <div className="space-y-1.5">
@@ -141,6 +149,19 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
           />
         </div>
       </div>
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox" id="is_autopay" name="is_autopay"
+          checked={isAutopay}
+          onChange={(e) => setIsAutopay(e.target.checked)}
+          className="w-4 h-4 rounded accent-[var(--color-primary)]"
+        />
+        <span className="text-sm text-[var(--color-foreground)]">{t.autopayLabel}</span>
+      </label>
+      {isAutopay && (
+        <p className="text-xs text-[var(--color-muted-foreground)] -mt-2">{t.autopayHint}</p>
+      )}
 
       <div className="space-y-1.5">
         <Label htmlFor="notes">{t.notesLabel}</Label>

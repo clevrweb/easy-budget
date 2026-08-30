@@ -12,6 +12,10 @@ export async function createBillAction(formData: FormData) {
   if (!accountId) return { error: "No account selected" };
 
   const status = (formData.get("status") as string) || "pending";
+  const paymentMethod = (formData.get("payment_method") as string) || null;
+  const isAutopay = formData.get("is_autopay") === "on";
+  if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
+
   const { error } = await supabase.from("bills").insert({
     account_id: accountId,
     user_id: user.id,
@@ -20,7 +24,8 @@ export async function createBillAction(formData: FormData) {
     amount: parseFloat(formData.get("amount") as string),
     due_date: formData.get("due_date") as string,
     status,
-    payment_method: (formData.get("payment_method") as string) || null,
+    payment_method: paymentMethod,
+    is_autopay: isAutopay,
     category_id: (formData.get("category_id") as string) || null,
     group_id: (formData.get("group_id") as string) || null,
     notes: (formData.get("notes") as string) || null,
@@ -45,6 +50,10 @@ export async function updateBillAction(formData: FormData) {
   const id = formData.get("id") as string;
 
   const status = (formData.get("status") as string) || "pending";
+  const paymentMethod = (formData.get("payment_method") as string) || null;
+  const isAutopay = formData.get("is_autopay") === "on";
+  if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
+
   const { error } = await supabase
     .from("bills")
     .update({
@@ -53,7 +62,8 @@ export async function updateBillAction(formData: FormData) {
       amount: parseFloat(formData.get("amount") as string),
       due_date: formData.get("due_date") as string,
       status,
-      payment_method: (formData.get("payment_method") as string) || null,
+      payment_method: paymentMethod,
+      is_autopay: isAutopay,
       category_id: (formData.get("category_id") as string) || null,
       group_id: (formData.get("group_id") as string) || null,
       notes: (formData.get("notes") as string) || null,
@@ -90,11 +100,13 @@ export async function createRecurringBillAction(formData: FormData) {
   const groupId        = (formData.get("group_id") as string) || null;
   const paymentMethod  = (formData.get("payment_method") as string) || null;
   const notes          = (formData.get("notes") as string) || null;
+  const isAutopay      = formData.get("is_autopay") === "on";
+  if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
 
   // Create the template
   const { data: template, error: templateError } = await supabase
     .from("recurring_templates")
-    .insert({ account_id: accountId, user_id: user.id, name, creditor, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_active: true })
+    .insert({ account_id: accountId, user_id: user.id, name, creditor, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_autopay: isAutopay, is_active: true })
     .select()
     .single();
 
@@ -129,7 +141,7 @@ export async function createRecurringBillAction(formData: FormData) {
     bills.push({
       account_id: accountId, user_id: user.id, name, creditor, amount,
       due_date: billDate, status: "pending",
-      payment_method: paymentMethod, category_id: categoryId,
+      payment_method: paymentMethod, is_autopay: isAutopay, category_id: categoryId,
       group_id: groupId, notes, is_recurring: true,
       recurring_template_id: template.id,
     });
@@ -184,11 +196,13 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   const endsType    = (formData.get("ends_type") as string) || "never";
   const endDate     = (formData.get("end_date") as string) || null;
   const endCount    = parseInt(formData.get("end_count") as string) || null;
+  const isAutopay   = formData.get("is_autopay") === "on";
+  if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
 
   // Update the template
   const { error: tplError } = await supabase
     .from("recurring_templates")
-    .update({ name, creditor, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod })
+    .update({ name, creditor, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod, is_autopay: isAutopay })
     .eq("id", templateId)
     .eq("account_id", accountId);
 
@@ -235,7 +249,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
       account_id: accountId, user_id: user.id, name, creditor, amount,
       due_date: billDate, status: "pending",
       category_id: categoryId, group_id: groupId,
-      logo_url: logoUrl, payment_method: paymentMethod,
+      logo_url: logoUrl, payment_method: paymentMethod, is_autopay: isAutopay,
       is_recurring: true, recurring_template_id: templateId,
     });
   }

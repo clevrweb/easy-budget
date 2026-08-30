@@ -134,6 +134,7 @@ export async function createRecurringBillForDebtAction(debtId: string, dueDay: n
       category_id: null,
       group_id: null,
       payment_method: null,
+      is_autopay: false,
       is_active: true,
     })
     .select("id")

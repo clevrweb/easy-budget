@@ -12,6 +12,10 @@ export async function createTemplateAction(formData: FormData) {
   const accountId = await getActiveAccountId(supabase, user.id);
   if (!accountId) return { error: "No account selected" };
 
+  const paymentMethod = (formData.get("payment_method") as string) || null;
+  const isAutopay = formData.get("is_autopay") === "on";
+  if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
+
   const { error } = await supabase.from("recurring_templates").insert({
     account_id: accountId,
     user_id: user.id,
@@ -22,7 +26,8 @@ export async function createTemplateAction(formData: FormData) {
     frequency: (formData.get("frequency") as string) || "monthly",
     category_id: (formData.get("category_id") as string) || null,
     group_id: (formData.get("group_id") as string) || null,
-    payment_method: (formData.get("payment_method") as string) || null,
+    payment_method: paymentMethod,
+    is_autopay: isAutopay,
     is_active: true,
   });
 
@@ -39,6 +44,9 @@ export async function updateTemplateAction(formData: FormData) {
   if (!accountId) return { error: "No account selected" };
 
   const id = formData.get("id") as string;
+  const paymentMethod = (formData.get("payment_method") as string) || null;
+  const isAutopay = formData.get("is_autopay") === "on";
+  if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
 
   const { error } = await supabase
     .from("recurring_templates")
@@ -50,7 +58,8 @@ export async function updateTemplateAction(formData: FormData) {
       frequency: formData.get("frequency") as string,
       category_id: (formData.get("category_id") as string) || null,
       group_id: (formData.get("group_id") as string) || null,
-      payment_method: (formData.get("payment_method") as string) || null,
+      payment_method: paymentMethod,
+      is_autopay: isAutopay,
     })
     .eq("id", id)
     .eq("account_id", accountId);
@@ -149,6 +158,7 @@ export async function generateBillsForMonthAction(month: string) {
         due_date,
         status: "pending" as const,
         payment_method: t.payment_method,
+        is_autopay: t.is_autopay,
         is_recurring: true,
         notes: null,
         paid_at: null,

@@ -105,6 +105,7 @@ export interface Bill {
   due_date: string;
   status: BillStatus;
   payment_method: string | null;
+  is_autopay: boolean;
   notes: string | null;
   logo_url: string | null;
   is_recurring: boolean;
@@ -125,6 +126,7 @@ export interface RecurringTemplate {
   due_day: number;
   frequency: RecurringFrequency;
   payment_method: string | null;
+  is_autopay: boolean;
   is_active: boolean;
   created_at: string;
 }
