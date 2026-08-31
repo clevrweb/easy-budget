@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { fetchBillerLogo } from "./biller-presets";
+import { BillerLogoPreview, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction } from "@/app/(dashboard)/bills/actions";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
 import type { Category, Group } from "@/types/database";
@@ -91,11 +91,15 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
 
       <div className="space-y-1.5">
         <Label htmlFor="biller">{t.billerLabel}</Label>
-        <Input
-          id="biller" name="biller" placeholder={t.billerPlaceholder}
-          value={biller}
-          onChange={(e) => setBiller(e.target.value)}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            id="biller" name="biller" placeholder={t.billerPlaceholder}
+            value={biller}
+            onChange={(e) => setBiller(e.target.value)}
+            className="flex-1"
+          />
+          <BillerLogoPreview logoUrl={logoUrl} fallbackName={biller.trim() || billName} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

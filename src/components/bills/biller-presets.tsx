@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 // Logo lookup history, in order of what was tried and why it was dropped:
 // - Clearbit's logo/autocomplete APIs are dead (logo.clearbit.com no longer
 //   resolves; autocomplete.clearbit.com returns null logos for every query).
@@ -34,4 +38,52 @@ export function fetchBillerLogo(name: string): string | null {
   const domain = guessDomain(name);
   if (domain === ".com") return null;
   return logoUrlForDomain(domain);
+}
+
+const AVATAR_COLORS = [
+  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
+  "#ea580c", "#d97706", "#16a34a", "#0891b2",
+  "#0284c7", "#6d28d9", "#be185d", "#0f766e",
+];
+
+function avatarColor(name: string) {
+  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+}
+
+interface BillerLogoPreviewProps {
+  logoUrl: string | null;
+  fallbackName: string;
+}
+
+// Live preview shown next to the Biller field as the user types, so they see
+// the logo (or letter fallback) before saving, matching what bill-row.tsx
+// will render afterward.
+export function BillerLogoPreview({ logoUrl, fallbackName }: BillerLogoPreviewProps) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => { setImgFailed(false); }, [logoUrl]);
+
+  if (!fallbackName) return null;
+
+  const letter = fallbackName[0].toUpperCase();
+  const color = avatarColor(fallbackName);
+  const showImg = logoUrl && !imgFailed;
+
+  return (
+    <div
+      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden select-none"
+      style={{ backgroundColor: showImg ? "transparent" : color }}
+    >
+      {showImg ? (
+        <img
+          src={logoUrl}
+          alt=""
+          className="w-10 h-10 object-contain rounded-full"
+          onError={() => setImgFailed(true)}
+        />
+      ) : (
+        letter
+      )}
+    </div>
+  );
 }

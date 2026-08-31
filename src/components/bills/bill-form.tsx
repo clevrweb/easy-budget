@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { RecurringSection } from "./recurring-section";
 import type { EndsType } from "./recurring-section";
-import { fetchBillerLogo } from "./biller-presets";
+import { BillerLogoPreview, fetchBillerLogo } from "./biller-presets";
 import { createBillAction, createRecurringBillAction, updateBillAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import { Plus } from "lucide-react";
@@ -143,11 +143,15 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
           <div className="space-y-1.5">
             <Label htmlFor="bf-biller">{t.billerLabel}</Label>
-            <Input
-              id="bf-biller" name="biller" placeholder={t.billerPlaceholder}
-              value={biller}
-              onChange={(e) => setBiller(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="bf-biller" name="biller" placeholder={t.billerPlaceholder}
+                value={biller}
+                onChange={(e) => setBiller(e.target.value)}
+                className="flex-1"
+              />
+              <BillerLogoPreview logoUrl={logoUrl} fallbackName={biller.trim() || billName} />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

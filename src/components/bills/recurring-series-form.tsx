@@ -12,7 +12,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
-import { fetchBillerLogo } from "./biller-presets";
+import { BillerLogoPreview, fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
 import type { EndsType } from "./recurring-section";
@@ -168,11 +168,15 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
           <div className="space-y-1.5">
             <Label htmlFor="rs-biller">{tb.billerLabel}</Label>
-            <Input
-              id="rs-biller" name="biller" placeholder={tb.billerPlaceholder}
-              value={biller}
-              onChange={(e) => setBiller(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="rs-biller" name="biller" placeholder={tb.billerPlaceholder}
+                value={biller}
+                onChange={(e) => setBiller(e.target.value)}
+                className="flex-1"
+              />
+              <BillerLogoPreview logoUrl={logoUrl} fallbackName={biller.trim() || billName} />
+            </div>
           </div>
 
           <div className="space-y-1.5">
