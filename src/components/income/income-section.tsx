@@ -34,7 +34,7 @@ export function IncomeSection({ incomeSources, billsTotal, range }: IncomeSectio
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Income header row */}
-      <div className="flex items-center bg-gradient-to-r from-teal-500 to-emerald-600">
+      <div className="flex items-center bg-gradient-to-r from-teal-700 to-emerald-800">
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex-1 flex items-center justify-between gap-2 px-4 py-2.5 text-left"

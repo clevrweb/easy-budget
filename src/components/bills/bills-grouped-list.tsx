@@ -54,7 +54,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group",
       {isPastDue ? (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left bg-gradient-to-r from-red-500 to-rose-600"
+          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left bg-gradient-to-r from-red-700 to-rose-800"
         >
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-white" />
@@ -71,7 +71,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group",
           </div>
         </button>
       ) : (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700">
           <Receipt className="w-4 h-4 text-white" />
           <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.title}</span>
         </div>
