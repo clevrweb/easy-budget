@@ -75,6 +75,7 @@ export const en: Dict = {
 
   bills: {
     title: "Bills",
+    pastDueSectionTitle: "Past Due",
     nameLabel: "Bill Name",
     namePlaceholder: "e.g., Electricity",
     billerLabel: "Biller (optional)",

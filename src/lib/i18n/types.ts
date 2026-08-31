@@ -73,6 +73,7 @@ export interface Dict {
 
   bills: {
     title: string;
+    pastDueSectionTitle: string;
     nameLabel: string;
     namePlaceholder: string;
     billerLabel: string;

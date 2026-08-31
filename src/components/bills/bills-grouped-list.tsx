@@ -1,6 +1,7 @@
 "use client";
 
-import { Receipt } from "lucide-react";
+import { useState } from "react";
+import { Receipt, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getGroupIcon } from "@/lib/group-icons";
 import { BillRow } from "./bill-row";
@@ -13,6 +14,7 @@ interface BillsGroupedListProps {
   categories: Category[];
   groups: Group[];
   groupBy?: GroupBy;
+  variant?: "default" | "pastDue";
 }
 
 function GroupHeader({ group, count, total, billWord, ungroupedLabel }: {
@@ -37,26 +39,55 @@ function GroupHeader({ group, count, total, billWord, ungroupedLabel }: {
   );
 }
 
-export function BillsGroupedList({ bills, categories, groups, groupBy = "group" }: BillsGroupedListProps) {
+export function BillsGroupedList({ bills, categories, groups, groupBy = "group", variant = "default" }: BillsGroupedListProps) {
   const dict = useDict();
+  const [expanded, setExpanded] = useState(false);
+  const isPastDue = variant === "pastDue";
+
+  if (isPastDue && bills.length === 0) return null;
+
+  const showBody = !isPastDue || expanded;
 
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Bills header row */}
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500">
-        <Receipt className="w-4 h-4 text-white" />
-        <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.title}</span>
-      </div>
-
-      {bills.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-[var(--color-muted-foreground)] text-sm">{dict.bills.noBills}</p>
-          <p className="text-[var(--color-muted-foreground)] text-xs mt-1">{dict.bills.noBillsHint}</p>
-        </div>
-      ) : groupBy === "day" ? (
-        <DayView bills={bills} categories={categories} groups={groups} dict={dict} />
+      {isPastDue ? (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left bg-gradient-to-r from-red-500 to-rose-600"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-white" />
+            <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.pastDueSectionTitle}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-white tabular-nums">
+              {formatCurrency(bills.reduce((s, b) => s + b.amount, 0))}
+            </span>
+            {expanded
+              ? <ChevronUp className="w-4 h-4 text-white shrink-0" />
+              : <ChevronDown className="w-4 h-4 text-white shrink-0" />
+            }
+          </div>
+        </button>
       ) : (
-        <GroupView bills={bills} categories={categories} groups={groups} dict={dict} />
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500">
+          <Receipt className="w-4 h-4 text-white" />
+          <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.title}</span>
+        </div>
+      )}
+
+      {showBody && (
+        bills.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-[var(--color-muted-foreground)] text-sm">{dict.bills.noBills}</p>
+            <p className="text-[var(--color-muted-foreground)] text-xs mt-1">{dict.bills.noBillsHint}</p>
+          </div>
+        ) : groupBy === "day" ? (
+          <DayView bills={bills} categories={categories} groups={groups} dict={dict} />
+        ) : (
+          <GroupView bills={bills} categories={categories} groups={groups} dict={dict} />
+        )
       )}
     </div>
   );

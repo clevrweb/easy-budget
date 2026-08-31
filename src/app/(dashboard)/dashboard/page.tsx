@@ -38,6 +38,15 @@ function getDateRange(view: ViewMode, date: string): { start: string; end: strin
   return null;
 }
 
+function applyStatusFilter(bills: Bill[], status: StatusFilter, today: string): Bill[] {
+  if (status === "all") return bills;
+  return bills.filter((b) => {
+    const isOverdue = b.status === "pending" && b.due_date < today;
+    const effective = isOverdue ? "overdue" : b.status;
+    return effective === status;
+  });
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -102,14 +111,23 @@ export default async function DashboardPage({
   let billsQuery = supabase.from("bills").select("*").eq("account_id", accountId ?? "").order("due_date");
   if (range)  billsQuery = billsQuery.gte("due_date", range.start).lte("due_date", range.end);
   if (q)      billsQuery = billsQuery.ilike("name", `%${q}%`);
-  const { data: filteredBillsRaw } = await billsQuery;
 
-  const filteredBills = ((filteredBillsRaw ?? []) as Bill[]).filter((b) => {
-    if (status === "all") return true;
-    const isOverdue  = b.status === "pending" && b.due_date < today;
-    const effective  = isOverdue ? "overdue" : b.status;
-    return effective === status;
-  });
+  // Past due: still-pending bills due before the selected period, clamped to
+  // "today" so navigating into a future period never pulls in not-yet-due
+  // bills under a "Past Due" label.
+  let pastDueQuery = range
+    ? supabase.from("bills").select("*").eq("account_id", accountId ?? "").eq("status", "pending")
+        .lt("due_date", range.start < today ? range.start : today).order("due_date")
+    : null;
+  if (pastDueQuery && q) pastDueQuery = pastDueQuery.ilike("name", `%${q}%`);
+
+  const [{ data: filteredBillsRaw }, pastDueResult] = await Promise.all([
+    billsQuery,
+    pastDueQuery ?? Promise.resolve({ data: [] as Bill[] }),
+  ]);
+
+  const filteredBills = applyStatusFilter((filteredBillsRaw ?? []) as Bill[], status, today);
+  const pastDueBills   = applyStatusFilter((pastDueResult.data ?? []) as Bill[], status, today);
 
   const billsTotal = filteredBills.reduce((s, b) => s + b.amount, 0);
 
@@ -141,6 +159,17 @@ export default async function DashboardPage({
             groupBy={groupBy}
           />
         </div>
+
+        {/* Past due bills, shown after the regular list */}
+        {range && (
+          <BillsGroupedList
+            bills={pastDueBills}
+            categories={(categories ?? []) as Category[]}
+            groups={(groups ?? []) as Group[]}
+            groupBy={groupBy}
+            variant="pastDue"
+          />
+        )}
       </main>
 
       {/* Floating action button */}
