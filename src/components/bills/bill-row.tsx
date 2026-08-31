@@ -133,7 +133,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
     });
   }
 
-  const avatarSource = bill.creditor || bill.name;
+  const avatarSource = bill.biller || bill.name;
   const color = avatarColor(avatarSource);
 
   return (
@@ -170,9 +170,9 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         <p className="font-semibold text-sm text-[var(--color-foreground)] truncate leading-tight">
           {bill.name}
         </p>
-        {bill.creditor && (
+        {bill.biller && (
           <p className="text-xs text-[var(--color-muted-foreground)] truncate leading-tight">
-            {bill.creditor}
+            {bill.biller}
           </p>
         )}
         <div className="flex items-center gap-1.5 mt-0.5">

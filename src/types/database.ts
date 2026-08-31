@@ -99,7 +99,7 @@ export interface Bill {
   category_id: string | null;
   group_id: string | null;
   name: string;
-  creditor: string | null;
+  biller: string | null;
   amount: number;
   amount_paid: number;
   due_date: string;
@@ -121,7 +121,7 @@ export interface RecurringTemplate {
   category_id: string | null;
   group_id: string | null;
   name: string;
-  creditor: string | null;
+  biller: string | null;
   amount: number;
   due_day: number;
   frequency: RecurringFrequency;

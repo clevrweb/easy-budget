@@ -20,7 +20,7 @@ export async function createBillAction(formData: FormData) {
     account_id: accountId,
     user_id: user.id,
     name: formData.get("name") as string,
-    creditor: (formData.get("creditor") as string) || null,
+    biller: (formData.get("biller") as string) || null,
     amount: parseFloat(formData.get("amount") as string),
     due_date: formData.get("due_date") as string,
     status,
@@ -58,7 +58,7 @@ export async function updateBillAction(formData: FormData) {
     .from("bills")
     .update({
       name: formData.get("name") as string,
-      creditor: (formData.get("creditor") as string) || null,
+      biller: (formData.get("biller") as string) || null,
       amount: parseFloat(formData.get("amount") as string),
       due_date: formData.get("due_date") as string,
       status,
@@ -87,7 +87,7 @@ export async function createRecurringBillAction(formData: FormData) {
   if (!accountId) return { error: "No account selected" };
 
   const name           = formData.get("name") as string;
-  const creditor       = (formData.get("creditor") as string) || null;
+  const biller       = (formData.get("biller") as string) || null;
   const amount         = parseFloat(formData.get("amount") as string);
   const dueDate        = formData.get("due_date") as string;
   const frequency      = (formData.get("frequency") as string) || "monthly";
@@ -106,7 +106,7 @@ export async function createRecurringBillAction(formData: FormData) {
   // Create the template
   const { data: template, error: templateError } = await supabase
     .from("recurring_templates")
-    .insert({ account_id: accountId, user_id: user.id, name, creditor, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_autopay: isAutopay, is_active: true })
+    .insert({ account_id: accountId, user_id: user.id, name, biller, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_autopay: isAutopay, is_active: true })
     .select()
     .single();
 
@@ -139,7 +139,7 @@ export async function createRecurringBillAction(formData: FormData) {
     if (endsType === "date" && endDate && billDate > endDate) break;
 
     bills.push({
-      account_id: accountId, user_id: user.id, name, creditor, amount,
+      account_id: accountId, user_id: user.id, name, biller, amount,
       due_date: billDate, status: "pending",
       payment_method: paymentMethod, is_autopay: isAutopay, category_id: categoryId,
       group_id: groupId, notes, is_recurring: true,
@@ -185,7 +185,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
 
   const templateId  = formData.get("template_id") as string;
   const name        = formData.get("name") as string;
-  const creditor    = (formData.get("creditor") as string) || null;
+  const biller    = (formData.get("biller") as string) || null;
   const amount      = parseFloat(formData.get("amount") as string);
   const categoryId  = (formData.get("category_id") as string) || null;
   const groupId     = (formData.get("group_id") as string) || null;
@@ -202,7 +202,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   // Update the template
   const { error: tplError } = await supabase
     .from("recurring_templates")
-    .update({ name, creditor, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod, is_autopay: isAutopay })
+    .update({ name, biller, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod, is_autopay: isAutopay })
     .eq("id", templateId)
     .eq("account_id", accountId);
 
@@ -246,7 +246,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
     if (endsType === "date" && endDate && billDate > endDate) break;
 
     bills.push({
-      account_id: accountId, user_id: user.id, name, creditor, amount,
+      account_id: accountId, user_id: user.id, name, biller, amount,
       due_date: billDate, status: "pending",
       category_id: categoryId, group_id: groupId,
       logo_url: logoUrl, payment_method: paymentMethod, is_autopay: isAutopay,

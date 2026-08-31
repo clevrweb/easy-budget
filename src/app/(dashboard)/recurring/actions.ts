@@ -20,7 +20,7 @@ export async function createTemplateAction(formData: FormData) {
     account_id: accountId,
     user_id: user.id,
     name: formData.get("name") as string,
-    creditor: (formData.get("creditor") as string) || null,
+    biller: (formData.get("biller") as string) || null,
     amount: parseFloat(formData.get("amount") as string),
     due_day: parseInt(formData.get("due_day") as string, 10),
     frequency: (formData.get("frequency") as string) || "monthly",
@@ -52,7 +52,7 @@ export async function updateTemplateAction(formData: FormData) {
     .from("recurring_templates")
     .update({
       name: formData.get("name") as string,
-      creditor: (formData.get("creditor") as string) || null,
+      biller: (formData.get("biller") as string) || null,
       amount: parseFloat(formData.get("amount") as string),
       due_day: parseInt(formData.get("due_day") as string, 10),
       frequency: formData.get("frequency") as string,
@@ -153,7 +153,7 @@ export async function generateBillsForMonthAction(month: string) {
         category_id: t.category_id,
         group_id: t.group_id,
         name: t.name,
-        creditor: t.creditor,
+        biller: t.biller,
         amount: t.amount,
         due_date,
         status: "pending" as const,

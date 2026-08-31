@@ -76,9 +76,9 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
         <p className={`font-medium text-sm truncate ${template.is_active ? "text-[var(--color-foreground)]" : "text-[var(--color-muted-foreground)] line-through"}`}>
           {template.name}
         </p>
-        {template.creditor && (
+        {template.biller && (
           <p className="text-xs text-[var(--color-muted-foreground)] truncate">
-            {template.creditor}
+            {template.biller}
           </p>
         )}
         <p className="text-xs text-[var(--color-muted-foreground)] flex items-center gap-1.5">

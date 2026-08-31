@@ -44,7 +44,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
   const defaultDueDay = new Date(bill.due_date + "T00:00:00").getDate();
   const [billName, setBillName]   = useState(bill.name);
-  const [creditor, setCreditor]   = useState(bill.creditor ?? "");
+  const [biller, setBiller]   = useState(bill.biller ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill.logo_url ?? null);
   // Skips the next auto-fetch run right after a reset (dialog open, or the
   // template finishing its async load), so restoring known values doesn't
@@ -64,7 +64,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
     if (!open) return;
     skipAutoFetch.current = true;
     setBillName(bill.name);
-    setCreditor(bill.creditor ?? "");
+    setBiller(bill.biller ?? "");
     setLogoUrl(bill.logo_url ?? null);
     setIsAutopay(bill.is_autopay);
     setStartDate(bill.due_date);
@@ -84,7 +84,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         setFrequency(result.template.frequency);
         setDueDay(result.template.due_day);
         setPaymentMethod(result.template.payment_method ?? "");
-        setCreditor(result.template.creditor ?? "");
+        setBiller(result.template.biller ?? "");
         setIsAutopay(result.template.is_autopay);
       }
       setLoading(false);
@@ -93,14 +93,14 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
 
   useEffect(() => {
     if (skipAutoFetch.current) { skipAutoFetch.current = false; return; }
-    const lookupName = creditor.trim() || billName;
+    const lookupName = biller.trim() || billName;
     if (lookupName.length < 3) { setLogoUrl(null); return; }
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(lookupName);
       setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
-  }, [billName, creditor]);
+  }, [billName, biller]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -167,11 +167,11 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="rs-creditor">{tb.creditorLabel}</Label>
+            <Label htmlFor="rs-biller">{tb.billerLabel}</Label>
             <Input
-              id="rs-creditor" name="creditor" placeholder={tb.creditorPlaceholder}
-              value={creditor}
-              onChange={(e) => setCreditor(e.target.value)}
+              id="rs-biller" name="biller" placeholder={tb.billerPlaceholder}
+              value={biller}
+              onChange={(e) => setBiller(e.target.value)}
             />
           </div>
 

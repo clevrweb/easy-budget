@@ -48,7 +48,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
   const todayStr = now.toISOString().split("T")[0];
 
   const [billName, setBillName]   = useState(bill?.name ?? "");
-  const [creditor, setCreditor]   = useState(bill?.creditor ?? "");
+  const [biller, setBiller]   = useState(bill?.biller ?? "");
   const [logoUrl, setLogoUrl]     = useState<string | null>(bill?.logo_url ?? null);
   // Skips the very first auto-fetch run after the dialog (re)opens, so simply
   // viewing an existing bill doesn't overwrite its already-confirmed logo.
@@ -62,7 +62,7 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
     if (!open) return;
     skipAutoFetch.current = true;
     setBillName(bill?.name ?? "");
-    setCreditor(bill?.creditor ?? "");
+    setBiller(bill?.biller ?? "");
     setLogoUrl(bill?.logo_url ?? null);
     setDueDate(bill?.due_date ?? todayStr);
     setIsAutopay(bill?.is_autopay ?? false);
@@ -72,14 +72,14 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
 
   useEffect(() => {
     if (skipAutoFetch.current) { skipAutoFetch.current = false; return; }
-    const lookupName = creditor.trim() || billName;
+    const lookupName = biller.trim() || billName;
     if (lookupName.length < 3) { setLogoUrl(null); return; }
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(lookupName);
       setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
-  }, [billName, creditor]);
+  }, [billName, biller]);
 
   // Recurring state (only for create)
   const [isRecurring, setIsRecurring] = useState(false);
@@ -142,11 +142,11 @@ export function BillForm({ bill, categories, groups, trigger, open: externalOpen
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="bf-creditor">{t.creditorLabel}</Label>
+            <Label htmlFor="bf-biller">{t.billerLabel}</Label>
             <Input
-              id="bf-creditor" name="creditor" placeholder={t.creditorPlaceholder}
-              value={creditor}
-              onChange={(e) => setCreditor(e.target.value)}
+              id="bf-biller" name="biller" placeholder={t.billerPlaceholder}
+              value={biller}
+              onChange={(e) => setBiller(e.target.value)}
             />
           </div>
 

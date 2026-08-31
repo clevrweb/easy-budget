@@ -32,19 +32,19 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
   const todayStr = today.toISOString().split("T")[0];
 
   const [billName, setBillName]   = useState("");
-  const [creditor, setCreditor]   = useState("");
+  const [biller, setBiller]   = useState("");
   const [logoUrl, setLogoUrl]     = useState<string | null>(null);
   const [isAutopay, setIsAutopay] = useState(false);
 
   useEffect(() => {
-    const lookupName = creditor.trim() || billName;
+    const lookupName = biller.trim() || billName;
     if (lookupName.length < 3) { setLogoUrl(null); return; }
     const timer = setTimeout(async () => {
       const url = await fetchBillerLogo(lookupName);
       setLogoUrl(url);
     }, 600);
     return () => clearTimeout(timer);
-  }, [billName, creditor]);
+  }, [billName, biller]);
 
   // Recurring state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -90,11 +90,11 @@ export function AddBillForm({ categories, groups }: AddBillFormProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="creditor">{t.creditorLabel}</Label>
+        <Label htmlFor="biller">{t.billerLabel}</Label>
         <Input
-          id="creditor" name="creditor" placeholder={t.creditorPlaceholder}
-          value={creditor}
-          onChange={(e) => setCreditor(e.target.value)}
+          id="biller" name="biller" placeholder={t.billerPlaceholder}
+          value={biller}
+          onChange={(e) => setBiller(e.target.value)}
         />
       </div>
 
