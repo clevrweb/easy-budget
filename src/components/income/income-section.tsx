@@ -45,23 +45,26 @@ export function IncomeSection({ incomeSources, billsTotal, range }: IncomeSectio
               {t.incomeSectionTitle}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-white tabular-nums">
-              +{formatCurrency(incomeTotal)}
-            </span>
-            {expanded
-              ? <ChevronUp className="w-4 h-4 text-white shrink-0" />
-              : <ChevronDown className="w-4 h-4 text-white shrink-0" />
-            }
-          </div>
+          <span className="text-sm font-bold text-white tabular-nums">
+            +{formatCurrency(incomeTotal)}
+          </span>
         </button>
         <Link
           href="/income"
-          className="w-6 h-6 mr-3 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0"
+          className="w-6 h-6 mr-2 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0"
           title={t.addIncome}
         >
           <Plus className="w-3.5 h-3.5 text-white" />
         </Link>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-6 h-6 mr-3 flex items-center justify-center shrink-0"
+        >
+          {expanded
+            ? <ChevronUp className="w-4 h-4 text-white" />
+            : <ChevronDown className="w-4 h-4 text-white" />
+          }
+        </button>
       </div>
 
       {expanded && (
