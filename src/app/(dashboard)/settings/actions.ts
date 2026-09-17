@@ -392,7 +392,20 @@ export async function updateHeaderColorsAction(formData: FormData) {
   const accountId = await getActiveAccountId(supabase, user.id);
   if (!accountId) return { error: "No account selected" };
 
-  const { error } = await supabase
+  // accounts has no RLS UPDATE policy for members (only SELECT), so this
+  // silently no-ops with the regular client -- same issue renameAccountAction
+  // works around: verify membership manually, then write via the admin
+  // client to bypass RLS entirely.
+  const { data: membership } = await supabase
+    .from("account_members")
+    .select("account_id")
+    .eq("user_id", user.id)
+    .eq("account_id", accountId)
+    .maybeSingle();
+  if (!membership) return { error: "Not a member" };
+
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("accounts")
     .update({
       income_bar_bg: formData.get("income_bg") as string,
