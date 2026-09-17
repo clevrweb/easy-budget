@@ -138,6 +138,7 @@ export interface Group {
   user_id: string | null;
   name: string;
   color: string;
+  text_color: string;
   icon: string | null;
   created_at: string;
 }
@@ -159,6 +160,12 @@ export interface Account {
   name: string;
   is_personal: boolean;
   created_by: string | null;
+  income_bar_bg: string;
+  income_bar_fg: string;
+  bills_bar_bg: string;
+  bills_bar_fg: string;
+  past_due_bar_bg: string;
+  past_due_bar_fg: string;
   created_at: string;
 }
 

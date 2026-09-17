@@ -9,12 +9,18 @@ import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
 import type { GroupBy } from "./bills-header";
 
+interface HeaderColors {
+  bg: string;
+  fg: string;
+}
+
 interface BillsGroupedListProps {
   bills: Bill[];
   categories: Category[];
   groups: Group[];
   groupBy?: GroupBy;
   variant?: "default" | "pastDue";
+  headerColors: HeaderColors;
 }
 
 function GroupHeader({ group, count, total, billWord, ungroupedLabel }: {
@@ -25,21 +31,22 @@ function GroupHeader({ group, count, total, billWord, ungroupedLabel }: {
   ungroupedLabel: string;
 }) {
   const color = group?.color ?? "#94a3b8";
+  const textColor = group?.text_color ?? "#ffffff";
   const Icon = getGroupIcon(group?.icon);
 
   return (
     <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor: color }}>
       <div className="flex items-center gap-2 min-w-0">
-        {Icon && <Icon className="w-4 h-4 text-white shrink-0" />}
-        <span className="text-sm font-semibold text-white truncate">{group?.name ?? ungroupedLabel}</span>
-        <span className="text-xs text-white/80 shrink-0">· {count} {billWord}</span>
+        {Icon && <Icon className="w-4 h-4 shrink-0" color={textColor} />}
+        <span className="text-sm font-semibold truncate" style={{ color: textColor }}>{group?.name ?? ungroupedLabel}</span>
+        <span className="text-xs shrink-0" style={{ color: textColor, opacity: 0.8 }}>· {count} {billWord}</span>
       </div>
-      <span className="text-sm font-bold text-white tabular-nums shrink-0">{formatCurrency(total)}</span>
+      <span className="text-sm font-bold tabular-nums shrink-0" style={{ color: textColor }}>{formatCurrency(total)}</span>
     </div>
   );
 }
 
-export function BillsGroupedList({ bills, categories, groups, groupBy = "group", variant = "default" }: BillsGroupedListProps) {
+export function BillsGroupedList({ bills, categories, groups, groupBy = "group", variant = "default", headerColors }: BillsGroupedListProps) {
   const dict = useDict();
   const [expanded, setExpanded] = useState(false);
   const isPastDue = variant === "pastDue";
@@ -47,6 +54,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group",
   if (isPastDue && bills.length === 0) return null;
 
   const showBody = !isPastDue || expanded;
+  const { bg, fg } = headerColors;
 
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
@@ -54,26 +62,27 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group",
       {isPastDue ? (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left bg-gradient-to-r from-red-700 to-rose-800"
+          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left"
+          style={{ backgroundColor: bg }}
         >
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-white" />
-            <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.pastDueSectionTitle}</span>
+            <AlertTriangle className="w-4 h-4" color={fg} />
+            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: fg }}>{dict.bills.pastDueSectionTitle}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-white tabular-nums">
+            <span className="text-sm font-bold tabular-nums" style={{ color: fg }}>
               {formatCurrency(bills.reduce((s, b) => s + b.amount, 0))}
             </span>
             {expanded
-              ? <ChevronUp className="w-4 h-4 text-white shrink-0" />
-              : <ChevronDown className="w-4 h-4 text-white shrink-0" />
+              ? <ChevronUp className="w-4 h-4 shrink-0" color={fg} />
+              : <ChevronDown className="w-4 h-4 shrink-0" color={fg} />
             }
           </div>
         </button>
       ) : (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700">
-          <Receipt className="w-4 h-4 text-white" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">{dict.bills.title}</span>
+        <div className="flex items-center gap-2 px-4 py-2.5" style={{ backgroundColor: bg }}>
+          <Receipt className="w-4 h-4" color={fg} />
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: fg }}>{dict.bills.title}</span>
         </div>
       )}
 

@@ -357,3 +357,55 @@ export async function updatePhoneNumberAction(phoneNumber: string) {
   revalidatePath("/settings");
   return { success: true };
 }
+
+const DEFAULT_HEADER_COLORS = {
+  income:  { bg: "#00493b", fg: "#ffffff" },
+  bills:   { bg: "#004a71", fg: "#ffffff" },
+  pastDue: { bg: "#99171d", fg: "#ffffff" },
+};
+
+export async function getHeaderColorsAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return DEFAULT_HEADER_COLORS;
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return DEFAULT_HEADER_COLORS;
+
+  const { data } = await supabase
+    .from("accounts")
+    .select("income_bar_bg, income_bar_fg, bills_bar_bg, bills_bar_fg, past_due_bar_bg, past_due_bar_fg")
+    .eq("id", accountId)
+    .single();
+
+  if (!data) return DEFAULT_HEADER_COLORS;
+  return {
+    income:  { bg: data.income_bar_bg, fg: data.income_bar_fg },
+    bills:   { bg: data.bills_bar_bg, fg: data.bills_bar_fg },
+    pastDue: { bg: data.past_due_bar_bg, fg: data.past_due_bar_fg },
+  };
+}
+
+export async function updateHeaderColorsAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({
+      income_bar_bg: formData.get("income_bg") as string,
+      income_bar_fg: formData.get("income_fg") as string,
+      bills_bar_bg: formData.get("bills_bg") as string,
+      bills_bar_fg: formData.get("bills_fg") as string,
+      past_due_bar_bg: formData.get("past_due_bg") as string,
+      past_due_bar_fg: formData.get("past_due_fg") as string,
+    })
+    .eq("id", accountId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard");
+  revalidatePath("/settings");
+  return { success: true };
+}

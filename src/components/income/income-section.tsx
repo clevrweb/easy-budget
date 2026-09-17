@@ -12,6 +12,7 @@ interface IncomeSectionProps {
   incomeSources: IncomeSource[];
   billsTotal: number;
   range: { start: string; end: string };
+  headerColors: { bg: string; fg: string };
 }
 
 const FREQ_LABELS: Record<string, string> = {
@@ -21,10 +22,11 @@ const FREQ_LABELS: Record<string, string> = {
   monthly: "Monthly",
 };
 
-export function IncomeSection({ incomeSources, billsTotal, range }: IncomeSectionProps) {
+export function IncomeSection({ incomeSources, billsTotal, range, headerColors }: IncomeSectionProps) {
   const [expanded, setExpanded] = useState(false);
   const dict = useDict();
   const t = dict.income;
+  const { bg, fg } = headerColors;
 
   const occurrences = getIncomeOccurrences(incomeSources, range.start, range.end);
   const grouped = groupOccurrencesBySource(occurrences);
@@ -34,18 +36,18 @@ export function IncomeSection({ incomeSources, billsTotal, range }: IncomeSectio
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Income header row */}
-      <div className="flex items-center bg-gradient-to-r from-teal-700 to-emerald-800">
+      <div className="flex items-center" style={{ backgroundColor: bg }}>
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex-1 flex items-center justify-between gap-2 px-4 py-2.5 text-left"
         >
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-white" />
-            <span className="text-xs font-bold text-white uppercase tracking-wider">
+            <TrendingUp className="w-4 h-4" color={fg} />
+            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: fg }}>
               {t.incomeSectionTitle}
             </span>
           </div>
-          <span className="text-sm font-bold text-white tabular-nums">
+          <span className="text-sm font-bold tabular-nums" style={{ color: fg }}>
             +{formatCurrency(incomeTotal)}
           </span>
         </button>
@@ -61,8 +63,8 @@ export function IncomeSection({ incomeSources, billsTotal, range }: IncomeSectio
           className="w-6 h-6 mr-3 flex items-center justify-center shrink-0"
         >
           {expanded
-            ? <ChevronUp className="w-4 h-4 text-white" />
-            : <ChevronDown className="w-4 h-4 text-white" />
+            ? <ChevronUp className="w-4 h-4" color={fg} />
+            : <ChevronDown className="w-4 h-4" color={fg} />
           }
         </button>
       </div>

@@ -226,6 +226,7 @@ export interface Dict {
     editGroup: string;
     nameLabel: string;
     colorLabel: string;
+    textColorLabel: string;
     iconLabel: string;
     noIcon: string;
     noGroups: string;
@@ -281,6 +282,12 @@ export interface Dict {
     defaultViewToday: string;
     defaultViewWeek: string;
     defaultViewMonth: string;
+    headerColorsTitle: string;
+    headerColorsDesc: string;
+    bgColorLabel: string;
+    fontColorLabel: string;
+    resetToDefault: string;
+    colorsSaved: string;
     pushTitle: string;
     pushBodySingular: string;
     pushBodyPlural: string;

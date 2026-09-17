@@ -9,7 +9,7 @@ import { IncomeSection } from "@/components/income/income-section";
 import type { Bill, Category, Group, IncomeSource } from "@/types/database";
 import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
-import { getDefaultViewAction } from "@/app/(dashboard)/settings/actions";
+import { getDefaultViewAction, getHeaderColorsAction } from "@/app/(dashboard)/settings/actions";
 import { getActiveAccountId } from "@/lib/supabase/account";
 
 function getMondayOf(d: Date) {
@@ -52,10 +52,11 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ view?: string; date?: string; status?: string; q?: string; groupBy?: string }>;
 }) {
-  const [{ view: rawView, date: rawDate, status: rawStatus, q = "", groupBy: rawGroupBy }, dict, defaultView] = await Promise.all([
+  const [{ view: rawView, date: rawDate, status: rawStatus, q = "", groupBy: rawGroupBy }, dict, defaultView, headerColors] = await Promise.all([
     searchParams,
     getServerDict(),
     getDefaultViewAction(),
+    getHeaderColorsAction(),
   ]);
 
   const view    = (rawView && ["day", "week", "month", "all"].includes(rawView) ? rawView : defaultView) as ViewMode;
@@ -148,6 +149,7 @@ export default async function DashboardPage({
             incomeSources={(incomeSources ?? []) as IncomeSource[]}
             billsTotal={billsTotal}
             range={range}
+            headerColors={headerColors.income}
           />
         )}
 
@@ -157,6 +159,7 @@ export default async function DashboardPage({
             categories={(categories ?? []) as Category[]}
             groups={(groups ?? []) as Group[]}
             groupBy={groupBy}
+            headerColors={headerColors.bills}
           />
         </div>
 
@@ -168,6 +171,7 @@ export default async function DashboardPage({
             groups={(groups ?? []) as Group[]}
             groupBy={groupBy}
             variant="pastDue"
+            headerColors={headerColors.pastDue}
           />
         )}
       </main>

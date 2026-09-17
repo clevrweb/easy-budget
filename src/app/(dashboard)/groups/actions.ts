@@ -18,6 +18,7 @@ export async function createGroupAction(formData: FormData) {
       user_id: user.id,
       name: formData.get("name") as string,
       color: (formData.get("color") as string) || "#4f46e5",
+      text_color: (formData.get("text_color") as string) || "#ffffff",
       icon: (formData.get("icon") as string) || null,
     })
     .select("id")
@@ -40,6 +41,7 @@ export async function updateGroupAction(formData: FormData) {
     .update({
       name: formData.get("name") as string,
       color: formData.get("color") as string,
+      text_color: (formData.get("text_color") as string) || "#ffffff",
       icon: (formData.get("icon") as string) || null,
     })
     .eq("id", formData.get("id") as string)

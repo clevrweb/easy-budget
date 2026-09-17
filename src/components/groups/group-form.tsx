@@ -9,6 +9,7 @@ import { createGroupAction, updateGroupAction } from "@/app/(dashboard)/groups/a
 import { GroupBillsPicker } from "./group-bills-picker";
 import { useDict } from "@/components/language-provider";
 import { GROUP_ICONS } from "@/lib/group-icons";
+import { ColorSwatchPicker } from "@/components/ui/color-swatch-picker";
 import type { Group } from "@/types/database";
 import { Plus, X } from "lucide-react";
 
@@ -17,6 +18,8 @@ const COLOR_PRESETS = [
   "#ea580c", "#d97706", "#16a34a", "#0891b2",
   "#0284c7", "#6b7280", "#1e293b", "#4caf50",
 ];
+
+const TEXT_COLOR_PRESETS = ["#ffffff", "#000000", "#e5e7eb", "#1e293b"];
 
 interface GroupFormProps {
   group?: Group;
@@ -27,6 +30,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [color, setColor] = useState(group?.color ?? "#4f46e5");
+  const [textColor, setTextColor] = useState(group?.text_color ?? "#ffffff");
   const [icon, setIcon] = useState<string | null>(group?.icon ?? null);
   const [isPending, startTransition] = useTransition();
   const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string } | null>(null);
@@ -38,6 +42,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
     setOpen(o);
     if (!o) {
       setColor(group?.color ?? "#4f46e5");
+      setTextColor(group?.text_color ?? "#ffffff");
       setIcon(group?.icon ?? null);
       setCreatedGroup(null);
     }
@@ -46,6 +51,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   async function handleSubmit(formData: FormData) {
     setError(null);
     formData.set("color", color);
+    formData.set("text_color", textColor);
     formData.set("icon", icon ?? "");
     startTransition(async () => {
       if (isEdit) {
@@ -118,6 +124,11 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
                   <div className="w-5 h-5 rounded-md" style={{ backgroundColor: color }} />
                   <span className="text-xs text-[var(--color-muted-foreground)] font-mono">{color}</span>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t.textColorLabel}</Label>
+                <ColorSwatchPicker value={textColor} onChange={setTextColor} presets={TEXT_COLOR_PRESETS} />
               </div>
 
               <div className="space-y-2">
