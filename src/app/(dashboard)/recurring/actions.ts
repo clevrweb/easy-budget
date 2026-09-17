@@ -158,6 +158,7 @@ export async function generateBillsForMonthAction(month: string) {
         due_date,
         status: "pending" as const,
         payment_method: t.payment_method,
+        logo_url: t.logo_url,
         is_autopay: t.is_autopay,
         is_recurring: true,
         notes: null,

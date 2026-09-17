@@ -126,6 +126,7 @@ export interface RecurringTemplate {
   due_day: number;
   frequency: RecurringFrequency;
   payment_method: string | null;
+  logo_url: string | null;
   is_autopay: boolean;
   is_active: boolean;
   created_at: string;

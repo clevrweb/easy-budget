@@ -85,6 +85,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
         setDueDay(result.template.due_day);
         setPaymentMethod(result.template.payment_method ?? "");
         setBiller(result.template.biller ?? "");
+        setLogoUrl(result.template.logo_url ?? bill.logo_url ?? null);
         setIsAutopay(result.template.is_autopay);
       }
       setLoading(false);

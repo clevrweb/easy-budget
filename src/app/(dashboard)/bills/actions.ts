@@ -100,13 +100,14 @@ export async function createRecurringBillAction(formData: FormData) {
   const groupId        = (formData.get("group_id") as string) || null;
   const paymentMethod  = (formData.get("payment_method") as string) || null;
   const notes          = (formData.get("notes") as string) || null;
+  const logoUrl        = (formData.get("logo_url") as string) || null;
   const isAutopay      = formData.get("is_autopay") === "on";
   if (isAutopay && !paymentMethod) return { error: "A payment method is required when Autopay is enabled" };
 
   // Create the template
   const { data: template, error: templateError } = await supabase
     .from("recurring_templates")
-    .insert({ account_id: accountId, user_id: user.id, name, biller, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, is_autopay: isAutopay, is_active: true })
+    .insert({ account_id: accountId, user_id: user.id, name, biller, amount, due_day: dueDay, frequency, category_id: categoryId, group_id: groupId, payment_method: paymentMethod, logo_url: logoUrl, is_autopay: isAutopay, is_active: true })
     .select()
     .single();
 
@@ -142,7 +143,7 @@ export async function createRecurringBillAction(formData: FormData) {
       account_id: accountId, user_id: user.id, name, biller, amount,
       due_date: billDate, status: "pending",
       payment_method: paymentMethod, is_autopay: isAutopay, category_id: categoryId,
-      group_id: groupId, notes, is_recurring: true,
+      group_id: groupId, notes, is_recurring: true, logo_url: logoUrl,
       recurring_template_id: template.id,
     });
   }
@@ -202,7 +203,7 @@ export async function updateRecurringSeriesAction(formData: FormData) {
   // Update the template
   const { error: tplError } = await supabase
     .from("recurring_templates")
-    .update({ name, biller, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod, is_autopay: isAutopay })
+    .update({ name, biller, amount, category_id: categoryId, group_id: groupId, frequency, due_day: dueDay, payment_method: paymentMethod, logo_url: logoUrl, is_autopay: isAutopay })
     .eq("id", templateId)
     .eq("account_id", accountId);
 
