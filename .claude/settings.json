@@ -13,7 +13,13 @@
       "Bash(git commit -m 'Use dark logo in dark mode on sidebar and mobile header *)",
       "Bash(git commit -m 'Use logo-transparent.png for dark mode logo *)",
       "Bash(git commit -m 'Add seed default categories action and Load defaults button *)",
-      "Bash(npx web-push *)"
+      "Bash(npx web-push *)",
+      "Bash(git commit -m 'Add delete entire series option and starting date to series edit *)",
+      "Bash(git commit -m 'Fix notification toggle: add loading state, surface real errors, reuse existing subscription *)",
+      "Bash(xargs wc *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\OneDrive\\\\Data\\\\WebDev\\\\Work\\\\CLEVRWEB\\\\Projects\\\\EasyBudget\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(git restore *)"
     ]
   }
 }
