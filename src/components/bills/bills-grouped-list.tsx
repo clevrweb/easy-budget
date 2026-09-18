@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Receipt, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import { Receipt, AlertTriangle, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getGroupIcon } from "@/lib/group-icons";
 import { BillRow } from "./bill-row";
@@ -48,45 +49,53 @@ function GroupHeader({ group, count, total, billWord, ungroupedLabel }: {
 
 export function BillsGroupedList({ bills, categories, groups, groupBy = "group", variant = "default", headerColors }: BillsGroupedListProps) {
   const dict = useDict();
-  const [expanded, setExpanded] = useState(false);
   const isPastDue = variant === "pastDue";
+  const [expanded, setExpanded] = useState(!isPastDue);
 
   if (isPastDue && bills.length === 0) return null;
 
-  const showBody = !isPastDue || expanded;
   const { bg, fg } = headerColors;
+  const total = bills.reduce((s, b) => s + b.amount, 0);
+  const Icon = isPastDue ? AlertTriangle : Receipt;
+  const title = isPastDue ? dict.bills.pastDueSectionTitle : dict.bills.title;
 
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
       {/* Bills header row */}
-      {isPastDue ? (
+      <div className="flex items-center" style={{ backgroundColor: bg }}>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left"
-          style={{ backgroundColor: bg }}
+          className="flex-1 flex items-center justify-between gap-2 px-4 py-2.5 text-left"
         >
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" color={fg} />
-            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: fg }}>{dict.bills.pastDueSectionTitle}</span>
+            <Icon className="w-4 h-4" color={fg} />
+            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: fg }}>{title}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold tabular-nums" style={{ color: fg }}>
-              {formatCurrency(bills.reduce((s, b) => s + b.amount, 0))}
-            </span>
-            {expanded
-              ? <ChevronUp className="w-4 h-4 shrink-0" color={fg} />
-              : <ChevronDown className="w-4 h-4 shrink-0" color={fg} />
-            }
-          </div>
+          <span className="text-sm font-bold tabular-nums" style={{ color: fg }}>
+            {formatCurrency(total)}
+          </span>
         </button>
-      ) : (
-        <div className="flex items-center gap-2 px-4 py-2.5" style={{ backgroundColor: bg }}>
-          <Receipt className="w-4 h-4" color={fg} />
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: fg }}>{dict.bills.title}</span>
-        </div>
-      )}
+        {!isPastDue && (
+          <Link
+            href="/bills/new"
+            className="w-6 h-6 mr-2 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors shrink-0"
+            title={dict.bills.addBill}
+          >
+            <Plus className="w-3.5 h-3.5 text-white" />
+          </Link>
+        )}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-6 h-6 mr-3 flex items-center justify-center shrink-0"
+        >
+          {expanded
+            ? <ChevronUp className="w-4 h-4" color={fg} />
+            : <ChevronDown className="w-4 h-4" color={fg} />
+          }
+        </button>
+      </div>
 
-      {showBody && (
+      {expanded && (
         bills.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-[var(--color-muted-foreground)] text-sm">{dict.bills.noBills}</p>
