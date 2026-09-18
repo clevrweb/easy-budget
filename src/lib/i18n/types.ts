@@ -55,6 +55,7 @@ export interface Dict {
     more: string;
     switchBudget: string;
     debts: string;
+    calculator: string;
   };
 
   dashboard: {
@@ -473,5 +474,36 @@ export interface Dict {
     skipButton: string;
     capWarning: string;
     payoffOrderPrefix: string;
+  };
+
+  calculator: {
+    title: string;
+    tickerLabel: string;
+    tickerPlaceholder: string;
+    initialInvestmentLabel: string;
+    startDateLabel: string;
+    endDateLabel: string;
+    includeDividends: string;
+    reinvestDividends: string;
+    calculateButton: string;
+    calculating: string;
+    endingValue: string;
+    totalReturn: string;
+    cagr: string;
+    totalDividendsCollected: string;
+    chartTitle: string;
+    startDateClampedWarning: string;
+    endDateClampedWarning: string;
+    errors: {
+      missing_symbol: string;
+      invalid_symbol: string;
+      rate_limited: string;
+      premium_required: string;
+      upstream_error: string;
+      server_misconfigured: string;
+      no_overlap: string;
+      invalid_dates: string;
+      invalid_amount: string;
+    };
   };
 }

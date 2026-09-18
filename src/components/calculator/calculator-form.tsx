@@ -1,0 +1,130 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useDict } from "@/components/language-provider";
+import type { DividendMode } from "@/lib/compound-calculator";
+
+interface CalculatorFormProps {
+  ticker: string;
+  onTicker: (value: string) => void;
+  initialInvestment: number;
+  onInitialInvestment: (value: number) => void;
+  startDate: string;
+  onStartDate: (value: string) => void;
+  endDate: string;
+  onEndDate: (value: string) => void;
+  includeDividends: boolean;
+  onIncludeDividends: (value: boolean) => void;
+  drip: boolean;
+  onDrip: (value: boolean) => void;
+  loading: boolean;
+  onSubmit: () => void;
+}
+
+export function dividendModeFrom(includeDividends: boolean, drip: boolean): DividendMode {
+  if (!includeDividends) return "none";
+  return drip ? "drip" : "cash";
+}
+
+export function CalculatorForm({
+  ticker, onTicker,
+  initialInvestment, onInitialInvestment,
+  startDate, onStartDate,
+  endDate, onEndDate,
+  includeDividends, onIncludeDividends,
+  drip, onDrip,
+  loading, onSubmit,
+}: CalculatorFormProps) {
+  const dict = useDict();
+  const t = dict.calculator;
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4"
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="calc-ticker">{t.tickerLabel}</Label>
+          <Input
+            id="calc-ticker"
+            value={ticker}
+            onChange={(e) => onTicker(e.target.value.toUpperCase())}
+            placeholder={t.tickerPlaceholder}
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="calc-amount">{t.initialInvestmentLabel}</Label>
+          <Input
+            id="calc-amount"
+            type="number"
+            min="1"
+            step="0.01"
+            value={initialInvestment}
+            onChange={(e) => onInitialInvestment(Number(e.target.value))}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="calc-start">{t.startDateLabel}</Label>
+          <Input
+            id="calc-start"
+            type="date"
+            value={startDate}
+            onChange={(e) => onStartDate(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="calc-end">{t.endDateLabel}</Label>
+          <Input
+            id="calc-end"
+            type="date"
+            value={endDate}
+            onChange={(e) => onEndDate(e.target.value)}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeDividends}
+            onChange={(e) => {
+              onIncludeDividends(e.target.checked);
+              if (!e.target.checked) onDrip(false);
+            }}
+            className="w-4 h-4 rounded accent-[var(--color-primary)]"
+          />
+          <span className="text-sm text-[var(--color-foreground)]">{t.includeDividends}</span>
+        </label>
+
+        <label className={`flex items-center gap-2 ${includeDividends ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
+          <input
+            type="checkbox"
+            checked={drip}
+            disabled={!includeDividends}
+            onChange={(e) => onDrip(e.target.checked)}
+            className="w-4 h-4 rounded accent-[var(--color-primary)]"
+          />
+          <span className="text-sm text-[var(--color-foreground)]">{t.reinvestDividends}</span>
+        </label>
+      </div>
+
+      <Button type="submit" disabled={loading}>
+        {loading ? t.calculating : t.calculateButton}
+      </Button>
+    </form>
+  );
+}

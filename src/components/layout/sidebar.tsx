@@ -15,6 +15,7 @@ import {
   TrendingDown,
   Repeat,
   ArrowLeftRight,
+  Calculator,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/supabase/actions";
@@ -38,6 +39,7 @@ export function Sidebar({ hasMultipleAccounts }: SidebarProps) {
     { href: "/recurring",  label: dict.nav.recurring,  icon: Repeat },
     { href: "/debts",      label: dict.nav.debts,      icon: TrendingDown },
     { href: "/reports",    label: dict.nav.reports,    icon: BarChart2 },
+    { href: "/calculator", label: dict.nav.calculator, icon: Calculator },
     ...(hasMultipleAccounts
       ? [{ href: "/choose-account", label: dict.nav.switchBudget, icon: ArrowLeftRight }]
       : []),
