@@ -494,6 +494,18 @@ export interface Dict {
     chartTitle: string;
     startDateClampedWarning: string;
     endDateClampedWarning: string;
+    modeBacktestLabel: string;
+    modeProjectLabel: string;
+    monthlyContributionLabel: string;
+    annualReturnOverrideLabel: string;
+    dividendYieldOverrideLabel: string;
+    estimateAutoPlaceholder: string;
+    totalContributed: string;
+    totalGrowth: string;
+    estimateNoteAuto: string;
+    estimateNoteOverridden: string;
+    limitedHistoryWarning: string;
+    projectionEndDateCappedWarning: string;
     errors: {
       missing_symbol: string;
       invalid_symbol: string;
@@ -504,6 +516,8 @@ export interface Dict {
       no_overlap: string;
       invalid_dates: string;
       invalid_amount: string;
+      invalid_contribution: string;
+      no_contribution: string;
     };
   };
 }
