@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 import type { DividendMode } from "@/lib/compound-calculator";
-import type { DividendFrequency, StockSnapshot } from "@/lib/future-projection";
+import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
 import { CalculatorModeToggle, type CalculatorMode } from "./calculator-mode-toggle";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
@@ -28,8 +28,10 @@ interface CalculatorFormProps {
   onEndDate: (value: string) => void;
 
   // project-only
-  monthlyContribution: number;
-  onMonthlyContribution: (value: number) => void;
+  contributionAmount: number;
+  onContributionAmount: (value: number) => void;
+  contributionFrequency: ContributionFrequency;
+  onContributionFrequency: (value: ContributionFrequency) => void;
   projectStartDate: string;
   onProjectStartDate: (value: string) => void;
   projectEndDate: string;
@@ -71,7 +73,8 @@ export function CalculatorForm({
   initialInvestment, onInitialInvestment,
   startDate, onStartDate,
   endDate, onEndDate,
-  monthlyContribution, onMonthlyContribution,
+  contributionAmount, onContributionAmount,
+  contributionFrequency, onContributionFrequency,
   projectStartDate, onProjectStartDate,
   projectEndDate, onProjectEndDate,
   loadStatus, loadError, onLoad, snapshot,
@@ -218,16 +221,32 @@ export function CalculatorForm({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="calc-monthly">{t.monthlyContributionLabel}</Label>
-            <Input
-              id="calc-monthly"
-              type="number"
-              min="0"
-              step="0.01"
-              value={monthlyContribution}
-              onChange={(e) => onMonthlyContribution(Number(e.target.value))}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="calc-contribution">{t.contributionAmountLabel}</Label>
+              <Input
+                id="calc-contribution"
+                type="number"
+                min="0"
+                step="0.01"
+                value={contributionAmount}
+                onChange={(e) => onContributionAmount(Number(e.target.value))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="calc-contribution-frequency">{t.contributionFrequencyLabel}</Label>
+              <select
+                id="calc-contribution-frequency"
+                className={selectCls}
+                value={contributionFrequency}
+                onChange={(e) => onContributionFrequency(e.target.value as ContributionFrequency)}
+              >
+                <option value="weekly">{t.contributionFrequencyOptions.weekly}</option>
+                <option value="monthly">{t.contributionFrequencyOptions.monthly}</option>
+                <option value="quarterly">{t.contributionFrequencyOptions.quarterly}</option>
+                <option value="annually">{t.contributionFrequencyOptions.annually}</option>
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

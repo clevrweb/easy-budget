@@ -19,6 +19,7 @@ import {
   type FutureProjectionResult,
   type StockSnapshot,
   type DividendFrequency,
+  type ContributionFrequency,
 } from "@/lib/future-projection";
 import type { CalculatorMode } from "./calculator-mode-toggle";
 import type { StockHistoryError, StockHistoryPoint, StockHistoryResponse } from "@/app/api/calculator/stock-history/route";
@@ -86,7 +87,8 @@ export function CalculatorPageClient() {
   const [endDate, setEndDate] = useState(todayStr());
 
   // project-only
-  const [monthlyContribution, setMonthlyContribution] = useState(100);
+  const [contributionAmount, setContributionAmount] = useState(100);
+  const [contributionFrequency, setContributionFrequency] = useState<ContributionFrequency>("monthly");
   const [projectStartDate, setProjectStartDate] = useState(todayStr());
   const [projectEndDate, setProjectEndDate] = useState(tenYearsFromTodayStr());
 
@@ -177,12 +179,12 @@ export function CalculatorPageClient() {
         return;
       }
     } else {
-      if (initialInvestment < 0 || monthlyContribution < 0) {
+      if (initialInvestment < 0 || contributionAmount < 0) {
         setStatus("error");
         setErrorMessage(t.errors.invalid_contribution);
         return;
       }
-      if (initialInvestment === 0 && monthlyContribution === 0) {
+      if (initialInvestment === 0 && contributionAmount === 0) {
         setStatus("error");
         setErrorMessage(t.errors.no_contribution);
         return;
@@ -241,7 +243,8 @@ export function CalculatorPageClient() {
           dividendGrowthPct: effective.dividendGrowthPct,
           dividendFrequency: effective.dividendFrequency,
           initialInvestment,
-          monthlyContribution,
+          contributionAmount,
+          contributionFrequency,
           startDate: projectStartDate,
           endDate: projectEndDate,
           dividendMode,
@@ -276,7 +279,8 @@ export function CalculatorPageClient() {
           initialInvestment={initialInvestment} onInitialInvestment={setInitialInvestment}
           startDate={startDate} onStartDate={setStartDate}
           endDate={endDate} onEndDate={setEndDate}
-          monthlyContribution={monthlyContribution} onMonthlyContribution={setMonthlyContribution}
+          contributionAmount={contributionAmount} onContributionAmount={setContributionAmount}
+          contributionFrequency={contributionFrequency} onContributionFrequency={setContributionFrequency}
           projectStartDate={projectStartDate} onProjectStartDate={setProjectStartDate}
           projectEndDate={projectEndDate} onProjectEndDate={setProjectEndDate}
           loadStatus={loadStatus} loadError={loadError} onLoad={handleLoadStock} snapshot={snapshot}

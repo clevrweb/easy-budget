@@ -166,6 +166,13 @@ function addMonthsClamped(dateStr: string, months: number): string {
   return toISODate(new Date(y, targetMonthIndex, clampedDay));
 }
 
+export type ContributionFrequency = "weekly" | "monthly" | "quarterly" | "annually";
+
+const CONTRIBUTION_PERIOD_MONTHS: Record<Exclude<ContributionFrequency, "weekly">, number> = {
+  monthly: 1, quarterly: 3, annually: 12,
+};
+const WEEKS_PER_YEAR = 52.1786;
+
 export interface FutureProjectionInput {
   referencePrice: number; // "Share Price" — directly editable
   priceGrowthPct: number; // "Share Price Growth"
@@ -173,7 +180,8 @@ export interface FutureProjectionInput {
   dividendGrowthPct: number; // may be negative (dividend cut), must be > -100
   dividendFrequency: DividendFrequency;
   initialInvestment: number;
-  monthlyContribution: number;
+  contributionAmount: number; // per contributionFrequency period
+  contributionFrequency: ContributionFrequency;
   startDate: string; // typically today
   endDate: string; // future date
   dividendMode: DividendMode;
@@ -194,7 +202,7 @@ export interface FutureProjectionResult {
 export function projectFutureGrowth(input: FutureProjectionInput): FutureProjectionResult {
   const {
     referencePrice, priceGrowthPct, startingDividendPerShare, dividendGrowthPct, dividendFrequency,
-    initialInvestment, monthlyContribution, startDate, endDate, dividendMode,
+    initialInvestment, contributionAmount, contributionFrequency, startDate, endDate, dividendMode,
   } = input;
 
   if (referencePrice <= 0) {
@@ -206,10 +214,10 @@ export function projectFutureGrowth(input: FutureProjectionInput): FutureProject
   if (dividendGrowthPct <= -100) {
     throw new FutureProjectionError("Dividend growth rate must be greater than -100%");
   }
-  if (initialInvestment < 0 || monthlyContribution < 0) {
+  if (initialInvestment < 0 || contributionAmount < 0) {
     throw new FutureProjectionError("Investment and contribution amounts cannot be negative");
   }
-  if (initialInvestment === 0 && monthlyContribution === 0) {
+  if (initialInvestment === 0 && contributionAmount === 0) {
     throw new FutureProjectionError("Enter an initial investment or a monthly contribution greater than 0");
   }
   if (startDate >= endDate) {
@@ -237,6 +245,7 @@ export function projectFutureGrowth(input: FutureProjectionInput): FutureProject
   let cashDividendsAccrued = 0;
   let totalDividendsCollected = 0;
   let paymentCount = 0;
+  let totalContributed = initialInvestment;
 
   const timeline: TimelinePoint[] = [
     { date: startDate, price, shares, cashDividendsAccrued: 0, value: shares * price },
@@ -262,7 +271,15 @@ export function projectFutureGrowth(input: FutureProjectionInput): FutureProject
 
     // Contribution lands at the end of the month, so it starts compounding
     // the following month rather than earning this month's own growth.
-    shares += monthlyContribution / price;
+    let contributionThisMonth = 0;
+    if (contributionFrequency === "weekly") {
+      contributionThisMonth = contributionAmount * (WEEKS_PER_YEAR / 12);
+    } else {
+      const contributionPeriodMonths = CONTRIBUTION_PERIOD_MONTHS[contributionFrequency];
+      if (i % contributionPeriodMonths === 0) contributionThisMonth = contributionAmount;
+    }
+    shares += contributionThisMonth / price;
+    totalContributed += contributionThisMonth;
 
     timeline.push({
       date: addMonthsClamped(startDate, i),
@@ -274,7 +291,6 @@ export function projectFutureGrowth(input: FutureProjectionInput): FutureProject
   }
 
   const endingValue = timeline[timeline.length - 1].value;
-  const totalContributed = initialInvestment + monthlyContribution * months;
   const totalGrowth = endingValue - totalContributed;
 
   return {

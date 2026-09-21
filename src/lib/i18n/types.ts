@@ -496,7 +496,14 @@ export interface Dict {
     endDateClampedWarning: string;
     modeBacktestLabel: string;
     modeProjectLabel: string;
-    monthlyContributionLabel: string;
+    contributionAmountLabel: string;
+    contributionFrequencyLabel: string;
+    contributionFrequencyOptions: {
+      weekly: string;
+      monthly: string;
+      quarterly: string;
+      annually: string;
+    };
     totalContributed: string;
     totalGrowth: string;
     limitedHistoryWarning: string;
