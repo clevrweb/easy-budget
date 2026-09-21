@@ -14,15 +14,18 @@ import {
 } from "@/lib/compound-calculator";
 import {
   projectFutureGrowth,
-  estimateHistoricalReturns,
+  analyzeStock,
   FutureProjectionError,
   type FutureProjectionResult,
-  type HistoricalReturnEstimate,
+  type StockSnapshot,
+  type DividendFrequency,
 } from "@/lib/future-projection";
 import type { CalculatorMode } from "./calculator-mode-toggle";
 import type { StockHistoryError, StockHistoryPoint, StockHistoryResponse } from "@/app/api/calculator/stock-history/route";
 
 type Status = "idle" | "loading" | "error" | "success";
+
+class StockFetchError extends Error {}
 
 function todayStr(): string {
   return new Date().toISOString().split("T")[0];
@@ -47,11 +50,24 @@ function mapCalculatorErrorMessage(message: string): "invalid_amount" | "invalid
   return "upstream_error";
 }
 
-function mapProjectionErrorMessage(message: string): "invalid_contribution" | "no_contribution" | "invalid_dates" | "upstream_error" {
+function mapProjectionErrorMessage(
+  message: string
+): "invalid_contribution" | "no_contribution" | "invalid_dates" | "invalid_share_price" | "invalid_dividend_amount" | "invalid_dividend_growth" | "upstream_error" {
+  if (message.includes("Dividend amount")) return "invalid_dividend_amount";
+  if (message.includes("Dividend growth rate")) return "invalid_dividend_growth";
+  if (message.includes("share price")) return "invalid_share_price";
   if (message.includes("cannot be negative")) return "invalid_contribution";
   if (message.includes("greater than 0")) return "no_contribution";
   if (message.includes("before end date") || message.includes("at least one month")) return "invalid_dates";
   return "upstream_error";
+}
+
+interface ProjectionAssumptions {
+  sharePrice: number;
+  priceGrowthPct: number;
+  dividendAmount: number;
+  dividendFrequency: DividendFrequency;
+  dividendGrowthPct: number;
 }
 
 export function CalculatorPageClient() {
@@ -73,10 +89,17 @@ export function CalculatorPageClient() {
   const [monthlyContribution, setMonthlyContribution] = useState(100);
   const [projectStartDate, setProjectStartDate] = useState(todayStr());
   const [projectEndDate, setProjectEndDate] = useState(tenYearsFromTodayStr());
-  const [annualReturnOverride, setAnnualReturnOverride] = useState<number | null>(null);
-  const [dividendYieldOverride, setDividendYieldOverride] = useState<number | null>(null);
-  const [estimate, setEstimate] = useState<HistoricalReturnEstimate | null>(null);
-  const [usingOverrideAtCalc, setUsingOverrideAtCalc] = useState(false);
+
+  const [snapshot, setSnapshot] = useState<StockSnapshot | null>(null);
+  const [sharePrice, setSharePrice] = useState(0);
+  const [priceGrowthPct, setPriceGrowthPct] = useState(0);
+  const [dividendAmount, setDividendAmount] = useState(0);
+  const [dividendFrequency, setDividendFrequency] = useState<DividendFrequency>("none");
+  const [dividendGrowthPct, setDividendGrowthPct] = useState(0);
+
+  const [loadStatus, setLoadStatus] = useState<Status>("idle");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [projectionAssumptions, setProjectionAssumptions] = useState<ProjectionAssumptions | null>(null);
 
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -85,6 +108,54 @@ export function CalculatorPageClient() {
 
   const [cachedSymbol, setCachedSymbol] = useState<string | null>(null);
   const [cachedSeries, setCachedSeries] = useState<StockHistoryPoint[] | null>(null);
+
+  function handleTickerChange(value: string) {
+    setTicker(value);
+    setSnapshot(null);
+    setLoadStatus("idle");
+    setLoadError(null);
+  }
+
+  async function fetchSeriesForSymbol(symbol: string): Promise<StockHistoryPoint[]> {
+    if (cachedSeries && symbol === cachedSymbol) return cachedSeries;
+    const res = await fetch(`/api/calculator/stock-history?symbol=${encodeURIComponent(symbol)}`);
+    const json = await res.json();
+    if (!res.ok) {
+      const err = json as StockHistoryError;
+      throw new StockFetchError(t.errors[err.error] ?? err.message);
+    }
+    const series = (json as StockHistoryResponse).series;
+    setCachedSymbol(symbol);
+    setCachedSeries(series);
+    return series;
+  }
+
+  async function handleLoadStock() {
+    setLoadError(null);
+    const symbol = ticker.trim().toUpperCase();
+    if (!symbol) {
+      setLoadStatus("error");
+      setLoadError(t.errors.missing_symbol);
+      return;
+    }
+    setLoadStatus("loading");
+    try {
+      const series = await fetchSeriesForSymbol(symbol);
+      const snap = analyzeStock(series);
+      setSnapshot(snap);
+      setSharePrice(snap.lastPrice);
+      setPriceGrowthPct(snap.measuredPriceGrowthPct);
+      setDividendAmount(snap.lastDividendAmount);
+      setDividendFrequency(snap.dividendFrequency);
+      setDividendGrowthPct(snap.measuredDividendGrowthPct);
+      setLoadStatus("success");
+    } catch (err) {
+      setLoadStatus("error");
+      if (err instanceof StockFetchError) setLoadError(err.message);
+      else if (err instanceof FutureProjectionError) setLoadError(t.errors.insufficient_history);
+      else setLoadError(t.errors.upstream_error);
+    }
+  }
 
   async function handleCalculate() {
     setErrorMessage(null);
@@ -127,27 +198,10 @@ export function CalculatorPageClient() {
 
     try {
       const symbol = ticker.trim().toUpperCase();
-      let series = cachedSeries;
-
-      if (!series || symbol !== cachedSymbol) {
-        const res = await fetch(`/api/calculator/stock-history?symbol=${encodeURIComponent(symbol)}`);
-        const json = await res.json();
-
-        if (!res.ok) {
-          const err = json as StockHistoryError;
-          setStatus("error");
-          setErrorMessage(t.errors[err.error] ?? err.message);
-          return;
-        }
-
-        series = (json as StockHistoryResponse).series;
-        setCachedSymbol(symbol);
-        setCachedSeries(series);
-      }
-
       const dividendMode = dividendModeFrom(includeDividends, drip);
 
       if (mode === "backtest") {
+        const series = await fetchSeriesForSymbol(symbol);
         const computed = computeCompoundGrowth({
           prices: series,
           initialInvestment,
@@ -157,17 +211,35 @@ export function CalculatorPageClient() {
         });
         setResult(computed);
       } else {
-        const est = estimateHistoricalReturns(series);
-        setEstimate(est);
-        const overridden = annualReturnOverride !== null || dividendYieldOverride !== null;
-        setUsingOverrideAtCalc(overridden);
-        const annualPriceReturnPct = annualReturnOverride ?? est.annualPriceReturnPct;
-        const annualDividendYieldPct = dividendYieldOverride ?? est.annualDividendYieldPct;
-        const referencePrice = series[series.length - 1].close;
+        let snap = snapshot;
+        let effective: ProjectionAssumptions = {
+          sharePrice, priceGrowthPct, dividendAmount, dividendFrequency, dividendGrowthPct,
+        };
+
+        if (!snap) {
+          const series = await fetchSeriesForSymbol(symbol);
+          snap = analyzeStock(series);
+          effective = {
+            sharePrice: snap.lastPrice,
+            priceGrowthPct: snap.measuredPriceGrowthPct,
+            dividendAmount: snap.lastDividendAmount,
+            dividendFrequency: snap.dividendFrequency,
+            dividendGrowthPct: snap.measuredDividendGrowthPct,
+          };
+          setSnapshot(snap);
+          setSharePrice(effective.sharePrice);
+          setPriceGrowthPct(effective.priceGrowthPct);
+          setDividendAmount(effective.dividendAmount);
+          setDividendFrequency(effective.dividendFrequency);
+          setDividendGrowthPct(effective.dividendGrowthPct);
+        }
+
         const computed = projectFutureGrowth({
-          referencePrice,
-          annualPriceReturnPct,
-          annualDividendYieldPct,
+          referencePrice: effective.sharePrice,
+          priceGrowthPct: effective.priceGrowthPct,
+          startingDividendPerShare: effective.dividendAmount,
+          dividendGrowthPct: effective.dividendGrowthPct,
+          dividendFrequency: effective.dividendFrequency,
           initialInvestment,
           monthlyContribution,
           startDate: projectStartDate,
@@ -175,6 +247,7 @@ export function CalculatorPageClient() {
           dividendMode,
         });
         setProjectionResult(computed);
+        setProjectionAssumptions(effective);
       }
 
       setStatus("success");
@@ -184,6 +257,8 @@ export function CalculatorPageClient() {
         setErrorMessage(t.errors[mapCalculatorErrorMessage(err.message)]);
       } else if (err instanceof FutureProjectionError) {
         setErrorMessage(t.errors[mapProjectionErrorMessage(err.message)]);
+      } else if (err instanceof StockFetchError) {
+        setErrorMessage(err.message);
       } else {
         setErrorMessage(t.errors.upstream_error);
       }
@@ -197,16 +272,19 @@ export function CalculatorPageClient() {
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <CalculatorForm
           mode={mode} onMode={setMode}
-          ticker={ticker} onTicker={setTicker}
+          ticker={ticker} onTicker={handleTickerChange}
           initialInvestment={initialInvestment} onInitialInvestment={setInitialInvestment}
           startDate={startDate} onStartDate={setStartDate}
           endDate={endDate} onEndDate={setEndDate}
           monthlyContribution={monthlyContribution} onMonthlyContribution={setMonthlyContribution}
           projectStartDate={projectStartDate} onProjectStartDate={setProjectStartDate}
           projectEndDate={projectEndDate} onProjectEndDate={setProjectEndDate}
-          annualReturnOverride={annualReturnOverride} onAnnualReturnOverride={setAnnualReturnOverride}
-          dividendYieldOverride={dividendYieldOverride} onDividendYieldOverride={setDividendYieldOverride}
-          estimate={estimate}
+          loadStatus={loadStatus} loadError={loadError} onLoad={handleLoadStock} snapshot={snapshot}
+          sharePrice={sharePrice} onSharePrice={setSharePrice}
+          priceGrowthPct={priceGrowthPct} onPriceGrowthPct={setPriceGrowthPct}
+          dividendAmount={dividendAmount} onDividendAmount={setDividendAmount}
+          dividendFrequency={dividendFrequency} onDividendFrequency={setDividendFrequency}
+          dividendGrowthPct={dividendGrowthPct} onDividendGrowthPct={setDividendGrowthPct}
           includeDividends={includeDividends} onIncludeDividends={setIncludeDividends}
           drip={drip} onDrip={setDrip}
           loading={status === "loading"}
@@ -254,8 +332,7 @@ export function CalculatorPageClient() {
 
             <ProjectionResults
               result={projectionResult}
-              estimate={estimate}
-              usingOverride={usingOverrideAtCalc}
+              assumptions={projectionAssumptions}
               ticker={ticker}
             />
 

@@ -3,16 +3,23 @@
 import { formatCurrency } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 import { StatCard } from "./stat-card";
-import type { FutureProjectionResult, HistoricalReturnEstimate } from "@/lib/future-projection";
+import type { FutureProjectionResult, DividendFrequency } from "@/lib/future-projection";
+
+interface ProjectionAssumptions {
+  sharePrice: number;
+  priceGrowthPct: number;
+  dividendAmount: number;
+  dividendFrequency: DividendFrequency;
+  dividendGrowthPct: number;
+}
 
 interface ProjectionResultsProps {
   result: FutureProjectionResult;
-  estimate: HistoricalReturnEstimate | null;
-  usingOverride: boolean;
+  assumptions: ProjectionAssumptions | null;
   ticker: string;
 }
 
-export function ProjectionResults({ result, estimate, usingOverride, ticker }: ProjectionResultsProps) {
+export function ProjectionResults({ result, assumptions, ticker }: ProjectionResultsProps) {
   const dict = useDict();
   const t = dict.calculator;
 
@@ -27,22 +34,13 @@ export function ProjectionResults({ result, estimate, usingOverride, ticker }: P
         <StatCard label={t.totalDividendsCollected} value={formatCurrency(result.totalDividendsCollected)} />
       </div>
 
-      {estimate && (
+      {assumptions && (
         <p className="text-xs text-[var(--color-muted-foreground)]">
-          {usingOverride
-            ? t.estimateNoteOverridden
-            : t.estimateNoteAuto
-                .replace("{return}", estimate.annualPriceReturnPct.toFixed(1))
-                .replace("{yield}", estimate.annualDividendYieldPct.toFixed(1))
-                .replace("{years}", Math.round(estimate.yearsOfHistory).toString())
-                .replace("{ticker}", ticker)
-                .replace("{date}", estimate.sinceDate)}
-        </p>
-      )}
-
-      {estimate?.insufficientHistory && (
-        <p className="text-xs text-[var(--color-warning)]">
-          {t.limitedHistoryWarning.replace("{years}", estimate.yearsOfHistory.toFixed(1))}
+          {t.assumptionsNote
+            .replace("{price}", assumptions.priceGrowthPct.toFixed(1))
+            .replace("{dividend}", assumptions.dividendGrowthPct.toFixed(1))
+            .replace("{frequency}", t.dividendFrequencyOptions[assumptions.dividendFrequency])
+            .replace("{ticker}", ticker)}
         </p>
       )}
     </div>

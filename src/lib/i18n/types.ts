@@ -497,15 +497,29 @@ export interface Dict {
     modeBacktestLabel: string;
     modeProjectLabel: string;
     monthlyContributionLabel: string;
-    annualReturnOverrideLabel: string;
-    dividendYieldOverrideLabel: string;
-    estimateAutoPlaceholder: string;
     totalContributed: string;
     totalGrowth: string;
-    estimateNoteAuto: string;
-    estimateNoteOverridden: string;
     limitedHistoryWarning: string;
     projectionEndDateCappedWarning: string;
+    loadButton: string;
+    loadingButton: string;
+    lastPriceLabel: string;
+    dividendYieldLabel: string;
+    measuredLabel: string;
+    sharePriceLabel: string;
+    dividendAmountLabel: string;
+    dividendFrequencyLabel: string;
+    dividendFrequencyOptions: {
+      monthly: string;
+      quarterly: string;
+      semiannual: string;
+      annual: string;
+      none: string;
+    };
+    dividendGrowthRateLabel: string;
+    priceGrowthRateLabel: string;
+    insufficientDividendHistoryWarning: string;
+    assumptionsNote: string;
     errors: {
       missing_symbol: string;
       invalid_symbol: string;
@@ -518,6 +532,10 @@ export interface Dict {
       invalid_amount: string;
       invalid_contribution: string;
       no_contribution: string;
+      invalid_share_price: string;
+      invalid_dividend_amount: string;
+      invalid_dividend_growth: string;
+      insufficient_history: string;
     };
   };
 }

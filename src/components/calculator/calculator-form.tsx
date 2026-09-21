@@ -5,8 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 import type { DividendMode } from "@/lib/compound-calculator";
-import type { HistoricalReturnEstimate } from "@/lib/future-projection";
+import type { DividendFrequency, StockSnapshot } from "@/lib/future-projection";
 import { CalculatorModeToggle, type CalculatorMode } from "./calculator-mode-toggle";
+
+const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
+
+type LoadStatus = "idle" | "loading" | "error" | "success";
 
 interface CalculatorFormProps {
   mode: CalculatorMode;
@@ -30,11 +34,22 @@ interface CalculatorFormProps {
   onProjectStartDate: (value: string) => void;
   projectEndDate: string;
   onProjectEndDate: (value: string) => void;
-  annualReturnOverride: number | null;
-  onAnnualReturnOverride: (value: number | null) => void;
-  dividendYieldOverride: number | null;
-  onDividendYieldOverride: (value: number | null) => void;
-  estimate: HistoricalReturnEstimate | null;
+
+  loadStatus: LoadStatus;
+  loadError: string | null;
+  onLoad: () => void;
+  snapshot: StockSnapshot | null;
+
+  sharePrice: number;
+  onSharePrice: (value: number) => void;
+  priceGrowthPct: number;
+  onPriceGrowthPct: (value: number) => void;
+  dividendAmount: number;
+  onDividendAmount: (value: number) => void;
+  dividendFrequency: DividendFrequency;
+  onDividendFrequency: (value: DividendFrequency) => void;
+  dividendGrowthPct: number;
+  onDividendGrowthPct: (value: number) => void;
 
   includeDividends: boolean;
   onIncludeDividends: (value: boolean) => void;
@@ -50,12 +65,6 @@ export function dividendModeFrom(includeDividends: boolean, drip: boolean): Divi
   return drip ? "drip" : "cash";
 }
 
-function parseOptionalNumber(raw: string): number | null {
-  if (raw.trim() === "") return null;
-  const n = Number(raw);
-  return Number.isNaN(n) ? null : n;
-}
-
 export function CalculatorForm({
   mode, onMode,
   ticker, onTicker,
@@ -65,9 +74,12 @@ export function CalculatorForm({
   monthlyContribution, onMonthlyContribution,
   projectStartDate, onProjectStartDate,
   projectEndDate, onProjectEndDate,
-  annualReturnOverride, onAnnualReturnOverride,
-  dividendYieldOverride, onDividendYieldOverride,
-  estimate,
+  loadStatus, loadError, onLoad, snapshot,
+  sharePrice, onSharePrice,
+  priceGrowthPct, onPriceGrowthPct,
+  dividendAmount, onDividendAmount,
+  dividendFrequency, onDividendFrequency,
+  dividendGrowthPct, onDividendGrowthPct,
   includeDividends, onIncludeDividends,
   drip, onDrip,
   loading, onSubmit,
@@ -88,13 +100,34 @@ export function CalculatorForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="calc-ticker">{t.tickerLabel}</Label>
-          <Input
-            id="calc-ticker"
-            value={ticker}
-            onChange={(e) => onTicker(e.target.value.toUpperCase())}
-            placeholder={t.tickerPlaceholder}
-            required
-          />
+          {mode === "project" ? (
+            <div className="flex gap-2">
+              <Input
+                id="calc-ticker"
+                className="flex-1"
+                value={ticker}
+                onChange={(e) => onTicker(e.target.value.toUpperCase())}
+                placeholder={t.tickerPlaceholder}
+                required
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onLoad}
+                disabled={loadStatus === "loading" || !ticker.trim()}
+              >
+                {loadStatus === "loading" ? t.loadingButton : t.loadButton}
+              </Button>
+            </div>
+          ) : (
+            <Input
+              id="calc-ticker"
+              value={ticker}
+              onChange={(e) => onTicker(e.target.value.toUpperCase())}
+              placeholder={t.tickerPlaceholder}
+              required
+            />
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="calc-amount">{t.initialInvestmentLabel}</Label>
@@ -108,6 +141,34 @@ export function CalculatorForm({
           />
         </div>
       </div>
+
+      {mode === "project" && loadStatus === "error" && loadError && (
+        <p className="text-xs text-[var(--color-danger)]">{loadError}</p>
+      )}
+
+      {mode === "project" && snapshot && (
+        <div className="rounded-lg bg-[var(--color-muted)] px-3 py-2 space-y-0.5 text-xs text-[var(--color-muted-foreground)]">
+          <p>{t.lastPriceLabel.replace("{ticker}", ticker).replace("{price}", snapshot.lastPrice.toFixed(2))}</p>
+          <p>
+            {t.dividendYieldLabel
+              .replace("{pct}", snapshot.currentDividendYieldPct.toFixed(2))
+              .replace("{amount}", snapshot.currentDividendAnnualAmount.toFixed(2))}
+          </p>
+          <p>
+            {t.measuredLabel
+              .replace("{dividendPct}", snapshot.measuredDividendGrowthPct.toFixed(2))
+              .replace("{pricePct}", snapshot.measuredPriceGrowthPct.toFixed(2))}
+          </p>
+          {snapshot.insufficientHistory && (
+            <p className="text-[var(--color-warning)]">
+              {t.limitedHistoryWarning.replace("{years}", snapshot.yearsOfHistory.toFixed(1))}
+            </p>
+          )}
+          {snapshot.insufficientDividendHistory && (
+            <p className="text-[var(--color-warning)]">{t.insufficientDividendHistoryWarning}</p>
+          )}
+        </div>
+      )}
 
       {mode === "backtest" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -171,26 +232,65 @@ export function CalculatorForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="calc-return-override">{t.annualReturnOverrideLabel}</Label>
+              <Label htmlFor="calc-share-price">{t.sharePriceLabel}</Label>
               <Input
-                id="calc-return-override"
+                id="calc-share-price"
                 type="number"
-                step="0.1"
-                value={annualReturnOverride ?? ""}
-                onChange={(e) => onAnnualReturnOverride(parseOptionalNumber(e.target.value))}
-                placeholder={estimate ? estimate.annualPriceReturnPct.toFixed(1) : t.estimateAutoPlaceholder}
+                min="0"
+                step="0.01"
+                value={sharePrice}
+                onChange={(e) => onSharePrice(Number(e.target.value))}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="calc-yield-override">{t.dividendYieldOverrideLabel}</Label>
+              <Label htmlFor="calc-price-growth">{t.priceGrowthRateLabel}</Label>
               <Input
-                id="calc-yield-override"
+                id="calc-price-growth"
                 type="number"
                 step="0.1"
-                value={dividendYieldOverride ?? ""}
-                onChange={(e) => onDividendYieldOverride(parseOptionalNumber(e.target.value))}
-                placeholder={estimate ? estimate.annualDividendYieldPct.toFixed(1) : t.estimateAutoPlaceholder}
-                disabled={!includeDividends}
+                value={priceGrowthPct}
+                onChange={(e) => onPriceGrowthPct(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="calc-dividend-amount">{t.dividendAmountLabel}</Label>
+              <Input
+                id="calc-dividend-amount"
+                type="number"
+                min="0"
+                step="0.001"
+                value={dividendAmount}
+                onChange={(e) => onDividendAmount(Number(e.target.value))}
+                disabled={dividendFrequency === "none"}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="calc-dividend-frequency">{t.dividendFrequencyLabel}</Label>
+              <select
+                id="calc-dividend-frequency"
+                className={selectCls}
+                value={dividendFrequency}
+                onChange={(e) => onDividendFrequency(e.target.value as DividendFrequency)}
+              >
+                <option value="monthly">{t.dividendFrequencyOptions.monthly}</option>
+                <option value="quarterly">{t.dividendFrequencyOptions.quarterly}</option>
+                <option value="semiannual">{t.dividendFrequencyOptions.semiannual}</option>
+                <option value="annual">{t.dividendFrequencyOptions.annual}</option>
+                <option value="none">{t.dividendFrequencyOptions.none}</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="calc-dividend-growth">{t.dividendGrowthRateLabel}</Label>
+              <Input
+                id="calc-dividend-growth"
+                type="number"
+                step="0.1"
+                value={dividendGrowthPct}
+                onChange={(e) => onDividendGrowthPct(Number(e.target.value))}
+                disabled={dividendFrequency === "none"}
               />
             </div>
           </div>
