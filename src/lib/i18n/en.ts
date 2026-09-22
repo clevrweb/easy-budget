@@ -501,6 +501,7 @@ export const en: Dict = {
     contributionFrequencyLabel: "Contribution Frequency",
     contributionFrequencyOptions: {
       weekly: "Weekly",
+      biweekly: "Biweekly",
       monthly: "Monthly",
       quarterly: "Quarterly",
       annually: "Annually",

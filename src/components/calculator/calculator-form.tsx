@@ -242,6 +242,7 @@ export function CalculatorForm({
                 onChange={(e) => onContributionFrequency(e.target.value as ContributionFrequency)}
               >
                 <option value="weekly">{t.contributionFrequencyOptions.weekly}</option>
+                <option value="biweekly">{t.contributionFrequencyOptions.biweekly}</option>
                 <option value="monthly">{t.contributionFrequencyOptions.monthly}</option>
                 <option value="quarterly">{t.contributionFrequencyOptions.quarterly}</option>
                 <option value="annually">{t.contributionFrequencyOptions.annually}</option>

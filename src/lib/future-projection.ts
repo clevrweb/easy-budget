@@ -166,9 +166,9 @@ function addMonthsClamped(dateStr: string, months: number): string {
   return toISODate(new Date(y, targetMonthIndex, clampedDay));
 }
 
-export type ContributionFrequency = "weekly" | "monthly" | "quarterly" | "annually";
+export type ContributionFrequency = "weekly" | "biweekly" | "monthly" | "quarterly" | "annually";
 
-const CONTRIBUTION_PERIOD_MONTHS: Record<Exclude<ContributionFrequency, "weekly">, number> = {
+const CONTRIBUTION_PERIOD_MONTHS: Record<Exclude<ContributionFrequency, "weekly" | "biweekly">, number> = {
   monthly: 1, quarterly: 3, annually: 12,
 };
 const WEEKS_PER_YEAR = 52.1786;
@@ -274,6 +274,8 @@ export function projectFutureGrowth(input: FutureProjectionInput): FutureProject
     let contributionThisMonth = 0;
     if (contributionFrequency === "weekly") {
       contributionThisMonth = contributionAmount * (WEEKS_PER_YEAR / 12);
+    } else if (contributionFrequency === "biweekly") {
+      contributionThisMonth = contributionAmount * (WEEKS_PER_YEAR / 2 / 12);
     } else {
       const contributionPeriodMonths = CONTRIBUTION_PERIOD_MONTHS[contributionFrequency];
       if (i % contributionPeriodMonths === 0) contributionThisMonth = contributionAmount;

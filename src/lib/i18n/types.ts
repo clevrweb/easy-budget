@@ -500,6 +500,7 @@ export interface Dict {
     contributionFrequencyLabel: string;
     contributionFrequencyOptions: {
       weekly: string;
+      biweekly: string;
       monthly: string;
       quarterly: string;
       annually: string;
