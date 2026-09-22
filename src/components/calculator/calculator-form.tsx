@@ -8,7 +8,7 @@ import type { DividendMode } from "@/lib/compound-calculator";
 import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
 import { CalculatorModeToggle, type CalculatorMode } from "./calculator-mode-toggle";
 
-const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
+const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] disabled:opacity-50 disabled:cursor-not-allowed";
 
 type LoadStatus = "idle" | "loading" | "error" | "success";
 
@@ -89,6 +89,7 @@ export function CalculatorForm({
 }: CalculatorFormProps) {
   const dict = useDict();
   const t = dict.calculator;
+  const projectLocked = mode === "project" && loadStatus !== "success";
 
   return (
     <form
@@ -141,6 +142,7 @@ export function CalculatorForm({
             step="0.01"
             value={initialInvestment}
             onChange={(e) => onInitialInvestment(Number(e.target.value))}
+            disabled={projectLocked}
           />
         </div>
       </div>
@@ -207,6 +209,7 @@ export function CalculatorForm({
                 value={projectStartDate}
                 onChange={(e) => onProjectStartDate(e.target.value)}
                 required
+                disabled={projectLocked}
               />
             </div>
             <div className="space-y-1.5">
@@ -217,6 +220,7 @@ export function CalculatorForm({
                 value={projectEndDate}
                 onChange={(e) => onProjectEndDate(e.target.value)}
                 required
+                disabled={projectLocked}
               />
             </div>
           </div>
@@ -231,6 +235,7 @@ export function CalculatorForm({
                 step="0.01"
                 value={contributionAmount}
                 onChange={(e) => onContributionAmount(Number(e.target.value))}
+                disabled={projectLocked}
               />
             </div>
             <div className="space-y-1.5">
@@ -240,6 +245,7 @@ export function CalculatorForm({
                 className={selectCls}
                 value={contributionFrequency}
                 onChange={(e) => onContributionFrequency(e.target.value as ContributionFrequency)}
+                disabled={projectLocked}
               >
                 <option value="weekly">{t.contributionFrequencyOptions.weekly}</option>
                 <option value="biweekly">{t.contributionFrequencyOptions.biweekly}</option>
@@ -257,9 +263,10 @@ export function CalculatorForm({
                 id="calc-share-price"
                 type="number"
                 min="0"
-                step="0.01"
+                step="any"
                 value={sharePrice}
                 onChange={(e) => onSharePrice(Number(e.target.value))}
+                disabled={projectLocked}
               />
             </div>
             <div className="space-y-1.5">
@@ -267,9 +274,10 @@ export function CalculatorForm({
               <Input
                 id="calc-price-growth"
                 type="number"
-                step="0.1"
+                step="any"
                 value={priceGrowthPct}
                 onChange={(e) => onPriceGrowthPct(Number(e.target.value))}
+                disabled={projectLocked}
               />
             </div>
           </div>
@@ -281,10 +289,10 @@ export function CalculatorForm({
                 id="calc-dividend-amount"
                 type="number"
                 min="0"
-                step="0.001"
+                step="any"
                 value={dividendAmount}
                 onChange={(e) => onDividendAmount(Number(e.target.value))}
-                disabled={dividendFrequency === "none"}
+                disabled={projectLocked || dividendFrequency === "none"}
               />
             </div>
             <div className="space-y-1.5">
@@ -294,6 +302,7 @@ export function CalculatorForm({
                 className={selectCls}
                 value={dividendFrequency}
                 onChange={(e) => onDividendFrequency(e.target.value as DividendFrequency)}
+                disabled={projectLocked}
               >
                 <option value="monthly">{t.dividendFrequencyOptions.monthly}</option>
                 <option value="quarterly">{t.dividendFrequencyOptions.quarterly}</option>
@@ -307,10 +316,10 @@ export function CalculatorForm({
               <Input
                 id="calc-dividend-growth"
                 type="number"
-                step="0.1"
+                step="any"
                 value={dividendGrowthPct}
                 onChange={(e) => onDividendGrowthPct(Number(e.target.value))}
-                disabled={dividendFrequency === "none"}
+                disabled={projectLocked || dividendFrequency === "none"}
               />
             </div>
           </div>
@@ -318,10 +327,11 @@ export function CalculatorForm({
       )}
 
       <div className="space-y-2">
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className={`flex items-center gap-2 ${projectLocked ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}>
           <input
             type="checkbox"
             checked={includeDividends}
+            disabled={projectLocked}
             onChange={(e) => {
               onIncludeDividends(e.target.checked);
               if (!e.target.checked) onDrip(false);
@@ -331,11 +341,11 @@ export function CalculatorForm({
           <span className="text-sm text-[var(--color-foreground)]">{t.includeDividends}</span>
         </label>
 
-        <label className={`flex items-center gap-2 ${includeDividends ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
+        <label className={`flex items-center gap-2 ${!includeDividends || projectLocked ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}>
           <input
             type="checkbox"
             checked={drip}
-            disabled={!includeDividends}
+            disabled={!includeDividends || projectLocked}
             onChange={(e) => onDrip(e.target.checked)}
             className="w-4 h-4 rounded accent-[var(--color-primary)]"
           />
@@ -343,7 +353,7 @@ export function CalculatorForm({
         </label>
       </div>
 
-      <Button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading || projectLocked}>
         {loading ? t.calculating : t.calculateButton}
       </Button>
     </form>
