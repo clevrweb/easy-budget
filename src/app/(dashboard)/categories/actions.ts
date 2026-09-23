@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveAccountId } from "@/lib/supabase/account";
+import { CATEGORY_COLOR_DEFAULT } from "@/lib/colors";
 
 export async function createCategoryAction(formData: FormData) {
   const supabase = await createClient();
@@ -15,7 +16,7 @@ export async function createCategoryAction(formData: FormData) {
     account_id: accountId,
     user_id: user.id,
     name: formData.get("name") as string,
-    color: (formData.get("color") as string) || "#4f46e5",
+    color: (formData.get("color") as string) || CATEGORY_COLOR_DEFAULT,
     icon: (formData.get("icon") as string) || null,
   }).select().single();
 

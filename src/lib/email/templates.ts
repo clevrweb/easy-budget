@@ -27,7 +27,7 @@ function baseLayout(heading: string, body: string, buttonLabel: string, buttonHr
             </tr>
             <tr>
               <td style="padding:0 32px 32px 32px;">
-                <a href="${buttonHref}" style="display:inline-block;background-color:#4f46e5;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;">${buttonLabel}</a>
+                <a href="${buttonHref}" style="display:inline-block;background-color:#c94569;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;">${buttonLabel}</a>
               </td>
             </tr>
             <tr>

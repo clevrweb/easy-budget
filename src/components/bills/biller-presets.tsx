@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CATEGORY_COLOR_PRESETS as AVATAR_COLORS } from "@/lib/colors";
 
 // Logo lookup history, in order of what was tried and why it was dropped:
 // - Clearbit's logo/autocomplete APIs are dead (logo.clearbit.com no longer
@@ -39,12 +40,6 @@ export function fetchBillerLogo(name: string): string | null {
   if (domain === ".com") return null;
   return logoUrlForDomain(domain);
 }
-
-const AVATAR_COLORS = [
-  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
-  "#ea580c", "#d97706", "#16a34a", "#0891b2",
-  "#0284c7", "#6d28d9", "#be185d", "#0f766e",
-];
 
 function avatarColor(name: string) {
   return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];

@@ -8,12 +8,7 @@ import { Label } from "@/components/ui/label";
 import { createCategoryAction } from "@/app/(dashboard)/categories/actions";
 import type { Category } from "@/types/database";
 import { useDict } from "@/components/language-provider";
-
-const COLOR_PRESETS = [
-  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
-  "#ea580c", "#d97706", "#16a34a", "#0891b2",
-  "#0284c7", "#6b7280", "#1e293b", "#4caf50",
-];
+import { CATEGORY_COLOR_PRESETS, CATEGORY_COLOR_DEFAULT } from "@/lib/colors";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
@@ -37,13 +32,13 @@ export function CategorySelectWithAdd({
   const [categories, setCategories] = useState(initialCategories);
   const [selected, setSelected]     = useState(defaultValue);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [color, setColor]           = useState("#4f46e5");
+  const [color, setColor]           = useState(CATEGORY_COLOR_DEFAULT);
   const [catName, setCatName]       = useState("");
   const [error, setError]           = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function openDialog() {
-    setColor("#4f46e5");
+    setColor(CATEGORY_COLOR_DEFAULT);
     setCatName("");
     setError(null);
     setDialogOpen(true);
@@ -123,7 +118,7 @@ export function CategorySelectWithAdd({
             />
 
             <div className="flex flex-wrap gap-1.5">
-              {COLOR_PRESETS.map((c) => (
+              {CATEGORY_COLOR_PRESETS.map((c) => (
                 <button
                   key={c}
                   type="button"

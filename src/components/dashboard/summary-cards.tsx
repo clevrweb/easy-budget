@@ -54,9 +54,9 @@ export function SummaryCards({ summary }: { summary: Summary }) {
   const d = dict.dashboard;
 
   const cards = [
-    { label: d.dueToday,     bills: summary.dueToday,     icon: <Calendar className="w-4 h-4" />,      color: "#4f46e5" },
+    { label: d.dueToday,     bills: summary.dueToday,     icon: <Calendar className="w-4 h-4" />,      color: "#8B93F0" },
     { label: d.dueThisWeek,  bills: summary.dueThisWeek,  icon: <CalendarDays className="w-4 h-4" />,  color: "#ff9800" },
-    { label: d.dueThisMonth, bills: summary.dueThisMonth, icon: <CalendarRange className="w-4 h-4" />, color: "#0891b2" },
+    { label: d.dueThisMonth, bills: summary.dueThisMonth, icon: <CalendarRange className="w-4 h-4" />, color: "#7FD4E8" },
     { label: d.paid,         bills: summary.paid,          icon: <CheckCircle2 className="w-4 h-4" />, color: "#4caf50" },
     { label: d.pending,      bills: summary.pending,       icon: <Clock className="w-4 h-4" />,        color: "#94a3b8" },
     { label: d.overdue,      bills: summary.overdue,       icon: <AlertCircle className="w-4 h-4" />,  color: "#f44336" },

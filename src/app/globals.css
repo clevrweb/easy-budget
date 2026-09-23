@@ -2,8 +2,8 @@
 
 @theme {
   /* Brand colors from EasyBudget */
-  --color-primary: #7c3bed;
-  --color-primary-hover: #6d2fd4;
+  --color-primary: #c94569;
+  --color-primary-hover: #b23a5c;
   --color-primary-foreground: #ffffff;
 
   --color-success: #4caf50;
@@ -34,11 +34,11 @@
   --color-muted-foreground: #7f8c8d;
   --color-border: #e1e8ed;
   --color-input: #e1e8ed;
-  --color-ring: #7c3bed;
+  --color-ring: #c94569;
   --color-sidebar: #ffffff;
   --color-sidebar-foreground: #2c3e50;
-  --color-sidebar-active: #f3eeff;
-  --color-sidebar-active-foreground: #7c3bed;
+  --color-sidebar-active: #fbe7ed;
+  --color-sidebar-active-foreground: #c94569;
 
   /* Font */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -81,8 +81,8 @@
     --color-input: #404040;
     --color-sidebar: #1c1c1c;
     --color-sidebar-foreground: #f3f3f3;
-    --color-sidebar-active: #3a1f6e;
-    --color-sidebar-active-foreground: #d4b8ff;
+    --color-sidebar-active: #3d2029;
+    --color-sidebar-active-foreground: #f0a8bc;
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
     --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.5);
   }

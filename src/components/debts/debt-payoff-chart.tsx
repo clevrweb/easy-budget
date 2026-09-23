@@ -3,8 +3,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import type { SnowballPlan } from "@/lib/debt-snowball";
-
-const COLORS = ["#4f46e5", "#db2777", "#ea580c", "#16a34a", "#0891b2", "#7c3aed", "#dc2626", "#0284c7"];
+import { CHART_COLOR_PRESETS as COLORS } from "@/lib/colors";
 
 interface DebtPayoffChartProps {
   plan: SnowballPlan;

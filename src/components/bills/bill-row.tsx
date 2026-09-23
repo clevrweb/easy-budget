@@ -12,12 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
-
-const AVATAR_COLORS = [
-  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
-  "#ea580c", "#d97706", "#16a34a", "#0891b2",
-  "#0284c7", "#6d28d9", "#be185d", "#0f766e",
-];
+import { CATEGORY_COLOR_PRESETS as AVATAR_COLORS } from "@/lib/colors";
 
 function avatarColor(name: string) {
   return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];

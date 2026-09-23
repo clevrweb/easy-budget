@@ -12,14 +12,7 @@ import { GROUP_ICONS } from "@/lib/group-icons";
 import { ColorSwatchPicker } from "@/components/ui/color-swatch-picker";
 import type { Group } from "@/types/database";
 import { Plus, X } from "lucide-react";
-
-const COLOR_PRESETS = [
-  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
-  "#ea580c", "#d97706", "#16a34a", "#0891b2",
-  "#0284c7", "#6b7280", "#1e293b", "#4caf50",
-];
-
-const TEXT_COLOR_PRESETS = ["#ffffff", "#000000", "#e5e7eb", "#1e293b"];
+import { CATEGORY_COLOR_PRESETS, CATEGORY_COLOR_DEFAULT, TEXT_COLOR_PRESETS } from "@/lib/colors";
 
 interface GroupFormProps {
   group?: Group;
@@ -29,7 +22,7 @@ interface GroupFormProps {
 export function GroupForm({ group, trigger }: GroupFormProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [color, setColor] = useState(group?.color ?? "#4f46e5");
+  const [color, setColor] = useState(group?.color ?? CATEGORY_COLOR_DEFAULT);
   const [textColor, setTextColor] = useState(group?.text_color ?? "#ffffff");
   const [icon, setIcon] = useState<string | null>(group?.icon ?? null);
   const [isPending, startTransition] = useTransition();
@@ -41,7 +34,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
   function resetAndClose(o: boolean) {
     setOpen(o);
     if (!o) {
-      setColor(group?.color ?? "#4f46e5");
+      setColor(group?.color ?? CATEGORY_COLOR_DEFAULT);
       setTextColor(group?.text_color ?? "#ffffff");
       setIcon(group?.icon ?? null);
       setCreatedGroup(null);
@@ -104,7 +97,7 @@ export function GroupForm({ group, trigger }: GroupFormProps) {
               <div className="space-y-2">
                 <Label>{t.colorLabel}</Label>
                 <div className="flex flex-wrap gap-2">
-                  {COLOR_PRESETS.map((c) => (
+                  {CATEGORY_COLOR_PRESETS.map((c) => (
                     <button
                       key={c}
                       type="button"

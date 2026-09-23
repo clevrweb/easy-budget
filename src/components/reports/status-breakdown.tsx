@@ -12,7 +12,7 @@ export function StatusBreakdown({ total, paid, pending, overdue }: StatusBreakdo
   const stats = [
     { label: "Total", value: total, icon: Receipt, color: "text-[var(--color-primary)]", bar: "bg-[var(--color-primary)]" },
     { label: "Paid", value: paid, icon: CheckCircle2, color: "text-[var(--color-success)]", bar: "bg-[var(--color-success)]" },
-    { label: "Pending", value: pending, icon: Clock, color: "text-yellow-500", bar: "bg-yellow-500" },
+    { label: "Pending", value: pending, icon: Clock, color: "text-[var(--color-warning)]", bar: "bg-[var(--color-warning)]" },
     { label: "Overdue", value: overdue, icon: AlertCircle, color: "text-[var(--color-danger)]", bar: "bg-[var(--color-danger)]" },
   ];
 

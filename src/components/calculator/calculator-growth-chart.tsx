@@ -38,7 +38,7 @@ export function CalculatorGrowthChart({ timeline }: CalculatorGrowthChartProps) 
           formatter={(v: number) => formatCurrency(v)}
           contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 12 }}
         />
-        <Area type="monotone" dataKey="value" name="Value" stroke="#4f46e5" fill="#4f46e5" fillOpacity={0.25} />
+        <Area type="monotone" dataKey="value" name="Value" stroke="#C94569" fill="#C94569" fillOpacity={0.25} />
       </AreaChart>
     </ResponsiveContainer>
   );

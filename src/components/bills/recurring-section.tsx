@@ -189,7 +189,7 @@ export function RecurringSection({
           </div>
 
           {/* Preview */}
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium" style={{ backgroundColor: "#4f46e510", color: "var(--color-primary)" }}>
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium" style={{ backgroundColor: "#c9456910", color: "var(--color-primary)" }}>
             {previewText}
           </div>
 

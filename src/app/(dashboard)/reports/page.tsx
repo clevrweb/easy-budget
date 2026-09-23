@@ -9,11 +9,7 @@ import type { MonthlyDataPoint } from "@/components/reports/monthly-chart";
 import type { CategoryDataPoint } from "@/components/reports/category-chart";
 import { getServerDict } from "@/lib/i18n/server";
 import { getActiveAccountId } from "@/lib/supabase/account";
-
-const FALLBACK_COLORS = [
-  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
-  "#ea580c", "#d97706", "#16a34a", "#0891b2",
-];
+import { CHART_COLOR_PRESETS as FALLBACK_COLORS } from "@/lib/colors";
 
 export default async function ReportsPage({
   searchParams,

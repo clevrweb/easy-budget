@@ -9,12 +9,7 @@ import { createCategoryAction, updateCategoryAction } from "@/app/(dashboard)/ca
 import { useDict } from "@/components/language-provider";
 import type { Category } from "@/types/database";
 import { Plus } from "lucide-react";
-
-const COLOR_PRESETS = [
-  "#4f46e5", "#7c3aed", "#db2777", "#dc2626",
-  "#ea580c", "#d97706", "#16a34a", "#0891b2",
-  "#0284c7", "#6b7280", "#1e293b", "#4caf50",
-];
+import { CATEGORY_COLOR_PRESETS, CATEGORY_COLOR_DEFAULT } from "@/lib/colors";
 
 interface CategoryFormProps {
   category?: Category;
@@ -24,7 +19,7 @@ interface CategoryFormProps {
 export function CategoryForm({ category, trigger }: CategoryFormProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [color, setColor] = useState(category?.color ?? "#4f46e5");
+  const [color, setColor] = useState(category?.color ?? CATEGORY_COLOR_DEFAULT);
   const [isPending, startTransition] = useTransition();
   const isEdit = !!category;
   const dict = useDict();
@@ -38,12 +33,12 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
         ? await updateCategoryAction(formData)
         : await createCategoryAction(formData);
       if (result?.error) setError(result.error);
-      else { setOpen(false); setColor("#4f46e5"); }
+      else { setOpen(false); setColor(CATEGORY_COLOR_DEFAULT); }
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setColor(category?.color ?? "#4f46e5"); }}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setColor(category?.color ?? CATEGORY_COLOR_DEFAULT); }}>
       <DialogTrigger asChild>
         {trigger ?? <Button><Plus className="w-4 h-4" />{t.addCategory}</Button>}
       </DialogTrigger>
@@ -69,7 +64,7 @@ export function CategoryForm({ category, trigger }: CategoryFormProps) {
           <div className="space-y-2">
             <Label>{t.colorLabel}</Label>
             <div className="flex flex-wrap gap-2">
-              {COLOR_PRESETS.map((c) => (
+              {CATEGORY_COLOR_PRESETS.map((c) => (
                 <button
                   key={c}
                   type="button"
