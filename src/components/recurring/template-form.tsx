@@ -22,9 +22,11 @@ interface TemplateFormProps {
   categories: Category[];
   groups: Group[];
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function TemplateForm({ template, categories, groups, trigger }: TemplateFormProps) {
+export function TemplateForm({ template, categories, groups, trigger, open: externalOpen, onOpenChange }: TemplateFormProps) {
   const dict = useDict();
   const t = dict.recurring;
   const tb = dict.bills;
@@ -36,7 +38,10 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
     { value: "yearly", label: t.yearly },
   ];
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const isControlled = externalOpen !== undefined;
+  const setOpen = isControlled ? (onOpenChange as (o: boolean) => void) : setInternalOpen;
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [frequency, setFrequency] = useState<string>(template?.frequency ?? "monthly");
@@ -63,14 +68,16 @@ export function TemplateForm({ template, categories, groups, trigger }: Template
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button>
-            <Plus className="w-4 h-4" />
-            {t.addTemplate}
-          </Button>
-        )}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button>
+              <Plus className="w-4 h-4" />
+              {t.addTemplate}
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? t.editTemplate : t.addRecurringTemplate}</DialogTitle>

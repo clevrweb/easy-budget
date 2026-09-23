@@ -2,7 +2,7 @@
 
 import { useTransition, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Pencil, Trash2, CircleDollarSign } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, CircleDollarSign, Check, RotateCcw } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction, payBillAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
 import { CATEGORY_COLOR_PRESETS as AVATAR_COLORS } from "@/lib/colors";
+import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
+import { useConfirmAction } from "@/lib/use-confirm-action";
 
 function avatarColor(name: string) {
   return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
@@ -101,6 +103,16 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
     startTransition(async () => { await deleteBillAction(bill.id); });
   }
 
+  function handleSwipeDelete() {
+    if (bill.recurring_template_id) {
+      setDeleteChoiceOpen(true);
+      return;
+    }
+    startTransition(async () => { await deleteBillAction(bill.id); });
+  }
+
+  const deleteConfirm = useConfirmAction(handleSwipeDelete);
+
   function handleDeleteThis() {
     setDeleteChoiceOpen(false);
     startTransition(async () => { await deleteBillAction(bill.id); });
@@ -131,7 +143,30 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const avatarSource = bill.biller || bill.name;
   const color = avatarColor(avatarSource);
 
+  const swipeActions: SwipeAction[] = [
+    {
+      key: "toggle-paid",
+      label: isPaid ? dict.bills.pending : dict.bills.paid,
+      icon: isPaid ? <RotateCcw className="w-4 h-4" /> : <Check className="w-4 h-4" />,
+      onActivate: () => startTransition(async () => {
+        if (isPaid) await markBillPendingAction(bill.id);
+        else await markBillPaidAction(bill.id);
+      }),
+      className: isPaid ? "bg-slate-500" : "bg-[var(--color-success)]",
+    },
+    {
+      key: "delete",
+      label: bill.recurring_template_id
+        ? dict.common.delete
+        : (deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete),
+      icon: <Trash2 className="w-4 h-4" />,
+      onActivate: bill.recurring_template_id ? handleSwipeDelete : deleteConfirm.trigger,
+      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
+    },
+  ];
+
   return (
+    <SwipeableRow actions={swipeActions} disabled={isPending} onClose={deleteConfirm.reset}>
     <div
       className={`flex items-center gap-2.5 px-3 sm:px-4 py-3
         ${isPending ? "opacity-50 pointer-events-none" : ""}
@@ -361,5 +396,6 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         <RecurringSeriesForm bill={bill} categories={categories} groups={groups} open={seriesEditOpen} onOpenChange={setSeriesEditOpen} />
       )}
     </div>
+    </SwipeableRow>
   );
 }

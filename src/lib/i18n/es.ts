@@ -353,6 +353,7 @@ export const es: Dict = {
     delete: "Eliminar",
     cancel: "Cancelar",
     saving: "Guardando...",
+    confirmAgain: "¿Confirmar?",
   },
 
   account: {

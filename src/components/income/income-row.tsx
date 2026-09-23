@@ -8,6 +8,8 @@ import { deleteIncomeSourceAction, toggleIncomeSourceActiveAction } from "@/app/
 import { IncomeForm } from "./income-form";
 import { useDict } from "@/components/language-provider";
 import type { IncomeSource } from "@/types/database";
+import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
+import { useConfirmAction } from "@/lib/use-confirm-action";
 
 const frequencyLabel: Record<string, string> = {
   weekly: "Weekly",
@@ -63,7 +65,29 @@ export function IncomeRow({ source }: IncomeRowProps) {
     startTransition(async () => { await deleteIncomeSourceAction(source.id); });
   }
 
+  const deleteConfirm = useConfirmAction(() => {
+    startTransition(async () => { await deleteIncomeSourceAction(source.id); });
+  });
+
+  const swipeActions: SwipeAction[] = [
+    {
+      key: "edit",
+      label: dict.common.edit,
+      icon: <Pencil className="w-4 h-4" />,
+      onActivate: () => setEditOpen(true),
+      className: "bg-slate-500",
+    },
+    {
+      key: "delete",
+      label: deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete,
+      icon: <Trash2 className="w-4 h-4" />,
+      onActivate: deleteConfirm.trigger,
+      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
+    },
+  ];
+
   return (
+    <SwipeableRow actions={swipeActions} disabled={isPending} onClose={deleteConfirm.reset}>
     <div className={`flex items-center gap-4 px-5 py-4 hover:bg-[var(--color-muted)] transition-colors ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
       {/* Active toggle */}
       <button
@@ -173,5 +197,6 @@ export function IncomeRow({ source }: IncomeRowProps) {
         document.body
       )}
     </div>
+    </SwipeableRow>
   );
 }

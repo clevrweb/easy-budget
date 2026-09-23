@@ -352,6 +352,7 @@ export interface Dict {
     delete: string;
     cancel: string;
     saving: string;
+    confirmAgain: string;
   };
 
   account: {

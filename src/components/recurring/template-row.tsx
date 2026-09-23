@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteTemplateAction, toggleTemplateActiveAction } from "@/app/(dashboard)/recurring/actions";
 import { TemplateForm } from "./template-form";
@@ -9,6 +9,8 @@ import { Pencil, Trash2, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDict } from "@/components/language-provider";
 import type { Dict } from "@/lib/i18n/types";
+import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
+import { useConfirmAction } from "@/lib/use-confirm-action";
 
 function frequencyLabel(t: Dict["recurring"], frequency: string, dueDay: number): string {
   if (frequency === "weekly") {
@@ -33,6 +35,7 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
   const dict = useDict();
   const t = dict.recurring;
   const [isPending, startTransition] = useTransition();
+  const [editOpen, setEditOpen] = useState(false);
 
   function handleDelete() {
     if (!confirm(`${t.confirmDeleteTemplate} "${template.name}"?`)) return;
@@ -45,11 +48,33 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
     });
   }
 
+  const deleteConfirm = useConfirmAction(() => {
+    startTransition(async () => { await deleteTemplateAction(template.id); });
+  });
+
+  const swipeActions: SwipeAction[] = [
+    {
+      key: "edit",
+      label: dict.common.edit,
+      icon: <Pencil className="w-4 h-4" />,
+      onActivate: () => setEditOpen(true),
+      className: "bg-slate-500",
+    },
+    {
+      key: "delete",
+      label: deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete,
+      icon: <Trash2 className="w-4 h-4" />,
+      onActivate: deleteConfirm.trigger,
+      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
+    },
+  ];
+
   const dueSuffix = template.frequency !== "weekly"
     ? ` · ${t.dueOn} ${dict.recurring.useOrdinal ? ordinal(template.due_day) : template.due_day}`
     : "";
 
   return (
+    <SwipeableRow actions={swipeActions} disabled={isPending} onClose={deleteConfirm.reset}>
     <div className={`flex items-center gap-4 px-5 py-4 hover:bg-[var(--color-muted)] transition-colors duration-150 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
       {/* Active toggle */}
       <button
@@ -106,20 +131,15 @@ export function TemplateRow({ template, categories, groups }: TemplateRowProps) 
 
       {/* Actions */}
       <div className="flex items-center gap-1 shrink-0">
-        <TemplateForm
-          template={template}
-          categories={categories}
-          groups={groups}
-          trigger={
-            <Button variant="ghost" size="icon" title={t.editTemplateTitle}>
-              <Pencil className="w-4 h-4 text-[var(--color-muted-foreground)]" />
-            </Button>
-          }
-        />
+        <Button variant="ghost" size="icon" title={t.editTemplateTitle} onClick={() => setEditOpen(true)}>
+          <Pencil className="w-4 h-4 text-[var(--color-muted-foreground)]" />
+        </Button>
         <Button variant="ghost" size="icon" onClick={handleDelete} title={t.deleteTemplateTitle}>
           <Trash2 className="w-4 h-4 text-[var(--color-danger)]" />
         </Button>
       </div>
     </div>
+    <TemplateForm template={template} categories={categories} groups={groups} open={editOpen} onOpenChange={setEditOpen} />
+    </SwipeableRow>
   );
 }

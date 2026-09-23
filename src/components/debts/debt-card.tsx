@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { deleteDebtAction } from "@/app/(dashboard)/debts/actions";
 import { DebtForm } from "./debt-form";
 import { useDict } from "@/components/language-provider";
@@ -9,6 +9,8 @@ import type { Debt } from "@/types/database";
 import type { DebtPayoffResult } from "@/lib/debt-snowball";
 import { Pencil, Trash2, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
+import { useConfirmAction } from "@/lib/use-confirm-action";
 
 interface DebtCardProps {
   debt: Debt;
@@ -18,6 +20,7 @@ interface DebtCardProps {
 
 export function DebtCard({ debt, payoff, onChanged }: DebtCardProps) {
   const [isPending, startTransition] = useTransition();
+  const [editOpen, setEditOpen] = useState(false);
   const dict = useDict();
   const t = dict.debts;
 
@@ -29,8 +32,38 @@ export function DebtCard({ debt, payoff, onChanged }: DebtCardProps) {
     });
   }
 
+  const deleteConfirm = useConfirmAction(() => {
+    startTransition(async () => {
+      const result = await deleteDebtAction(debt.id);
+      if (!result?.error) onChanged?.();
+    });
+  });
+
+  const swipeActions: SwipeAction[] = [
+    {
+      key: "edit",
+      label: dict.common.edit,
+      icon: <Pencil className="w-4 h-4" />,
+      onActivate: () => setEditOpen(true),
+      className: "bg-slate-500",
+    },
+    {
+      key: "delete",
+      label: deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete,
+      icon: <Trash2 className="w-4 h-4" />,
+      onActivate: deleteConfirm.trigger,
+      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
+    },
+  ];
+
   return (
-    <div className={`bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 flex flex-col gap-4 hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+    <SwipeableRow
+      actions={swipeActions}
+      disabled={isPending}
+      onClose={deleteConfirm.reset}
+      className="rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-200"
+    >
+    <div className={`bg-[var(--color-card)] p-5 flex flex-col gap-4 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[var(--color-danger)]/10 border-2 border-[var(--color-danger)]">
           <TrendingDown className="w-4 h-4 text-[var(--color-danger)]" />
@@ -58,19 +91,15 @@ export function DebtCard({ debt, payoff, onChanged }: DebtCardProps) {
       </div>
 
       <div className="flex gap-2 mt-auto pt-1 border-t border-[var(--color-border)]">
-        <DebtForm
-          debt={debt}
-          onSaved={onChanged}
-          trigger={
-            <Button variant="ghost" size="sm" className="flex-1 text-xs">
-              <Pencil className="w-3.5 h-3.5" /> {dict.common.edit}
-            </Button>
-          }
-        />
+        <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => setEditOpen(true)}>
+          <Pencil className="w-3.5 h-3.5" /> {dict.common.edit}
+        </Button>
         <Button variant="ghost" size="sm" onClick={handleDelete} className="flex-1 text-xs text-[var(--color-danger)] hover:text-[var(--color-danger)]">
           <Trash2 className="w-3.5 h-3.5" /> {dict.common.delete}
         </Button>
       </div>
     </div>
+    <DebtForm debt={debt} onSaved={onChanged} open={editOpen} onOpenChange={setEditOpen} />
+    </SwipeableRow>
   );
 }

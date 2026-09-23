@@ -15,10 +15,14 @@ interface DebtFormProps {
   debt?: Debt;
   trigger?: React.ReactNode;
   onSaved?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function DebtForm({ debt, trigger, onSaved }: DebtFormProps) {
-  const [open, setOpen] = useState(false);
+export function DebtForm({ debt, trigger, onSaved, open: externalOpen, onOpenChange }: DebtFormProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const isControlled = externalOpen !== undefined;
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [createdDebt, setCreatedDebt] = useState<{ id: string; name: string; minimumPayment: number } | null>(null);
@@ -27,7 +31,8 @@ export function DebtForm({ debt, trigger, onSaved }: DebtFormProps) {
   const t = dict.debts;
 
   function resetAndClose(o: boolean) {
-    setOpen(o);
+    if (isControlled) onOpenChange?.(o);
+    else setInternalOpen(o);
     if (!o) {
       setError(null);
       setCreatedDebt(null);
@@ -57,9 +62,11 @@ export function DebtForm({ debt, trigger, onSaved }: DebtFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={resetAndClose}>
-      <DialogTrigger asChild>
-        {trigger ?? <Button><Plus className="w-4 h-4" />{t.addDebt}</Button>}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? <Button><Plus className="w-4 h-4" />{t.addDebt}</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent>
         {createdDebt ? (
           <DebtRecurringPicker
