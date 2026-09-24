@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getAssignableBillsAction, assignBillsToGroupAction } from "@/app/(dashboard)/groups/actions";
 import { formatCurrency } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AssignableBill {
   id: string;
@@ -99,7 +100,15 @@ export function GroupBillsPicker({ groupId, groupName, onDone }: GroupBillsPicke
       </div>
 
       {loading ? (
-        <p className="text-sm text-[var(--color-muted-foreground)]">{dict.common.saving}</p>
+        <div className="space-y-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 px-3 py-2">
+              <Skeleton className="h-3.5 w-3.5 shrink-0 rounded" />
+              <Skeleton className="h-3.5 flex-1" />
+              <Skeleton className="h-3.5 w-14 shrink-0" />
+            </div>
+          ))}
+        </div>
       ) : bills.length === 0 && templates.length === 0 ? (
         <p className="text-sm text-[var(--color-muted-foreground)] py-4">{t.noAssignableBills}</p>
       ) : (

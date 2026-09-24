@@ -12,6 +12,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { CategorySelectWithAdd } from "@/components/categories/category-select-with-add";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BillerLogoPreview, fetchBillerLogo } from "./biller-presets";
 import { updateRecurringSeriesAction, getRecurringTemplateAction } from "@/app/(dashboard)/bills/actions";
 import type { Bill, Category, Group } from "@/types/database";
@@ -236,7 +237,16 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
             </p>
 
             {loading ? (
-              <p className="text-sm text-[var(--color-muted-foreground)]">{t.loading}</p>
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
             ) : (
               <>
                 <div className="space-y-1.5">

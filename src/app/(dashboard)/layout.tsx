@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { PendingInviteBanner } from "@/components/layout/pending-invite-banner";
+import { PageTransition } from "@/components/layout/page-transition";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -44,7 +45,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {pendingInvites.length > 0 && (
           <PendingInviteBanner invites={pendingInvites} />
         )}
-        {children}
+        <PageTransition>{children}</PageTransition>
       </div>
 
       {/* Mobile bottom nav */}
