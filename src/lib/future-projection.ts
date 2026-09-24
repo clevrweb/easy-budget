@@ -157,7 +157,7 @@ function monthsBetween(startDate: string, endDate: string): number {
  * — deliberately NOT debt-snowball.ts's day-1 normalization, which would desync
  * the timeline from the user's actual start date (e.g. today).
  */
-function addMonthsClamped(dateStr: string, months: number): string {
+export function addMonthsClamped(dateStr: string, months: number): string {
   const base = parseISODate(dateStr);
   const y = base.getFullYear();
   const targetMonthIndex = base.getMonth() + months;

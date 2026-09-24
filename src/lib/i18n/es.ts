@@ -262,6 +262,10 @@ export const es: Dict = {
 
   settings: {
     title: "Ajustes",
+    tabGeneral: "General",
+    tabAppearance: "Apariencia",
+    tabAccount: "Cuenta",
+    tabData: "Datos y Privacidad",
     notifications: "Notificaciones",
     billsDueToday: "Facturas de hoy",
     notifyMorning: "Recibe una notificación cada mañana cuando hay facturas pendientes",
@@ -547,5 +551,14 @@ export const es: Dict = {
       invalid_dividend_growth: "La tasa de crecimiento de dividendos debe ser mayor que -100%.",
       insufficient_history: "No hay suficiente historial de precios disponible para este símbolo.",
     },
+    savingsPlanTitle: "Convierte esto en un plan de ahorro",
+    savingsPlanDesc: "Crea facturas reales que coincidan con este plan para que tus contribuciones aparezcan en tu calendario.",
+    planNameLabel: "Nombre del Plan",
+    planNamePlaceholder: "p.ej. Vacaciones",
+    planPreview: "{count} facturas de {amount} cada {frequency}, {start} → {end}",
+    createBillsButton: "Crear Facturas",
+    creatingBills: "Creando...",
+    billsCreatedSuccess: "Se crearon {n} facturas para \"{name}\".",
+    billsCappedWarning: "Solo se crearon las primeras {created} de {total} facturas — acorta la duración o elige un intervalo más largo para el resto.",
   },
 };

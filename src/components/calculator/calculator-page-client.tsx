@@ -6,6 +6,7 @@ import { CalculatorForm, dividendModeFrom } from "./calculator-form";
 import { CalculatorResults } from "./calculator-results";
 import { ProjectionResults } from "./projection-results";
 import { CalculatorGrowthChart } from "./calculator-growth-chart";
+import { SavingsPlanForm } from "./savings-plan-form";
 import { useDict } from "@/components/language-provider";
 import {
   computeCompoundGrowth,
@@ -71,6 +72,13 @@ interface ProjectionAssumptions {
   dividendGrowthPct: number;
 }
 
+interface PlanInputs {
+  contributionAmount: number;
+  contributionFrequency: ContributionFrequency;
+  startDate: string;
+  endDate: string;
+}
+
 export function CalculatorPageClient() {
   const dict = useDict();
   const t = dict.calculator;
@@ -102,6 +110,7 @@ export function CalculatorPageClient() {
   const [loadStatus, setLoadStatus] = useState<Status>("idle");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [projectionAssumptions, setProjectionAssumptions] = useState<ProjectionAssumptions | null>(null);
+  const [planInputs, setPlanInputs] = useState<PlanInputs | null>(null);
 
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -251,6 +260,12 @@ export function CalculatorPageClient() {
         });
         setProjectionResult(computed);
         setProjectionAssumptions(effective);
+        setPlanInputs({
+          contributionAmount,
+          contributionFrequency,
+          startDate: projectStartDate,
+          endDate: projectEndDate,
+        });
       }
 
       setStatus("success");
@@ -345,6 +360,15 @@ export function CalculatorPageClient() {
               <p className="text-xs text-[var(--color-muted-foreground)] mb-5">{ticker}</p>
               <CalculatorGrowthChart timeline={projectionResult.timeline} />
             </div>
+
+            {planInputs && planInputs.contributionAmount > 0 && (
+              <SavingsPlanForm
+                contributionAmount={planInputs.contributionAmount}
+                contributionFrequency={planInputs.contributionFrequency}
+                startDate={planInputs.startDate}
+                endDate={planInputs.endDate}
+              />
+            )}
           </>
         )}
       </main>

@@ -262,6 +262,10 @@ export const en: Dict = {
 
   settings: {
     title: "Settings",
+    tabGeneral: "General",
+    tabAppearance: "Appearance",
+    tabAccount: "Account",
+    tabData: "Data & Privacy",
     notifications: "Notifications",
     billsDueToday: "Bills due today",
     notifyMorning: "Get notified each morning when bills are due",
@@ -547,5 +551,14 @@ export const en: Dict = {
       invalid_dividend_growth: "Dividend growth rate must be greater than -100%.",
       insufficient_history: "Not enough price history available for this ticker.",
     },
+    savingsPlanTitle: "Turn this into a savings plan",
+    savingsPlanDesc: "Create real bills matching this plan so your contributions show up on your schedule.",
+    planNameLabel: "Plan Name",
+    planNamePlaceholder: "e.g. Vacation",
+    planPreview: "{count} bills of {amount} every {frequency}, {start} → {end}",
+    createBillsButton: "Create Bills",
+    creatingBills: "Creating...",
+    billsCreatedSuccess: "Created {n} bills for \"{name}\".",
+    billsCappedWarning: "Only the first {created} of {total} bills were created — shorten the duration or choose a longer interval for the rest.",
   },
 };

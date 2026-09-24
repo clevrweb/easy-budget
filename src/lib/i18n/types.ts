@@ -261,6 +261,10 @@ export interface Dict {
 
   settings: {
     title: string;
+    tabGeneral: string;
+    tabAppearance: string;
+    tabAccount: string;
+    tabData: string;
     notifications: string;
     billsDueToday: string;
     notifyMorning: string;
@@ -546,5 +550,14 @@ export interface Dict {
       invalid_dividend_growth: string;
       insufficient_history: string;
     };
+    savingsPlanTitle: string;
+    savingsPlanDesc: string;
+    planNameLabel: string;
+    planNamePlaceholder: string;
+    planPreview: string;
+    createBillsButton: string;
+    creatingBills: string;
+    billsCreatedSuccess: string;
+    billsCappedWarning: string;
   };
 }

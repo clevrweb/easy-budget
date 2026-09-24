@@ -7,6 +7,7 @@ import { ExportDataSection } from "@/components/settings/export-data-section";
 import { DefaultViewSwitcher } from "@/components/settings/default-view-switcher";
 import { NotificationChannelSettings } from "@/components/settings/notification-channel-settings";
 import { HeaderColorsForm } from "@/components/settings/header-colors-form";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   getNotificationStatusAction,
   getSharedAccessDataAction,
@@ -29,84 +30,103 @@ export default async function SettingsPage() {
   const t = dict.settings;
   const ta = dict.account;
 
+  const showAccountTab = !!sharedAccess;
+
   return (
     <>
       <Topbar title={t.title} />
 
-      <main className="flex-1 p-4 md:p-6 max-w-xl space-y-6">
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-            {t.notifications}
-          </h2>
-          <NotificationSettings initialEnabled={enabled} />
-        </div>
+      <main className="flex-1 p-4 md:p-6 max-w-xl">
+        <Tabs defaultValue="general">
+          <TabsList>
+            <TabsTrigger value="general">{t.tabGeneral}</TabsTrigger>
+            <TabsTrigger value="appearance">{t.tabAppearance}</TabsTrigger>
+            {showAccountTab && <TabsTrigger value="account">{t.tabAccount}</TabsTrigger>}
+            <TabsTrigger value="data">{t.tabData}</TabsTrigger>
+          </TabsList>
 
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-            {t.language}
-          </h2>
-          <LanguageSwitcher label={t.languageDesc} updatedLabel={t.languageUpdated} />
-        </div>
+          <TabsContent value="general">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.notifications}
+              </h2>
+              <NotificationSettings initialEnabled={enabled} />
+            </div>
 
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-            {t.defaultViewLabel}
-          </h2>
-          <DefaultViewSwitcher initialView={defaultView} />
-        </div>
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.notificationChannelLabel}
+              </h2>
+              <NotificationChannelSettings
+                initialChannel={notificationPrefs.channel}
+                initialPhoneNumber={notificationPrefs.phoneNumber}
+              />
+            </div>
 
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-            {t.headerColorsTitle}
-          </h2>
-          <HeaderColorsForm initial={headerColors} />
-        </div>
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.language}
+              </h2>
+              <LanguageSwitcher label={t.languageDesc} updatedLabel={t.languageUpdated} />
+            </div>
 
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-            {t.notificationChannelLabel}
-          </h2>
-          <NotificationChannelSettings
-            initialChannel={notificationPrefs.channel}
-            initialPhoneNumber={notificationPrefs.phoneNumber}
-          />
-        </div>
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.defaultViewLabel}
+              </h2>
+              <DefaultViewSwitcher initialView={defaultView} />
+            </div>
+          </TabsContent>
 
-        {sharedAccess && sharedAccess.accounts.length > 1 && (
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-              {ta.switchAccountLabel}
-            </h2>
-            <AccountSwitcher accounts={sharedAccess.accounts} activeAccountId={sharedAccess.accountId} />
-          </div>
-        )}
+          <TabsContent value="appearance">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.headerColorsTitle}
+              </h2>
+              <HeaderColorsForm initial={headerColors} />
+            </div>
+          </TabsContent>
 
-        {sharedAccess && (
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-              {ta.sectionTitle}
-            </h2>
-            <SharedAccessSection
-              members={sharedAccess.members}
-              pendingInvites={sharedAccess.pendingInvites}
-              currentUserId={sharedAccess.currentUserId}
-            />
-          </div>
-        )}
+          {showAccountTab && (
+            <TabsContent value="account">
+              {sharedAccess.accounts.length > 1 && (
+                <div>
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                    {ta.switchAccountLabel}
+                  </h2>
+                  <AccountSwitcher accounts={sharedAccess.accounts} activeAccountId={sharedAccess.accountId} />
+                </div>
+              )}
 
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
-            {t.dataTitle}
-          </h2>
-          <ExportDataSection />
-        </div>
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                  {ta.sectionTitle}
+                </h2>
+                <SharedAccessSection
+                  members={sharedAccess.members}
+                  pendingInvites={sharedAccess.pendingInvites}
+                  currentUserId={sharedAccess.currentUserId}
+                />
+              </div>
+            </TabsContent>
+          )}
 
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-danger)] mb-3">
-            {t.dangerZoneTitle}
-          </h2>
-          <DangerZoneSection />
-        </div>
+          <TabsContent value="data">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.dataTitle}
+              </h2>
+              <ExportDataSection />
+            </div>
+
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-danger)] mb-3">
+                {t.dangerZoneTitle}
+              </h2>
+              <DangerZoneSection />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </>
   );
