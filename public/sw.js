@@ -1,6 +1,6 @@
-const CACHE = "easybudget-v2";
+const CACHE = "easybudget-v3";
 const OFFLINE_URL = "/offline.html";
-const PRECACHE = ["/offline.html", "/manifest.json", "/logo-transparent.png"];
+const PRECACHE = ["/offline.html", "/manifest.json", "/logo.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
@@ -50,8 +50,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/logo-transparent.png",
-      badge: "/logo-transparent.png",
+      icon: "/logo.png",
+      badge: "/logo.png",
       data: { url: data.url || "/dashboard" },
       requireInteraction: false,
     })

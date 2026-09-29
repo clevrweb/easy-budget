@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { selectAccountAction } from "@/lib/supabase/account-actions";
 import { ACCOUNT_COOKIE } from "@/lib/supabase/account";
@@ -35,11 +36,7 @@ export default async function ChooseAccountPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
-              <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-                <path d="M16 6L10 12H13V21H10L16 27L22 21H19V12H22L16 6Z" fill="white" />
-              </svg>
-            </div>
+            <Image src="/logo.png" alt="Budget Whisperer" width={80} height={80} className="w-10 h-10 rounded-xl shadow-lg" />
             <span className="text-2xl font-bold text-[var(--color-foreground)]">Budget Whisperer</span>
           </div>
           <h1 className="text-xl font-semibold text-[var(--color-foreground)] mb-1">{t.chooseAccountTitle}</h1>
