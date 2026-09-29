@@ -48,6 +48,7 @@ export function SwipeableRow({
 }: SwipeableRowProps) {
   const maxReveal = actions.length * actionWidth;
   const coarsePointer = useCoarsePointer();
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -75,7 +76,7 @@ export function SwipeableRow({
   useEffect(() => {
     if (!isOpen) return;
     function handler(e: Event) {
-      const wrapper = contentRef.current?.parentElement;
+      const wrapper = wrapperRef.current;
       if (wrapper && !wrapper.contains(e.target as Node)) commitOpen(false);
     }
     document.addEventListener("touchstart", handler);
@@ -127,14 +128,32 @@ export function SwipeableRow({
     commitOpen(finalOffset <= -maxReveal * SNAP_OPEN_RATIO);
   }
 
+  // Defensive fallback: some WebKit/iOS versions suppress native scroll less
+  // reliably via preventDefault() on pointer events than via touchmove's.
+  // React attaches its own onTouchMove as passive, so a manual listener with
+  // passive: false is required for preventDefault() to have any effect here.
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    function handler(e: TouchEvent) {
+      if (stateRef.current.dragging && stateRef.current.decided === "horizontal") {
+        e.preventDefault();
+      }
+    }
+    el.addEventListener("touchmove", handler, { passive: false });
+    return () => el.removeEventListener("touchmove", handler);
+  }, []);
+
   return (
     <div
+      ref={wrapperRef}
       className={`relative overflow-hidden ${className}`}
       style={{ touchAction: "pan-y" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onLostPointerCapture={endDrag}
     >
       {actions.length > 0 && (
         <div className="absolute inset-y-0 right-0 z-0 flex" style={{ width: maxReveal }}>
@@ -167,7 +186,8 @@ export function SwipeableRow({
 
       {isOpen && (
         <div
-          className="absolute inset-0 z-20"
+          className="absolute inset-y-0 left-0 z-20"
+          style={{ right: maxReveal }}
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); commitOpen(false); }}
         />
       )}

@@ -15,7 +15,7 @@ export default async function RegisterPage({
   const t = dict.auth;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-4">
+    <div className="min-h-dvh flex items-center justify-center bg-[var(--color-background)] px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

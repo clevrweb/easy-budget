@@ -8,7 +8,7 @@ import type { DividendMode } from "@/lib/compound-calculator";
 import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
 import { CalculatorModeToggle, type CalculatorMode } from "./calculator-mode-toggle";
 
-const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] disabled:opacity-50 disabled:cursor-not-allowed";
+const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-base md:text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] disabled:opacity-50 disabled:cursor-not-allowed";
 
 type LoadStatus = "idle" | "loading" | "error" | "success";
 

@@ -17,7 +17,7 @@ import { createIncomeSourceAction, updateIncomeSourceAction } from "@/app/(dashb
 import { useDict } from "@/components/language-provider";
 import type { IncomeSource, IncomeFrequency } from "@/types/database";
 
-const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
+const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-base md:text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
 interface IncomeFormProps {
   source?: IncomeSource;

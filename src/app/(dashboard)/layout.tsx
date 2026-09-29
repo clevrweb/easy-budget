@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const hasMultipleAccounts = (memberships?.length ?? 0) > 1;
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-background)]">
+    <div className="flex min-h-dvh bg-[var(--color-background)]">
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <Sidebar hasMultipleAccounts={hasMultipleAccounts} />

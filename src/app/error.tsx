@@ -13,7 +13,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-4">
+    <div className="min-h-dvh flex items-center justify-center bg-[var(--color-background)] px-4">
       <div className="w-full max-w-md text-center">
         <div className="inline-flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center shadow-lg">
