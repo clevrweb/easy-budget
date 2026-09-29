@@ -1,20 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
-import { generateContributionDates } from "@/lib/savings-plan";
+import { generateContributionDates, dateAfterOccurrences } from "@/lib/savings-plan";
 import { createSavingsPlanBillsAction } from "@/app/(dashboard)/calculator/actions";
 import { formatCurrency } from "@/lib/utils";
 import type { ContributionFrequency } from "@/lib/future-projection";
+import type { Group } from "@/types/database";
+
+const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-base md:text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
 
 interface SavingsPlanFormProps {
   contributionAmount: number;
   contributionFrequency: ContributionFrequency;
   startDate: string;
   endDate: string;
+  groups: Group[];
 }
 
 interface CreatedResult {
@@ -22,17 +26,34 @@ interface CreatedResult {
   created: number;
   capped: boolean;
   totalPlanned: number;
+  isSeries: boolean;
 }
 
-export function SavingsPlanForm({ contributionAmount, contributionFrequency, startDate, endDate }: SavingsPlanFormProps) {
+export function SavingsPlanForm({ contributionAmount, contributionFrequency, startDate, endDate, groups }: SavingsPlanFormProps) {
   const dict = useDict();
   const t = dict.calculator;
   const [name, setName] = useState("");
+  const [groupId, setGroupId] = useState("");
+  const [planStartDate, setPlanStartDate] = useState(startDate);
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<CreatedResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const preview = generateContributionDates(startDate, endDate, contributionFrequency);
+  // Original occurrence count, frozen at the calculated plan's own dates —
+  // shifting the start date preserves this count rather than silently
+  // changing how many contributions the plan represents.
+  const originalOccurrenceCount = useMemo(
+    () => generateContributionDates(startDate, endDate, contributionFrequency).dates.length,
+    [startDate, endDate, contributionFrequency]
+  );
+
+  const effectiveEndDate = useMemo(
+    () => dateAfterOccurrences(planStartDate, contributionFrequency, originalOccurrenceCount),
+    [planStartDate, contributionFrequency, originalOccurrenceCount]
+  );
+
+  const preview = generateContributionDates(planStartDate, effectiveEndDate, contributionFrequency);
+  const isQuarterly = contributionFrequency === "quarterly";
 
   function handleCreate() {
     setError(null);
@@ -43,8 +64,9 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
         name: planName,
         amount: contributionAmount,
         frequency: contributionFrequency,
-        startDate,
-        endDate,
+        startDate: planStartDate,
+        endDate: effectiveEndDate,
+        groupId: groupId || null,
       });
       if (res.error) {
         setError(res.error);
@@ -55,6 +77,7 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
         created: res.created ?? 0,
         capped: !!res.capped,
         totalPlanned: res.totalPlanned ?? res.created ?? 0,
+        isSeries: !!res.isSeries,
       });
       setName("");
     });
@@ -72,12 +95,16 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
           .replace("{count}", String(preview.totalPlanned))
           .replace("{amount}", formatCurrency(contributionAmount))
           .replace("{frequency}", t.contributionFrequencyOptions[contributionFrequency])
-          .replace("{start}", startDate)
-          .replace("{end}", endDate)}
+          .replace("{start}", planStartDate)
+          .replace("{end}", effectiveEndDate)}
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-        <div className="space-y-1.5 flex-1">
+      {isQuarterly && (
+        <p className="text-xs text-[var(--color-warning)]">{t.planQuarterlyNote}</p>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
           <Label htmlFor="plan-name">{t.planNameLabel}</Label>
           <Input
             id="plan-name"
@@ -86,16 +113,45 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
             placeholder={t.planNamePlaceholder}
           />
         </div>
-        <Button onClick={handleCreate} disabled={isPending || !name.trim()}>
-          {isPending ? t.creatingBills : t.createBillsButton}
-        </Button>
+        <div className="space-y-1.5">
+          <Label htmlFor="plan-start-date">{t.planStartDateLabel}</Label>
+          <Input
+            id="plan-start-date"
+            type="date"
+            value={planStartDate}
+            onChange={(e) => setPlanStartDate(e.target.value)}
+          />
+        </div>
       </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="plan-group">{t.planGroupLabel}</Label>
+        <select
+          id="plan-group"
+          className={selectCls}
+          value={groupId}
+          onChange={(e) => setGroupId(e.target.value)}
+        >
+          <option value="">{dict.bills.noGroup}</option>
+          {groups.map((g) => (
+            <option key={g.id} value={g.id}>{g.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <Button onClick={handleCreate} disabled={isPending || !name.trim()}>
+        {isPending ? t.creatingBills : t.createBillsButton}
+      </Button>
 
       {error && <p className="text-xs text-[var(--color-danger)]">{error}</p>}
 
       {result && (
         <div className="text-xs text-[var(--color-success)] space-y-1">
-          <p>{t.billsCreatedSuccess.replace("{n}", String(result.created)).replace("{name}", result.name)}</p>
+          <p>
+            {(result.isSeries ? t.seriesCreatedSuccess : t.billsCreatedSuccess)
+              .replace("{n}", String(result.created))
+              .replace("{name}", result.name)}
+          </p>
           {result.capped && (
             <p className="text-[var(--color-warning)]">
               {t.billsCappedWarning

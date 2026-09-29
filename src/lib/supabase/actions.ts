@@ -10,6 +10,7 @@ import { getServerDict } from "@/lib/i18n/server";
 import { translateAuthError } from "@/lib/i18n/auth-errors";
 import { getResendClient, getEmailFrom } from "@/lib/email/resend";
 import { passwordResetEmail } from "@/lib/email/templates";
+import { DEFAULT_CATEGORIES } from "@/lib/default-categories";
 
 export async function loginAction(formData: FormData) {
   const supabase = await createClient();
@@ -92,7 +93,13 @@ export async function registerAction(formData: FormData) {
       .single();
 
     if (!accountError && account) {
-      await admin.from("account_members").insert({ account_id: account.id, user_id: data.user.id });
+      const userId = data.user.id;
+      await admin.from("account_members").insert({ account_id: account.id, user_id: userId });
+
+      const categoryRows = DEFAULT_CATEGORIES.map((c) => ({
+        ...c, account_id: account.id, user_id: userId, icon: null,
+      }));
+      await admin.from("categories").insert(categoryRows);
     }
 
     const store = await cookies();

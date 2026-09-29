@@ -24,6 +24,7 @@ import {
 } from "@/lib/future-projection";
 import type { CalculatorMode } from "./calculator-mode-toggle";
 import type { StockHistoryError, StockHistoryPoint, StockHistoryResponse } from "@/app/api/calculator/stock-history/route";
+import type { Group } from "@/types/database";
 
 type Status = "idle" | "loading" | "error" | "success";
 
@@ -79,7 +80,11 @@ interface PlanInputs {
   endDate: string;
 }
 
-export function CalculatorPageClient() {
+interface CalculatorPageClientProps {
+  groups: Group[];
+}
+
+export function CalculatorPageClient({ groups }: CalculatorPageClientProps) {
   const dict = useDict();
   const t = dict.calculator;
 
@@ -367,6 +372,7 @@ export function CalculatorPageClient() {
                 contributionFrequency={planInputs.contributionFrequency}
                 startDate={planInputs.startDate}
                 endDate={planInputs.endDate}
+                groups={groups}
               />
             )}
           </>

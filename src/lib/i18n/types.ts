@@ -559,5 +559,10 @@ export interface Dict {
     creatingBills: string;
     billsCreatedSuccess: string;
     billsCappedWarning: string;
+    loadButtonHint: string;
+    planGroupLabel: string;
+    planStartDateLabel: string;
+    planQuarterlyNote: string;
+    seriesCreatedSuccess: string;
   };
 }

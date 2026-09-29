@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Download } from "lucide-react";
 import { useDict } from "@/components/language-provider";
 import type { DividendMode } from "@/lib/compound-calculator";
 import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
@@ -105,24 +106,27 @@ export function CalculatorForm({
         <div className="space-y-1.5">
           <Label htmlFor="calc-ticker">{t.tickerLabel}</Label>
           {mode === "project" ? (
-            <div className="flex gap-2">
-              <Input
-                id="calc-ticker"
-                className="flex-1"
-                value={ticker}
-                onChange={(e) => onTicker(e.target.value.toUpperCase())}
-                placeholder={t.tickerPlaceholder}
-                required
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onLoad}
-                disabled={loadStatus === "loading" || !ticker.trim()}
-              >
-                {loadStatus === "loading" ? t.loadingButton : t.loadButton}
-              </Button>
-            </div>
+            <>
+              <div className="flex gap-2">
+                <Input
+                  id="calc-ticker"
+                  className="flex-1"
+                  value={ticker}
+                  onChange={(e) => onTicker(e.target.value.toUpperCase())}
+                  placeholder={t.tickerPlaceholder}
+                  required
+                />
+                <Button
+                  type="button"
+                  onClick={onLoad}
+                  disabled={loadStatus === "loading" || !ticker.trim()}
+                >
+                  <Download className="w-4 h-4" />
+                  {loadStatus === "loading" ? t.loadingButton : t.loadButton}
+                </Button>
+              </div>
+              <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{t.loadButtonHint}</p>
+            </>
           ) : (
             <Input
               id="calc-ticker"

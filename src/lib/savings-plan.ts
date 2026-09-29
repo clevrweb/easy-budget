@@ -54,3 +54,23 @@ export function generateContributionDates(
     totalPlanned,
   };
 }
+
+/**
+ * Steps forward `occurrences - 1` times from `startDate` at the given
+ * frequency and returns that date — i.e. the date of the Nth occurrence
+ * if the first occurrence is `startDate` itself. Used to shift a plan's
+ * start date while preserving its total number of contributions.
+ */
+export function dateAfterOccurrences(
+  startDate: string,
+  frequency: ContributionFrequency,
+  occurrences: number
+): string {
+  const daysStep = DAYS_STEP[frequency];
+  const monthsStep = MONTHS_STEP[frequency];
+  let current = startDate;
+  for (let i = 1; i < occurrences; i++) {
+    current = daysStep ? addDays(current, daysStep) : addMonthsClamped(current, monthsStep ?? 1);
+  }
+  return current;
+}
