@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useDict } from "@/components/language-provider";
+import { AppLogo } from "@/components/app-logo";
 
 interface TopbarProps {
   title: string;
@@ -30,7 +30,7 @@ export function Topbar({ title, children, backHref }: TopbarProps) {
         <>
           <h1 className="text-base font-semibold text-[var(--color-foreground)] hidden md:block">{title}</h1>
           <div className="flex items-center gap-2.5 md:hidden">
-            <Image src="/logo.png" alt="Budget Whisperer" width={56} height={56} className="w-7 h-7 rounded-lg" />
+            <AppLogo size={56} className="w-7 h-7 rounded-lg" />
             <span className="font-bold text-sm text-[var(--color-foreground)]">Budget Whisperer</span>
           </div>
         </>

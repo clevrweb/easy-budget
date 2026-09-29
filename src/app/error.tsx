@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 import { useDict } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
+import { AppLogo } from "@/components/app-logo";
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const dict = useDict();
@@ -17,7 +17,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     <div className="min-h-dvh flex items-center justify-center bg-[var(--color-background)] px-4">
       <div className="w-full max-w-md text-center">
         <div className="inline-flex items-center gap-3 mb-6">
-          <Image src="/logo.png" alt="Budget Whisperer" width={80} height={80} className="w-10 h-10 rounded-xl shadow-lg" />
+          <AppLogo size={80} className="w-10 h-10 rounded-xl shadow-lg" />
           <span className="text-2xl font-bold text-[var(--color-foreground)]">Budget Whisperer</span>
         </div>
 

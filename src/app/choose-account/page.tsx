@@ -1,10 +1,10 @@
 import { cookies } from "next/headers";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { selectAccountAction } from "@/lib/supabase/account-actions";
 import { ACCOUNT_COOKIE } from "@/lib/supabase/account";
 import { getServerDict } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
+import { AppLogo } from "@/components/app-logo";
 
 interface MembershipRow {
   accounts: { id: string; name: string; is_personal: boolean; created_by: string | null } | null;
@@ -36,7 +36,7 @@ export default async function ChooseAccountPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <Image src="/logo.png" alt="Budget Whisperer" width={80} height={80} className="w-10 h-10 rounded-xl shadow-lg" />
+            <AppLogo size={80} className="w-10 h-10 rounded-xl shadow-lg" />
             <span className="text-2xl font-bold text-[var(--color-foreground)]">Budget Whisperer</span>
           </div>
           <h1 className="text-xl font-semibold text-[var(--color-foreground)] mb-1">{t.chooseAccountTitle}</h1>

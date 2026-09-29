@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -19,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/supabase/actions";
 import { useDict } from "@/components/language-provider";
+import { AppLogo } from "@/components/app-logo";
 
 interface SidebarProps {
   hasMultipleAccounts?: boolean;
@@ -47,7 +47,7 @@ export function Sidebar({ hasMultipleAccounts }: SidebarProps) {
     <aside className="flex flex-col w-64 min-h-screen bg-[var(--color-sidebar)] border-r border-[var(--color-border)] shrink-0">
       {/* Logo */}
       <div className="flex items-center justify-center px-6 py-4 border-b border-[var(--color-border)]">
-        <Image src="/logo.png" alt="Budget Whisperer" width={120} height={120} className="w-28 h-auto" priority />
+        <AppLogo size={120} className="w-28 h-auto" priority />
       </div>
 
       {/* Nav */}

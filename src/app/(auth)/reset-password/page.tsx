@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { AppLogo } from "@/components/app-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <Image src="/logo.png" alt="Budget Whisperer" width={80} height={80} className="w-10 h-10 rounded-xl shadow-lg" />
+            <AppLogo size={80} className="w-10 h-10 rounded-xl shadow-lg" />
             <span className="text-2xl font-bold text-[var(--color-foreground)]">Budget Whisperer</span>
           </div>
         </div>
