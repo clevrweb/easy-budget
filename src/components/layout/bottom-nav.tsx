@@ -61,7 +61,7 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
   }, [moreOpen]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-sidebar)] border-t border-[var(--color-border)] flex md:hidden safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-primary)] shadow-[0_-2px_10px_rgba(0,0,0,0.15)] flex md:hidden safe-area-inset-bottom">
       {navItems.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
         return (
@@ -73,12 +73,12 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
             <span
               className={cn(
                 "flex items-center justify-center w-9 h-7 rounded-full transition-colors",
-                isActive && "bg-[var(--color-sidebar-active)]"
+                isActive && "bg-white/20"
               )}
             >
-              <Icon className={cn("w-5 h-5", isActive ? "text-[var(--color-primary)]" : "text-[var(--color-muted-foreground)]")} />
+              <Icon className={cn("w-5 h-5", isActive ? "text-white" : "text-white/70")} />
             </span>
-            <span className={isActive ? "text-[var(--color-primary)]" : "text-[var(--color-muted-foreground)]"}>{label}</span>
+            <span className={isActive ? "text-white" : "text-white/70"}>{label}</span>
           </Link>
         );
       })}
@@ -92,12 +92,12 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
         <span
           className={cn(
             "flex items-center justify-center w-9 h-7 rounded-full transition-colors",
-            isMoreActive && "bg-[var(--color-sidebar-active)]"
+            isMoreActive && "bg-white/20"
           )}
         >
-          <MoreHorizontal className={cn("w-5 h-5", isMoreActive ? "text-[var(--color-primary)]" : "text-[var(--color-muted-foreground)]")} />
+          <MoreHorizontal className={cn("w-5 h-5", isMoreActive ? "text-white" : "text-white/70")} />
         </span>
-        <span className={isMoreActive ? "text-[var(--color-primary)]" : "text-[var(--color-muted-foreground)]"}>{dict.nav.more}</span>
+        <span className={isMoreActive ? "text-white" : "text-white/70"}>{dict.nav.more}</span>
       </button>
 
       {moreVisible && createPortal(
