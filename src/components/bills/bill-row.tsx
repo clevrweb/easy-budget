@@ -1,8 +1,8 @@
 "use client";
 
-import { useTransition, useState, useRef, useEffect } from "react";
+import { useTransition, useState } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Pencil, Trash2, CircleDollarSign, Check, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, CircleDollarSign, Check, RotateCcw } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction, payBillAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
@@ -28,8 +28,6 @@ interface BillRowProps {
 
 export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [isPending, startTransition] = useTransition();
-  const [menuOpen, setMenuOpen]         = useState(false);
-  const [menuPos, setMenuPos]           = useState<{ top: number; right: number } | null>(null);
   const [editOpen, setEditOpen]         = useState(false);
   const [choiceOpen, setChoiceOpen]           = useState(false);
   const [seriesEditOpen, setSeriesEditOpen]   = useState(false);
@@ -37,8 +35,6 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [payAmount, setPayAmount] = useState("");
   const [payError, setPayError] = useState<string | null>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef   = useRef<HTMLDivElement>(null);
   const dict = useDict();
 
   const today       = new Date().toISOString().split("T")[0];
@@ -72,37 +68,6 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         overdue: { label: statusLabel.overdue, bg: "var(--badge-overdue-bg)", color: "var(--badge-overdue-fg)" },
       }[effectiveStatus] ?? { label: bill.status, bg: "#94a3b822", color: "#475569" };
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    function handler(e: MouseEvent) {
-      if (
-        menuRef.current && !menuRef.current.contains(e.target as Node) &&
-        buttonRef.current && !buttonRef.current.contains(e.target as Node)
-      ) setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
-
-  function toggleMenu() {
-    if (menuOpen) { setMenuOpen(false); return; }
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
-    }
-    setMenuOpen(true);
-  }
-
-  function handleDelete() {
-    setMenuOpen(false);
-    if (bill.recurring_template_id) {
-      setDeleteChoiceOpen(true);
-      return;
-    }
-    if (!confirm(`${dict.bills.confirmDelete} "${bill.name}"?`)) return;
-    startTransition(async () => { await deleteBillAction(bill.id); });
-  }
-
   function handleSwipeDelete() {
     if (bill.recurring_template_id) {
       setDeleteChoiceOpen(true);
@@ -124,7 +89,6 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   }
 
   function openPayDialog() {
-    setMenuOpen(false);
     setPayError(null);
     setPayAmount(remaining.toFixed(2));
     setPayDialogOpen(true);
@@ -144,6 +108,23 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const color = avatarColor(avatarSource);
 
   const swipeActions: SwipeAction[] = [
+    {
+      key: "edit",
+      label: dict.common.edit,
+      icon: <Pencil className="w-4 h-4" />,
+      onActivate: () => {
+        if (bill.recurring_template_id) setChoiceOpen(true);
+        else setEditOpen(true);
+      },
+      className: "bg-blue-500",
+    },
+    ...(!isPaid ? [{
+      key: "record-payment",
+      label: dict.bills.recordPayment,
+      icon: <CircleDollarSign className="w-4 h-4" />,
+      onActivate: openPayDialog,
+      className: "bg-teal-600",
+    }] : []),
     {
       key: "toggle-paid",
       label: isPaid ? dict.bills.pending : dict.bills.paid,
@@ -166,7 +147,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   ];
 
   return (
-    <SwipeableRow actions={swipeActions} disabled={isPending} onClose={deleteConfirm.reset}>
+    <SwipeableRow actions={swipeActions} actionWidth={64} disabled={isPending} onClose={deleteConfirm.reset}>
     <div
       className={`flex items-center gap-2.5 px-3 sm:px-4 py-3
         ${isPending ? "opacity-50 pointer-events-none" : ""}
@@ -262,53 +243,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
             {dict.bills.paidBtn}
           </button>
         )}
-
-        <button
-          ref={buttonRef}
-          onClick={toggleMenu}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
-        >
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
       </div>
-
-      {/* Portal dropdown */}
-      {menuOpen && menuPos && createPortal(
-        <div
-          ref={menuRef}
-          style={{ position: "fixed", top: menuPos.top, right: menuPos.right, zIndex: 9999 }}
-          className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl shadow-xl py-1 min-w-[130px]"
-        >
-          <button
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-            onClick={() => {
-              setMenuOpen(false);
-              if (bill.recurring_template_id) setChoiceOpen(true);
-              else setEditOpen(true);
-            }}
-          >
-            <Pencil className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
-            {dict.common.edit}
-          </button>
-          {!isPaid && (
-            <button
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors"
-              onClick={openPayDialog}
-            >
-              <CircleDollarSign className="w-3.5 h-3.5 text-[var(--color-muted-foreground)]" />
-              {dict.bills.recordPayment}
-            </button>
-          )}
-          <button
-            onClick={handleDelete}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-muted)] transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            {dict.common.delete}
-          </button>
-        </div>,
-        document.body
-      )}
 
       {/* Edit dialog */}
       <BillForm bill={bill} categories={categories} groups={groups} open={editOpen} onOpenChange={setEditOpen} />

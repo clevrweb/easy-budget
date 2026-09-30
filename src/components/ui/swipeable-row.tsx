@@ -87,7 +87,7 @@ export function SwipeableRow({
     };
   }, [isOpen, commitOpen]);
 
-  function onPointerDown(e: React.PointerEvent) {
+  const onPointerDown = useCallback((e: PointerEvent) => {
     if (disabled || actions.length === 0 || !coarsePointer || e.pointerType === "mouse") return;
     const s = stateRef.current;
     s.startX = e.clientX;
@@ -96,9 +96,9 @@ export function SwipeableRow({
     s.curDx = 0;
     s.decided = null;
     s.dragging = true;
-  }
+  }, [disabled, actions.length, coarsePointer, maxReveal]);
 
-  function onPointerMove(e: React.PointerEvent) {
+  const onPointerMove = useCallback((e: PointerEvent) => {
     const s = stateRef.current;
     if (!s.dragging) return;
     const dx = e.clientX - s.startX;
@@ -109,16 +109,16 @@ export function SwipeableRow({
       s.decided = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
       if (s.decided === "vertical") { s.dragging = false; return; }
       setIsDragging(true);
-      e.currentTarget.setPointerCapture(e.pointerId);
+      wrapperRef.current?.setPointerCapture(e.pointerId);
     }
     if (s.decided !== "horizontal") return;
 
     e.preventDefault();
     s.curDx = dx;
     setTranslate(clamp(s.baseOffset + dx));
-  }
+  }, [clamp, setTranslate]);
 
-  function endDrag() {
+  const endDrag = useCallback(() => {
     const s = stateRef.current;
     if (!s.dragging) return;
     s.dragging = false;
@@ -126,34 +126,35 @@ export function SwipeableRow({
     setIsDragging(false);
     const finalOffset = clamp(s.baseOffset + s.curDx);
     commitOpen(finalOffset <= -maxReveal * SNAP_OPEN_RATIO);
-  }
+  }, [clamp, commitOpen, maxReveal]);
 
-  // Defensive fallback: some WebKit/iOS versions suppress native scroll less
-  // reliably via preventDefault() on pointer events than via touchmove's.
-  // React attaches its own onTouchMove as passive, so a manual listener with
-  // passive: false is required for preventDefault() to have any effect here.
+  // Native listeners, not React's synthetic pointer props: React can attach
+  // these as passive under the hood (confirmed necessary for touchmove --
+  // see below), which would silently no-op preventDefault() and let the
+  // browser's own scroll/pan win before our drag-direction check ever runs,
+  // so the row would never visibly move on some Android/WebView combos.
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
-    function handler(e: TouchEvent) {
-      if (stateRef.current.dragging && stateRef.current.decided === "horizontal") {
-        e.preventDefault();
-      }
-    }
-    el.addEventListener("touchmove", handler, { passive: false });
-    return () => el.removeEventListener("touchmove", handler);
-  }, []);
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove, { passive: false });
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+    el.addEventListener("lostpointercapture", endDrag);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", endDrag);
+      el.removeEventListener("pointercancel", endDrag);
+      el.removeEventListener("lostpointercapture", endDrag);
+    };
+  }, [onPointerDown, onPointerMove, endDrag]);
 
   return (
     <div
       ref={wrapperRef}
       className={`relative overflow-hidden ${className}`}
       style={{ touchAction: "pan-y" }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      onLostPointerCapture={endDrag}
     >
       {actions.length > 0 && (
         <div className="absolute inset-y-0 right-0 z-0 flex" style={{ width: maxReveal }}>

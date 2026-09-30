@@ -134,24 +134,12 @@ function DayView({ bills, categories, groups, dict }: { bills: Bill[]; categorie
         });
         const billWord = dayBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
 
-        // Within each day, sub-group by group
-        const subGroupMap = new Map<string | null, Bill[]>();
-        const subGroupOrder: (string | null)[] = [];
-        for (const bill of dayBills) {
-          const key = bill.group_id ?? null;
-          if (!subGroupMap.has(key)) {
-            subGroupMap.set(key, []);
-            subGroupOrder.push(key);
-          }
-          subGroupMap.get(key)!.push(bill);
-        }
-
         return (
           <div key={dayDate}>
             {/* Day header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-muted)]">
+            <div className="flex items-center justify-between px-4 py-3 bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border-b-2 border-[var(--color-primary)]">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-[var(--color-foreground)] capitalize">{dayLabel}</span>
+                <span className="text-sm font-bold text-[var(--color-primary)] capitalize">{dayLabel}</span>
                 <span className="text-xs text-[var(--color-muted-foreground)]">· {dayBills.length} {billWord}</span>
               </div>
               <span className="text-sm font-bold text-[var(--color-foreground)] tabular-nums">
@@ -159,24 +147,11 @@ function DayView({ bills, categories, groups, dict }: { bills: Bill[]; categorie
               </span>
             </div>
 
-            {/* Sub-groups within the day */}
-            {subGroupOrder.map((groupId) => {
-              const groupBills = subGroupMap.get(groupId)!;
-              const group = groupId ? groups.find((g) => g.id === groupId) ?? null : null;
-              const groupTotal = groupBills.reduce((s, b) => s + b.amount, 0);
-              const subBillWord = groupBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
-
-              return (
-                <div key={groupId ?? "__ungrouped__"}>
-                  <GroupHeader group={group} count={groupBills.length} total={groupTotal} billWord={subBillWord} ungroupedLabel={dict.bills.ungrouped} />
-                  <div className="divide-y divide-[var(--color-border)]">
-                    {groupBills.map((bill) => (
-                      <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            <div className="divide-y divide-[var(--color-border)]">
+              {dayBills.map((bill) => (
+                <BillRow key={bill.id} bill={bill} categories={categories} groups={groups} />
+              ))}
+            </div>
           </div>
         );
       })}

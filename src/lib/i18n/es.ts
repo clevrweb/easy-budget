@@ -57,7 +57,7 @@ export const es: Dict = {
     more: "Más",
     switchBudget: "Cambiar Presupuesto",
     debts: "Plan Bola de Nieve",
-    calculator: "Calculadora",
+    calculator: "Plan de Ahorro",
   },
 
   dashboard: {
@@ -483,7 +483,7 @@ export const es: Dict = {
   },
 
   calculator: {
-    title: "Calculadora",
+    title: "Plan de Ahorro",
     tickerLabel: "Símbolo de Cotización",
     tickerPlaceholder: "SPY",
     initialInvestmentLabel: "Inversión Inicial (USD)",
