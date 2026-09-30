@@ -64,6 +64,10 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .dark {
     color-scheme: dark;
     --badge-paid-bg: #16a34a55;

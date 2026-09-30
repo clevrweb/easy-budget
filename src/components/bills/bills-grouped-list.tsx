@@ -112,6 +112,7 @@ export function BillsGroupedList({ bills, categories, groups, groupBy = "group",
 }
 
 function DayView({ bills, categories, groups, dict }: { bills: Bill[]; categories: Category[]; groups: Group[]; dict: ReturnType<typeof useDict> }) {
+  const today = new Date().toISOString().split("T")[0];
   const dayMap = new Map<string, Bill[]>();
   const dayOrder: string[] = [];
 
@@ -133,13 +134,26 @@ function DayView({ bills, categories, groups, dict }: { bills: Bill[]; categorie
           weekday: "long", month: "short", day: "numeric",
         });
         const billWord = dayBills.length === 1 ? dict.bills.billSingular : dict.bills.billPlural;
+        const hasOverdue = dayBills.some((b) => b.status === "pending" && b.due_date < today);
 
         return (
           <div key={dayDate}>
             {/* Day header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border-b-2 border-[var(--color-primary)]">
+            <div
+              className={`flex items-center justify-between px-4 py-3 border-b-2 ${
+                hasOverdue
+                  ? "border-[var(--color-danger)]"
+                  : "border-[var(--color-primary)]"
+              }`}
+              style={{ backgroundColor: hasOverdue ? "var(--badge-overdue-bg)" : "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
+            >
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-[var(--color-primary)] capitalize">{dayLabel}</span>
+                <span
+                  className="text-sm font-bold capitalize"
+                  style={{ color: hasOverdue ? "var(--badge-overdue-fg)" : "var(--color-primary)" }}
+                >
+                  {dayLabel}
+                </span>
                 <span className="text-xs text-[var(--color-muted-foreground)]">· {dayBills.length} {billWord}</span>
               </div>
               <span className="text-sm font-bold text-[var(--color-foreground)] tabular-nums">
