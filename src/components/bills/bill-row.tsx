@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { createPortal } from "react-dom";
-import { Pencil, Trash2, CircleDollarSign, Check, RotateCcw } from "lucide-react";
+import { Pencil, Trash2, CircleDollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction, payBillAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
@@ -125,16 +125,6 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
       onActivate: openPayDialog,
       className: "bg-teal-600",
     }] : []),
-    {
-      key: "toggle-paid",
-      label: isPaid ? dict.bills.pending : dict.bills.paid,
-      icon: isPaid ? <RotateCcw className="w-4 h-4" /> : <Check className="w-4 h-4" />,
-      onActivate: () => startTransition(async () => {
-        if (isPaid) await markBillPendingAction(bill.id);
-        else await markBillPaidAction(bill.id);
-      }),
-      className: isPaid ? "bg-slate-500" : "bg-[var(--color-success)]",
-    },
     {
       key: "delete",
       label: bill.recurring_template_id
