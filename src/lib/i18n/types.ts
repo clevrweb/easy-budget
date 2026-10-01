@@ -70,6 +70,17 @@ export interface Dict {
     overdue: string;
     noMonthBills: string;
     noMonthBillsHint: string;
+    greetingMorning: string;
+    greetingAfternoon: string;
+    greetingEvening: string;
+    leftToSpendTitle: string;
+    leftToSpendDesc: string;
+    billsAndSpendingLabel: string;
+    comingUpTitle: string;
+    comingUpSubtitle: string;
+    seeAll: string;
+    dueLabel: string;
+    billsPaidThisMonth: string;
   };
 
   bills: {
@@ -287,6 +298,8 @@ export interface Dict {
     defaultViewToday: string;
     defaultViewWeek: string;
     defaultViewMonth: string;
+    themeTitle: string;
+    themeDesc: string;
     headerColorsTitle: string;
     headerColorsDesc: string;
     bgColorLabel: string;

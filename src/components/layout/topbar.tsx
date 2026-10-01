@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useDict } from "@/components/language-provider";
-import { AppLogo } from "@/components/app-logo";
+import { cn } from "@/lib/utils";
 
 interface TopbarProps {
   title: string;
@@ -12,11 +12,22 @@ interface TopbarProps {
   backHref?: string;
 }
 
+// Hidden on mobile -- the logo/title bar, per-page "Add" actions, and the
+// theme toggle it used to carry have moved to the bottom nav logo, a FAB per
+// page, and the Settings > Appearance tab, respectively. The one exception is
+// a page with `backHref`: that back-navigation link has no other mobile home,
+// so the bar stays visible there (just the back link + centered title; the
+// right-side slot below is still mobile-hidden even then).
 export function Topbar({ title, children, backHref }: TopbarProps) {
   const dict = useDict();
 
   return (
-    <header className="relative h-14 flex items-center justify-between px-4 md:px-6 border-b border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
+    <header
+      className={cn(
+        "relative h-14 items-center justify-between px-4 md:px-6 border-b border-[var(--color-border)] bg-[var(--color-card)] shrink-0",
+        backHref ? "flex" : "hidden md:flex"
+      )}
+    >
       {/* Left */}
       {backHref ? (
         <Link
@@ -27,13 +38,7 @@ export function Topbar({ title, children, backHref }: TopbarProps) {
           {dict.nav.back}
         </Link>
       ) : (
-        <>
-          <h1 className="text-base font-semibold text-[var(--color-foreground)] hidden md:block">{title}</h1>
-          <div className="flex items-center gap-2.5 md:hidden">
-            <AppLogo size={56} className="w-7 h-7 rounded-lg" />
-            <span className="font-bold text-sm text-[var(--color-foreground)]">Budget Whisperer</span>
-          </div>
-        </>
+        <h1 className="text-base font-semibold text-[var(--color-foreground)]">{title}</h1>
       )}
 
       {/* Center title on back pages */}
@@ -44,7 +49,7 @@ export function Topbar({ title, children, backHref }: TopbarProps) {
       )}
 
       {/* Right */}
-      <div className="flex items-center gap-2">
+      <div className="hidden md:flex items-center gap-2">
         {children}
         <ThemeToggle />
       </div>

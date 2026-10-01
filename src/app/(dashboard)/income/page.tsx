@@ -1,5 +1,7 @@
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
+import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { IncomeForm } from "@/components/income/income-form";
 import { IncomeRow } from "@/components/income/income-row";
 import { formatCurrency } from "@/lib/utils";
@@ -40,6 +42,10 @@ export default async function IncomePage() {
       <Topbar title={t.title}>
         <IncomeForm />
       </Topbar>
+
+      <MobileFab>
+        <IncomeForm trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.addIncome} />} />
+      </MobileFab>
 
       <main className="flex-1 p-4 md:p-6 space-y-5">
         {/* Summary bar */}

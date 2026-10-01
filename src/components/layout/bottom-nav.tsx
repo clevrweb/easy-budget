@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, BarChart2, Tag, TrendingUp, TrendingDown, Settings, MoreHorizontal, Users, Repeat, ArrowLeftRight, PiggyBank } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
+import { AppLogo } from "@/components/app-logo";
 
 interface BottomNavProps {
   hasMultipleAccounts?: boolean;
@@ -21,13 +22,12 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { href: "/dashboard", label: dict.nav.home,     icon: LayoutDashboard },
-    { href: "/income",    label: dict.nav.income,   icon: TrendingUp },
-    { href: "/reports",   label: dict.nav.reports,  icon: BarChart2 },
-    { href: "/settings",  label: dict.nav.settings, icon: Settings },
+    { href: "/dashboard", label: dict.nav.home,    icon: LayoutDashboard },
+    { href: "/reports",   label: dict.nav.reports, icon: BarChart2 },
   ];
 
   const moreItems = [
+    { href: "/income",     label: dict.nav.income,     icon: TrendingUp },
     { href: "/categories", label: dict.nav.categories, icon: Tag },
     { href: "/groups",    label: dict.nav.groups,    icon: Users },
     { href: "/recurring", label: dict.nav.recurring, icon: Repeat },
@@ -36,6 +36,7 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
     ...(hasMultipleAccounts
       ? [{ href: "/choose-account", label: dict.nav.switchBudget, icon: ArrowLeftRight }]
       : []),
+    { href: "/settings",  label: dict.nav.settings,  icon: Settings },
   ];
   const isMoreActive = moreItems.some((item) => pathname.startsWith(item.href));
 
@@ -61,7 +62,11 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
   }, [moreOpen]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-primary)] shadow-[0_-2px_10px_rgba(0,0,0,0.15)] flex md:hidden safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-primary)] shadow-[0_-2px_10px_rgba(0,0,0,0.15)] flex items-center md:hidden safe-area-inset-bottom">
+      <div className="flex items-center justify-center px-3 shrink-0">
+        <AppLogo size={40} className="w-7 h-7 rounded-md" />
+      </div>
+
       {navItems.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
         return (

@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
+import { HomeOverview } from "@/components/dashboard/home-overview";
 import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
 import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import { IncomeSection } from "@/components/income/income-section";
+import { getIncomeOccurrences } from "@/lib/income-utils";
 import type { Bill, Category, Group, IncomeSource } from "@/types/database";
 import type { ViewMode, StatusFilter, GroupBy } from "@/components/bills/bills-header";
 import { getServerDict } from "@/lib/i18n/server";
@@ -86,15 +88,26 @@ export default async function DashboardPage({
     { data: categories },
     { data: groups },
     { data: incomeSources },
+    { data: profile },
   ] = await Promise.all([
     supabase.from("bills").select("*").eq("account_id", accountId ?? "").gte("due_date", monthStart).lte("due_date", monthEnd).order("due_date"),
     supabase.from("bills").select("*").eq("account_id", accountId ?? "").lt("due_date", monthStart).eq("status", "pending"),
     supabase.from("categories").select("*").eq("account_id", accountId ?? "").order("name"),
     supabase.from("groups").select("*").eq("account_id", accountId ?? "").order("name"),
     supabase.from("income_sources").select("*").eq("account_id", accountId ?? "").eq("is_active", true),
+    user ? supabase.from("profiles").select("full_name").eq("user_id", user.id).single() : Promise.resolve({ data: null }),
   ]);
 
   const allCurrentBills = [...(monthBills ?? []), ...(overdueBills ?? [])] as Bill[];
+  const firstName = (profile?.full_name || user?.email || "").split(" ")[0] || "there";
+
+  const monthBillsTotal = (monthBills ?? []).reduce((s, b) => s + b.amount, 0);
+  const monthPaidTotal = (monthBills ?? []).filter((b) => b.status === "paid").reduce((s, b) => s + b.amount, 0);
+  const monthIncomeTotal = getIncomeOccurrences((incomeSources ?? []) as IncomeSource[], monthStart, monthEnd)
+    .reduce((s, occ) => s + occ.amount, 0);
+  const upcomingBills = allCurrentBills
+    .filter((b) => b.status !== "paid" && b.due_date >= today && b.due_date <= weekEnd.toISOString().split("T")[0])
+    .sort((a, b) => a.due_date.localeCompare(b.due_date));
 
   const summary = {
     dueToday:    allCurrentBills.filter((b) => b.due_date === today && b.status !== "paid"),
@@ -135,11 +148,22 @@ export default async function DashboardPage({
       <Topbar title={dict.dashboard.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
+        {/* Greeting + spend overview + coming up */}
+        <HomeOverview
+          firstName={firstName}
+          incomeTotal={monthIncomeTotal}
+          billsTotal={monthBillsTotal}
+          paidTotal={monthPaidTotal}
+          upcomingBills={upcomingBills}
+        />
+
         {/* Collapsible summary */}
         <CollapsibleSummary summary={summary} />
 
         {/* Bills filter + list */}
-        <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
+        <div id="all-bills" className="scroll-mt-4">
+          <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
+        </div>
 
         {/* Income + net total section */}
         {range && (

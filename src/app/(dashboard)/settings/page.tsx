@@ -7,6 +7,7 @@ import { ExportDataSection } from "@/components/settings/export-data-section";
 import { DefaultViewSwitcher } from "@/components/settings/default-view-switcher";
 import { NotificationChannelSettings } from "@/components/settings/notification-channel-settings";
 import { HeaderColorsForm } from "@/components/settings/header-colors-form";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   getNotificationStatusAction,
@@ -79,6 +80,14 @@ export default async function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="appearance">
+            <div className="md:hidden mb-6 flex items-center justify-between px-4 py-3 bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)]">
+              <div>
+                <p className="text-sm font-semibold text-[var(--color-foreground)]">{t.themeTitle}</p>
+                <p className="text-xs text-[var(--color-muted-foreground)]">{t.themeDesc}</p>
+              </div>
+              <ThemeToggle />
+            </div>
+
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
                 {t.headerColorsTitle}

@@ -5,7 +5,7 @@ import { useDict } from "@/components/language-provider";
 import type { Bill } from "@/types/database";
 import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
-export function BillsList({ bills, title }: { bills: Bill[]; title: string }) {
+export function BillsList({ bills, title }: { bills: Bill[]; title?: string }) {
   const dict = useDict();
 
   const statusConfig = {
@@ -39,9 +39,11 @@ export function BillsList({ bills, title }: { bills: Bill[]; title: string }) {
 
   return (
     <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)]">
-      <div className="px-6 py-4 border-b border-[var(--color-border)]">
-        <h2 className="font-semibold text-[var(--color-foreground)]">{title}</h2>
-      </div>
+      {title && (
+        <div className="px-6 py-4 border-b border-[var(--color-border)]">
+          <h2 className="font-semibold text-[var(--color-foreground)]">{title}</h2>
+        </div>
+      )}
       <div className="divide-y divide-[var(--color-border)]">
         {bills.map((bill) => {
           const status = statusConfig[bill.status] ?? statusConfig.pending;
@@ -60,7 +62,7 @@ export function BillsList({ bills, title }: { bills: Bill[]; title: string }) {
                     {bill.name}
                   </p>
                   <p className="text-xs text-[var(--color-muted-foreground)]">
-                    Due {formatDate(bill.due_date)}
+                    {dict.dashboard.dueLabel} {formatDate(bill.due_date)}
                   </p>
                 </div>
               </div>

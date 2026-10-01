@@ -43,12 +43,12 @@ export const en: Dict = {
   },
 
   nav: {
-    dashboard: "Dashboard",
+    dashboard: "Home",
     home: "Home",
     bills: "Bills",
     categories: "Categories",
     groups: "Groups",
-    reports: "Reports",
+    reports: "Analysis",
     settings: "Settings",
     recurring: "Recurring",
     income: "Income",
@@ -61,7 +61,7 @@ export const en: Dict = {
   },
 
   dashboard: {
-    title: "Dashboard",
+    title: "Home",
     summary: "Summary",
     today: "Today",
     dueToday: "Due Today",
@@ -72,6 +72,17 @@ export const en: Dict = {
     overdue: "Overdue",
     noMonthBills: "No bills for this month.",
     noMonthBillsHint: "Use Add Bill or Generate Recurring to populate this month.",
+    greetingMorning: "Good morning",
+    greetingAfternoon: "Good afternoon",
+    greetingEvening: "Good evening",
+    leftToSpendTitle: "Left to spend this month",
+    leftToSpendDesc: "Bills and income are accounted for",
+    billsAndSpendingLabel: "Bills & Spending",
+    comingUpTitle: "Coming up",
+    comingUpSubtitle: "{count} bills · next 7 days",
+    seeAll: "See all",
+    dueLabel: "Due",
+    billsPaidThisMonth: "Bills paid this month",
   },
 
   bills: {
@@ -252,7 +263,7 @@ export const en: Dict = {
   },
 
   reports: {
-    title: "Reports",
+    title: "Analysis",
     monthlyTrend: "Monthly Trend",
     last6Months: "Last 6 months",
     byCategory: "By Category",
@@ -288,6 +299,8 @@ export const en: Dict = {
     defaultViewToday: "Today",
     defaultViewWeek: "Week",
     defaultViewMonth: "Month",
+    themeTitle: "Theme",
+    themeDesc: "Switch between light and dark mode.",
     headerColorsTitle: "Header Colors",
     headerColorsDesc: "Customize the background and font color of the Income, Bills, and Past Due headers on your dashboard.",
     bgColorLabel: "Background",
