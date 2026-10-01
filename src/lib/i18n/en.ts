@@ -104,7 +104,7 @@ export const en: Dict = {
     addRecurringBill: "Add Recurring Bill",
     saving: "Saving...",
     cancel: "Cancel",
-    day: "Day",
+    day: "Today",
     week: "Week",
     month: "Month",
     all: "All",

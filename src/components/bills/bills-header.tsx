@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Search, Calendar, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useDict } from "@/components/language-provider";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 
@@ -38,8 +38,6 @@ function todayDateFor(v: ViewMode) {
 export function BillsHeader({ view, date, status, search, groupBy = "group", basePath = "/bills" }: BillsHeaderProps) {
   const router = useRouter();
   const dict = useDict();
-  const [searchOpen, setSearchOpen]   = useState(!!search);
-  const [searchValue, setSearchValue] = useState(search);
   const [isPending, startTransition]  = useTransition();
 
   const VIEWS: { label: string; value: ViewMode }[] = [
@@ -162,20 +160,6 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
         </div>
 
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              const next = !searchOpen;
-              setSearchOpen(next);
-              if (!next && search) push({ q: "" });
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-              searchOpen
-                ? "bg-[var(--color-primary)] text-white"
-                : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]"
-            }`}
-          >
-            <Search className="w-4 h-4" />
-          </button>
           <Select value={status} onValueChange={(v) => push({ status: v as StatusFilter })}>
             <SelectTrigger
               className={`h-8 w-auto gap-1.5 px-3 border-none rounded-lg text-xs font-medium ${
@@ -218,14 +202,6 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
           >
             <ChevronRight className="w-4 h-4" />
           </button>
-
-          <button
-            onClick={() => { if (!isPending) push({ date: todayDateFor(view) }); }}
-            disabled={isPending}
-            className="h-8 px-3 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0 disabled:opacity-50"
-          >
-            {dict.bills.todayBtn}
-          </button>
         </div>
       )}
 
@@ -244,30 +220,6 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
           >
             {dict.bills.byDay}
           </button>
-        </div>
-      )}
-
-      {/* Search input */}
-      {searchOpen && (
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-muted-foreground)] pointer-events-none" />
-          <input
-            autoFocus
-            type="text"
-            placeholder={dict.bills.searchPlaceholder}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && push({ q: searchValue })}
-            className="w-full h-9 pl-9 pr-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
-          />
-          {searchValue && (
-            <button
-              onClick={() => { setSearchValue(""); push({ q: "" }); }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
       )}
     </div>

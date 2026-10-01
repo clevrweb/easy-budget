@@ -104,7 +104,7 @@ export const es: Dict = {
     addRecurringBill: "Agregar factura recurrente",
     saving: "Guardando...",
     cancel: "Cancelar",
-    day: "Día",
+    day: "Hoy",
     week: "Semana",
     month: "Mes",
     all: "Todo",
