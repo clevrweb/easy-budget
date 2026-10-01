@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, Calendar, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Calendar, X } from "lucide-react";
 import { useDict } from "@/components/language-provider";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 export type ViewMode = "day" | "week" | "month" | "all";
 export type StatusFilter = "all" | "pending" | "paid" | "overdue";
@@ -38,7 +39,6 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
   const router = useRouter();
   const dict = useDict();
   const [searchOpen, setSearchOpen]   = useState(!!search);
-  const [filterOpen, setFilterOpen]   = useState(status !== "all");
   const [searchValue, setSearchValue] = useState(search);
   const [isPending, startTransition]  = useTransition();
 
@@ -176,20 +176,22 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
           >
             <Search className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              const next = !filterOpen;
-              setFilterOpen(next);
-              if (!next && status !== "all") push({ status: "all" });
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-              filterOpen || status !== "all"
-                ? "bg-[var(--color-primary)] text-white"
-                : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]"
-            }`}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-          </button>
+          <Select value={status} onValueChange={(v) => push({ status: v as StatusFilter })}>
+            <SelectTrigger
+              className={`h-8 w-auto gap-1.5 px-3 border-none rounded-lg text-xs font-medium ${
+                status !== "all"
+                  ? "bg-[var(--color-primary)] text-white"
+                  : "bg-transparent text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+              }`}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {STATUSES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -266,26 +268,6 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
               <X className="w-3.5 h-3.5" />
             </button>
           )}
-        </div>
-      )}
-
-      {/* Status filter pills */}
-      {filterOpen && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-[var(--color-muted-foreground)]">{dict.bills.statusPrefix}</span>
-          {STATUSES.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => push({ status: s.value })}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                status === s.value
-                  ? "bg-[var(--color-primary)] text-white"
-                  : "bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
         </div>
       )}
     </div>
