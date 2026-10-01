@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Topbar } from "@/components/layout/topbar";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { SharedAccessSection } from "@/components/settings/shared-access-section";
@@ -134,6 +135,12 @@ export default async function SettingsPage() {
               </h2>
               <DangerZoneSection />
             </div>
+
+            <p className="text-sm">
+              <Link href="/privacy" className="text-[var(--color-primary)] hover:underline">
+                Privacy Policy
+              </Link>
+            </p>
           </TabsContent>
         </Tabs>
       </main>

@@ -94,6 +94,12 @@ export default async function LoginPage({
             </Link>
           </p>
         </div>
+
+        <p className="text-center text-xs text-[var(--color-muted-foreground)] mt-6">
+          <Link href="/privacy" className="hover:underline">
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </div>
   );

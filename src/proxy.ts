@@ -37,6 +37,7 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
+  const isPublicRoute = pathname.startsWith("/privacy");
   // Hash-token pages: the invite/recovery link's session is established
   // client-side from the URL fragment, which the server can't see on the
   // first request, so these must never bounce to /login for lack of a
@@ -45,7 +46,7 @@ export async function proxy(request: NextRequest) {
   const isChooseAccount = pathname.startsWith("/choose-account");
   const isAdminRoute = pathname.startsWith("/admin");
 
-  if (!user && !isAuthRoute && !isSetPassword && pathname !== "/") {
+  if (!user && !isAuthRoute && !isSetPassword && !isPublicRoute && pathname !== "/") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -97,6 +98,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|offline.html|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|offline.html|\\.well-known|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
