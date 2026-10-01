@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, Calendar, X } from "lucide-react";
 import { useDict } from "@/components/language-provider";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 
 export type ViewMode = "day" | "week" | "month" | "all";
 export type StatusFilter = "all" | "pending" | "paid" | "overdue";
@@ -50,7 +50,7 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
   ];
 
   const STATUSES: { label: string; value: StatusFilter }[] = [
-    { label: dict.bills.statusAll, value: "all"   },
+    { label: dict.bills.all,     value: "all"     },
     { label: dict.bills.pending, value: "pending" },
     { label: dict.bills.paid,    value: "paid"    },
     { label: dict.bills.overdue, value: "overdue" },
@@ -184,7 +184,7 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
                   : "bg-transparent text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]"
               }`}
             >
-              <SelectValue />
+              {dict.bills.statusAll}
             </SelectTrigger>
             <SelectContent align="end">
               {STATUSES.map((s) => (
