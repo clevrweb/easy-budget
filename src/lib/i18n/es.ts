@@ -111,6 +111,7 @@ export const es: Dict = {
     allTime: "Todo el tiempo",
     todayBtn: "Hoy",
     statusPrefix: "Estado:",
+    statusAll: "Estado",
     pending: "Pendiente",
     paid: "Pagado",
     overdue: "Vencido",

@@ -109,6 +109,7 @@ export interface Dict {
     allTime: string;
     todayBtn: string;
     statusPrefix: string;
+    statusAll: string;
     pending: string;
     paid: string;
     overdue: string;

@@ -50,7 +50,7 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
   ];
 
   const STATUSES: { label: string; value: StatusFilter }[] = [
-    { label: dict.bills.all,     value: "all"     },
+    { label: dict.bills.statusAll, value: "all"   },
     { label: dict.bills.pending, value: "pending" },
     { label: dict.bills.paid,    value: "paid"    },
     { label: dict.bills.overdue, value: "overdue" },
