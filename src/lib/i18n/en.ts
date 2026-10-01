@@ -75,14 +75,9 @@ export const en: Dict = {
     greetingMorning: "Good morning",
     greetingAfternoon: "Good afternoon",
     greetingEvening: "Good evening",
-    leftToSpendTitle: "Left to spend this month",
-    leftToSpendDesc: "Bills and income are accounted for",
+    leftToSpendTitle: "Left to spend",
     billsAndSpendingLabel: "Bills & Spending",
-    comingUpTitle: "Coming up",
-    comingUpSubtitle: "{count} bills · next 7 days",
-    seeAll: "See all",
-    dueLabel: "Due",
-    billsPaidThisMonth: "Bills paid this month",
+    billsPaidLabel: "Bills paid",
   },
 
   bills: {

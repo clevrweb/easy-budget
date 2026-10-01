@@ -74,13 +74,8 @@ export interface Dict {
     greetingAfternoon: string;
     greetingEvening: string;
     leftToSpendTitle: string;
-    leftToSpendDesc: string;
     billsAndSpendingLabel: string;
-    comingUpTitle: string;
-    comingUpSubtitle: string;
-    seeAll: string;
-    dueLabel: string;
-    billsPaidThisMonth: string;
+    billsPaidLabel: string;
   };
 
   bills: {

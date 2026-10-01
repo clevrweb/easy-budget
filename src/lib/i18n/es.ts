@@ -75,14 +75,9 @@ export const es: Dict = {
     greetingMorning: "Buenos días",
     greetingAfternoon: "Buenas tardes",
     greetingEvening: "Buenas noches",
-    leftToSpendTitle: "Disponible para gastar este mes",
-    leftToSpendDesc: "Facturas e ingresos ya están contabilizados",
+    leftToSpendTitle: "Disponible para gastar",
     billsAndSpendingLabel: "Facturas y Gastos",
-    comingUpTitle: "Próximamente",
-    comingUpSubtitle: "{count} facturas · próximos 7 días",
-    seeAll: "Ver todo",
-    dueLabel: "Vence",
-    billsPaidThisMonth: "Facturas pagadas este mes",
+    billsPaidLabel: "Facturas pagadas",
   },
 
   bills: {

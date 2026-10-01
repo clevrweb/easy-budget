@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { HomeOverview } from "@/components/dashboard/home-overview";
-import { CollapsibleSummary } from "@/components/dashboard/collapsible-summary";
 import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
 import { IncomeSection } from "@/components/income/income-section";
@@ -76,47 +75,25 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser();
   const accountId = user ? await getActiveAccountId(supabase, user.id) : null;
 
-  // Summary: current month bills + prior overdue
+  // Current-month bounds, used only as the income estimate's fallback window
+  // when "all" is selected (a recurring income source has no natural
+  // "all time" bound to sum against).
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
   const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
-  const weekEnd    = new Date(now);
-  weekEnd.setDate(now.getDate() + 7);
 
   const [
-    { data: monthBills },
-    { data: overdueBills },
     { data: categories },
     { data: groups },
     { data: incomeSources },
     { data: profile },
   ] = await Promise.all([
-    supabase.from("bills").select("*").eq("account_id", accountId ?? "").gte("due_date", monthStart).lte("due_date", monthEnd).order("due_date"),
-    supabase.from("bills").select("*").eq("account_id", accountId ?? "").lt("due_date", monthStart).eq("status", "pending"),
     supabase.from("categories").select("*").eq("account_id", accountId ?? "").order("name"),
     supabase.from("groups").select("*").eq("account_id", accountId ?? "").order("name"),
     supabase.from("income_sources").select("*").eq("account_id", accountId ?? "").eq("is_active", true),
     user ? supabase.from("profiles").select("full_name").eq("user_id", user.id).single() : Promise.resolve({ data: null }),
   ]);
 
-  const allCurrentBills = [...(monthBills ?? []), ...(overdueBills ?? [])] as Bill[];
   const firstName = (profile?.full_name || user?.email || "").split(" ")[0] || "there";
-
-  const monthBillsTotal = (monthBills ?? []).reduce((s, b) => s + b.amount, 0);
-  const monthPaidTotal = (monthBills ?? []).filter((b) => b.status === "paid").reduce((s, b) => s + b.amount, 0);
-  const monthIncomeTotal = getIncomeOccurrences((incomeSources ?? []) as IncomeSource[], monthStart, monthEnd)
-    .reduce((s, occ) => s + occ.amount, 0);
-  const upcomingBills = allCurrentBills
-    .filter((b) => b.status !== "paid" && b.due_date >= today && b.due_date <= weekEnd.toISOString().split("T")[0])
-    .sort((a, b) => a.due_date.localeCompare(b.due_date));
-
-  const summary = {
-    dueToday:    allCurrentBills.filter((b) => b.due_date === today && b.status !== "paid"),
-    dueThisWeek: allCurrentBills.filter((b) => b.due_date > today && b.due_date <= weekEnd.toISOString().split("T")[0] && b.status !== "paid"),
-    dueThisMonth: allCurrentBills.filter((b) => b.due_date >= monthStart && b.due_date <= monthEnd && b.status !== "paid"),
-    paid:        allCurrentBills.filter((b) => b.status === "paid" && b.due_date >= monthStart),
-    pending:     allCurrentBills.filter((b) => b.status === "pending" && b.due_date >= monthStart && b.due_date >= today),
-    overdue:     allCurrentBills.filter((b) => b.status === "pending" && b.due_date < today),
-  };
 
   // Bills list: filtered by view/date/status/q
   const range = getDateRange(view, date);
@@ -142,28 +119,30 @@ export default async function DashboardPage({
   const pastDueBills   = applyStatusFilter((pastDueResult.data ?? []) as Bill[], status, today);
 
   const billsTotal = filteredBills.reduce((s, b) => s + b.amount, 0);
+  const paidTotal = filteredBills.filter((b) => b.status === "paid").reduce((s, b) => s + b.amount, 0);
+  // "all" has no natural bound for a recurring income schedule, so fall back
+  // to the current month as the most meaningful approximation.
+  const incomeRange = range ?? { start: monthStart, end: monthEnd };
+  const incomeTotal = getIncomeOccurrences((incomeSources ?? []) as IncomeSource[], incomeRange.start, incomeRange.end)
+    .reduce((s, occ) => s + occ.amount, 0);
+  const periodLabel = dict.bills[view];
 
   return (
     <>
       <Topbar title={dict.dashboard.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
-        {/* Greeting + spend overview + coming up */}
+        {/* Greeting + spend overview, tracking the selected Bills view below */}
         <HomeOverview
           firstName={firstName}
-          incomeTotal={monthIncomeTotal}
-          billsTotal={monthBillsTotal}
-          paidTotal={monthPaidTotal}
-          upcomingBills={upcomingBills}
+          incomeTotal={incomeTotal}
+          billsTotal={billsTotal}
+          paidTotal={paidTotal}
+          periodLabel={periodLabel}
         />
 
-        {/* Collapsible summary */}
-        <CollapsibleSummary summary={summary} />
-
         {/* Bills filter + list */}
-        <div id="all-bills" className="scroll-mt-4">
-          <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
-        </div>
+        <BillsHeader view={view} date={date} status={status} search={q} groupBy={groupBy} basePath="/dashboard" />
 
         {/* Income + net total section */}
         {range && (
