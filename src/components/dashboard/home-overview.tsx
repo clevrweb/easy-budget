@@ -43,14 +43,14 @@ export function HomeOverview({ firstName, incomeTotal, billsTotal, paidTotal, pe
         <p className="text-sm text-[var(--color-muted-foreground)] capitalize">{dateStr}</p>
       </div>
 
-      <div className="rounded-2xl p-5 text-white shadow-[var(--shadow-card)]" style={{ backgroundColor: "var(--color-primary)" }}>
+      <div className="rounded-2xl p-4 text-white shadow-[var(--shadow-card)]" style={{ backgroundColor: "var(--color-primary)" }}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wide text-white/80">{t.leftToSpendTitle}</p>
-            <p className="text-3xl font-bold mt-1 tabular-nums truncate">{formatCurrency(leftToSpend)}</p>
+            <p className="text-2xl font-bold mt-0.5 tabular-nums truncate">{formatCurrency(leftToSpend)}</p>
             <p className="text-xs text-white/80 mt-1">{periodLabel}</p>
           </div>
-          <CircularProgress percent={committedPercent} />
+          <CircularProgress percent={committedPercent} size={52} strokeWidth={5} />
         </div>
       </div>
 
