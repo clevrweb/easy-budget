@@ -4,10 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BarChart2, Tag, TrendingUp, TrendingDown, Settings, MoreHorizontal, Users, Repeat, ArrowLeftRight, PiggyBank } from "lucide-react";
+import { LayoutDashboard, BarChart2, Tag, TrendingUp, TrendingDown, Settings, MoreHorizontal, Users, Repeat, ArrowLeftRight, PiggyBank, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 import { AppLogo } from "@/components/app-logo";
+import { signOutAction } from "@/lib/supabase/actions";
 
 interface BottomNavProps {
   hasMultipleAccounts?: boolean;
@@ -131,6 +132,16 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
               {label}
             </Link>
           ))}
+          <div className="my-1 border-t border-[var(--color-border)]" />
+          <form action={signOutAction}>
+            <button
+              type="submit"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-danger)] transition-colors"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              {dict.nav.signOut}
+            </button>
+          </form>
         </div>,
         document.body
       )}

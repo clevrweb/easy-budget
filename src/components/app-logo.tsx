@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useTheme } from "next-themes";
 
 interface AppLogoProps {
   size: number;
@@ -10,7 +9,5 @@ interface AppLogoProps {
 }
 
 export function AppLogo({ size, className, priority }: AppLogoProps) {
-  const { resolvedTheme } = useTheme();
-  const src = resolvedTheme === "dark" ? "/logo-dark.png" : "/logo.png";
-  return <Image src={src} alt="Budget Whisperer" width={size} height={size} className={className} priority={priority} />;
+  return <Image src="/logo-transparent.png" alt="Budget Whisperer" width={size} height={size} className={className} priority={priority} />;
 }
