@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
-import { MobileFab, FabLink } from "@/components/layout/fab";
+import { DraggableFab } from "@/components/layout/draggable-fab";
 import { HomeOverview } from "@/components/dashboard/home-overview";
 import { BillsHeader } from "@/components/bills/bills-header";
 import { BillsGroupedList } from "@/components/bills/bills-grouped-list";
@@ -139,9 +139,13 @@ export default async function DashboardPage({
         </Button>
       </Topbar>
 
-      <MobileFab>
-        <FabLink href="/bills/new" icon={<Plus className="w-6 h-6" />} label={dict.bills.addBill} />
-      </MobileFab>
+      <DraggableFab
+        href="/bills/new"
+        icon={<Plus className="w-6 h-6" />}
+        label={dict.bills.addBill}
+        className="bg-[#0d3b66] text-white"
+        storageKey="home-add-bill-fab-pos"
+      />
 
       <main className="flex-1 p-4 md:p-6 space-y-4">
         {/* Greeting + spend overview, tracking the selected Bills view below */}
