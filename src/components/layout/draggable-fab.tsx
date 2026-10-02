@@ -12,7 +12,7 @@ interface DraggableFabProps {
   storageKey: string;
 }
 
-const SIZE = 56;
+const SIZE = 48;
 const SIDE_MARGIN = 16;
 const BOTTOM_MARGIN = 80;
 
@@ -26,7 +26,7 @@ function clamp(x: number, y: number) {
 }
 
 function defaultPos() {
-  return clamp(window.innerWidth - SIZE - SIDE_MARGIN, window.innerHeight - SIZE - BOTTOM_MARGIN);
+  return clamp((window.innerWidth - SIZE) / 2, (window.innerHeight - SIZE) / 2);
 }
 
 /** Draggable FAB that remembers where it was dropped, per `storageKey`. */
@@ -84,8 +84,8 @@ export function DraggableFab({ href, icon, label, className, storageKey }: Dragg
       onClick={handleClick}
       style={pos ? { left: pos.x, top: pos.y } : undefined}
       className={cn(
-        "fixed z-30 md:hidden h-14 w-14 rounded-full shadow-xl flex items-center justify-center active:scale-95 transition-transform touch-none select-none",
-        !pos && "bottom-20 right-4",
+        "fixed z-30 md:hidden h-12 w-12 rounded-full shadow-xl flex items-center justify-center active:scale-95 transition-transform touch-none select-none",
+        !pos && "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
         className ?? "bg-[var(--color-primary)] text-white"
       )}
     >

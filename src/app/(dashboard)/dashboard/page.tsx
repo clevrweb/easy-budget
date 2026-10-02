@@ -141,7 +141,7 @@ export default async function DashboardPage({
 
       <DraggableFab
         href="/bills/new"
-        icon={<Plus className="w-6 h-6" />}
+        icon={<Plus className="w-5 h-5" />}
         label={dict.bills.addBill}
         className="bg-[#0d3b66] text-white"
         storageKey="home-add-bill-fab-pos"
