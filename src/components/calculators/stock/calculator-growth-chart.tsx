@@ -2,10 +2,9 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import type { TimelinePoint } from "@/lib/compound-calculator";
 
 interface CalculatorGrowthChartProps {
-  timeline: TimelinePoint[];
+  timeline: { date: string; value: number }[];
 }
 
 function monthLabel(iso: string): string {

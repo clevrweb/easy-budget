@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Topbar } from "@/components/layout/topbar";
+import { Button } from "@/components/ui/button";
+import { saveBucketProjectionAction } from "@/app/(dashboard)/savings-plan/actions";
 import { CalculatorForm, dividendModeFrom } from "./calculator-form";
 import { CalculatorResults } from "./calculator-results";
 import { ProjectionResults } from "./projection-results";
@@ -24,7 +27,7 @@ import {
 } from "@/lib/future-projection";
 import type { CalculatorMode } from "./calculator-mode-toggle";
 import type { StockHistoryError, StockHistoryPoint, StockHistoryResponse } from "@/app/api/calculator/stock-history/route";
-import type { Group } from "@/types/database";
+import type { Group, SavingsBucket } from "@/types/database";
 
 type Status = "idle" | "loading" | "error" | "success";
 
@@ -82,16 +85,22 @@ interface PlanInputs {
 
 interface CalculatorPageClientProps {
   groups: Group[];
+  bucket?: SavingsBucket | null;
 }
 
-export function CalculatorPageClient({ groups }: CalculatorPageClientProps) {
+export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientProps) {
   const dict = useDict();
   const t = dict.calculator;
+  const router = useRouter();
+  const [isSaving, startSaving] = useTransition();
+  const [savedToBucket, setSavedToBucket] = useState(false);
 
-  const [mode, setMode] = useState<CalculatorMode>("backtest");
+  const bucketInput = (bucket?.projection_input ?? {}) as { ticker?: string };
 
-  const [ticker, setTicker] = useState("SPY");
-  const [initialInvestment, setInitialInvestment] = useState(10000);
+  const [mode, setMode] = useState<CalculatorMode>(bucket ? "project" : "backtest");
+
+  const [ticker, setTicker] = useState(bucketInput.ticker ?? "SPY");
+  const [initialInvestment, setInitialInvestment] = useState(bucket?.current_amount ?? 10000);
   const [includeDividends, setIncludeDividends] = useState(true);
   const [drip, setDrip] = useState(true);
 
@@ -100,10 +109,14 @@ export function CalculatorPageClient({ groups }: CalculatorPageClientProps) {
   const [endDate, setEndDate] = useState(todayStr());
 
   // project-only
-  const [contributionAmount, setContributionAmount] = useState(100);
-  const [contributionFrequency, setContributionFrequency] = useState<ContributionFrequency>("monthly");
+  const [contributionAmount, setContributionAmount] = useState(bucket?.contribution_amount ?? 100);
+  const [contributionFrequency, setContributionFrequency] = useState<ContributionFrequency>(
+    (bucket?.contribution_frequency as ContributionFrequency) ?? "monthly"
+  );
   const [projectStartDate, setProjectStartDate] = useState(todayStr());
-  const [projectEndDate, setProjectEndDate] = useState(tenYearsFromTodayStr());
+  const [projectEndDate, setProjectEndDate] = useState(
+    bucket?.target_date && bucket.target_date > todayStr() ? bucket.target_date : tenYearsFromTodayStr()
+  );
 
   const [snapshot, setSnapshot] = useState<StockSnapshot | null>(null);
   const [sharePrice, setSharePrice] = useState(0);
@@ -274,6 +287,7 @@ export function CalculatorPageClient({ groups }: CalculatorPageClientProps) {
       }
 
       setStatus("success");
+      setSavedToBucket(false);
     } catch (err) {
       setStatus("error");
       if (err instanceof CompoundCalculatorError) {
@@ -286,6 +300,31 @@ export function CalculatorPageClient({ groups }: CalculatorPageClientProps) {
         setErrorMessage(t.errors.upstream_error);
       }
     }
+  }
+
+  function handleSaveToBucket() {
+    if (!bucket || !projectionResult) return;
+    startSaving(async () => {
+      const result = await saveBucketProjectionAction({
+        bucketId: bucket.id,
+        projectionType: "stock",
+        projectionInput: {
+          ticker: ticker.trim().toUpperCase(),
+          priceGrowthPct,
+          dividendAmount,
+          dividendFrequency,
+          dividendGrowthPct,
+          contributionAmount,
+          contributionFrequency,
+        },
+        projectedValue: projectionResult.endingValue,
+        projectedDate: projectEndDate,
+      });
+      if (!result?.error) {
+        setSavedToBucket(true);
+        router.push("/savings-plan");
+      }
+    });
   }
 
   return (
@@ -365,6 +404,12 @@ export function CalculatorPageClient({ groups }: CalculatorPageClientProps) {
               <p className="text-xs text-[var(--color-muted-foreground)] mb-5">{ticker}</p>
               <CalculatorGrowthChart timeline={projectionResult.timeline} />
             </div>
+
+            {bucket && (
+              <Button onClick={handleSaveToBucket} disabled={isSaving} className="w-full">
+                {isSaving ? dict.common.saving : savedToBucket ? dict.savingsPlan.savedToBucket : dict.savingsPlan.saveToBucket}
+              </Button>
+            )}
 
             {planInputs && planInputs.contributionAmount > 0 && (
               <SavingsPlanForm

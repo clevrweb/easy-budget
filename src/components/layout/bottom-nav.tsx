@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BarChart2, Tag, TrendingUp, TrendingDown, Settings, MoreHorizontal, Users, Repeat, ArrowLeftRight, PiggyBank, LogOut } from "lucide-react";
+import { LayoutDashboard, BarChart2, Tag, TrendingUp, TrendingDown, Settings, MoreHorizontal, Users, Repeat, ArrowLeftRight, PiggyBank, Calculator, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 import { AppLogo } from "@/components/app-logo";
@@ -33,7 +33,8 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
     { href: "/groups",    label: dict.nav.groups,    icon: Users },
     { href: "/recurring", label: dict.nav.recurring, icon: Repeat },
     { href: "/debts",     label: dict.nav.debts,     icon: TrendingDown },
-    { href: "/calculator", label: dict.nav.calculator, icon: PiggyBank },
+    { href: "/savings-plan", label: dict.nav.savingsPlan, icon: PiggyBank },
+    { href: "/calculators", label: dict.nav.calculators, icon: Calculator },
     ...(hasMultipleAccounts
       ? [{ href: "/choose-account", label: dict.nav.switchBudget, icon: ArrowLeftRight }]
       : []),

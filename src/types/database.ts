@@ -64,6 +64,11 @@ export interface Database {
         Insert: DebtSettings;
         Update: Partial<Omit<DebtSettings, "account_id">>;
       };
+      savings_buckets: {
+        Row: SavingsBucket;
+        Insert: Omit<SavingsBucket, "id" | "created_at">;
+        Update: Partial<Omit<SavingsBucket, "id" | "created_at">>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -203,4 +208,25 @@ export interface DebtSettings {
   account_id: string;
   extra_monthly_payment: number;
   updated_at: string;
+}
+
+export type BucketContributionFrequency = "weekly" | "biweekly" | "monthly" | "quarterly" | "annually";
+export type BucketProjectionType = "stock" | "compound";
+
+export interface SavingsBucket {
+  id: string;
+  account_id: string;
+  user_id: string | null;
+  name: string;
+  target_amount: number;
+  current_amount: number;
+  target_date: string | null;
+  contribution_amount: number | null;
+  contribution_frequency: BucketContributionFrequency | null;
+  projection_type: BucketProjectionType | null;
+  projection_input: Record<string, unknown> | null;
+  projected_value: number | null;
+  projected_date: string | null;
+  is_active: boolean;
+  created_at: string;
 }

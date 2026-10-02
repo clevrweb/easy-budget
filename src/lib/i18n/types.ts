@@ -55,7 +55,8 @@ export interface Dict {
     more: string;
     switchBudget: string;
     debts: string;
-    calculator: string;
+    savingsPlan: string;
+    calculators: string;
   };
 
   dashboard: {
@@ -573,5 +574,85 @@ export interface Dict {
     planStartDateLabel: string;
     planQuarterlyNote: string;
     seriesCreatedSuccess: string;
+  };
+
+  savingsPlan: {
+    title: string;
+    description: string;
+    addBucket: string;
+    editBucket: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    targetAmountLabel: string;
+    currentAmountLabel: string;
+    targetDateLabel: string;
+    contributionAmountLabel: string;
+    contributionFrequencyLabel: string;
+    saveChanges: string;
+    noBuckets: string;
+    noBucketsDesc: string;
+    confirmDelete: string;
+    projectGrowth: string;
+    projectWithCompound: string;
+    projectWithStock: string;
+    projectedSummary: string;
+    saveToBucket: string;
+    savedToBucket: string;
+    backToBucket: string;
+  };
+
+  calculators: {
+    hubTitle: string;
+    hubDescription: string;
+    backToHub: string;
+    cardStockTitle: string;
+    cardStockDesc: string;
+    cardCompoundTitle: string;
+    cardCompoundDesc: string;
+    cardDebtPayoffTitle: string;
+    cardDebtPayoffDesc: string;
+    cardRetirementTitle: string;
+    cardRetirementDesc: string;
+    cardLoanTitle: string;
+    cardLoanDesc: string;
+    calculateButton: string;
+    chartTitle: string;
+    compound: {
+      principalLabel: string;
+      monthlyContributionLabel: string;
+      annualRateLabel: string;
+      yearsLabel: string;
+      compoundingFrequencyLabel: string;
+      compoundingOptions: { monthly: string; quarterly: string; annually: string };
+      endingValueLabel: string;
+      totalContributedLabel: string;
+      totalGrowthLabel: string;
+    };
+    debtPayoff: {
+      balanceLabel: string;
+      rateLabel: string;
+      paymentLabel: string;
+      monthsToPayoffLabel: string;
+      payoffDateLabel: string;
+      totalInterestLabel: string;
+      totalPaidLabel: string;
+      neverPaidOffWarning: string;
+    };
+    retirement: {
+      currentSavingsLabel: string;
+      monthlyContributionLabel: string;
+      returnRateLabel: string;
+      yearsLabel: string;
+      nestEggLabel: string;
+      withdrawalNote: string;
+    };
+    loan: {
+      loanAmountLabel: string;
+      rateLabel: string;
+      termYearsLabel: string;
+      monthlyPaymentLabel: string;
+      totalInterestLabel: string;
+      totalPaidLabel: string;
+    };
   };
 }

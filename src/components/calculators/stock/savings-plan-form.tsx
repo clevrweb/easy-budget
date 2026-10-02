@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDict } from "@/components/language-provider";
 import { generateContributionDates, dateAfterOccurrences } from "@/lib/savings-plan";
-import { createSavingsPlanBillsAction } from "@/app/(dashboard)/calculator/actions";
+import { createSavingsPlanBillsAction } from "@/app/(dashboard)/calculators/stock/actions";
 import { formatCurrency } from "@/lib/utils";
 import type { ContributionFrequency } from "@/lib/future-projection";
 import type { Group } from "@/types/database";
