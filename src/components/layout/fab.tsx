@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface FabTriggerProps {
   icon: React.ReactNode;
   label: string;
@@ -13,6 +15,23 @@ export function FabTrigger({ icon, label }: FabTriggerProps) {
     >
       {icon}
     </button>
+  );
+}
+
+interface FabLinkProps extends FabTriggerProps {
+  href: string;
+}
+
+/** Round FAB-styled link, for FABs that navigate to a page instead of opening a dialog. */
+export function FabLink({ href, icon, label }: FabLinkProps) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className="h-14 w-14 rounded-full bg-[var(--color-primary)] text-white shadow-xl flex items-center justify-center active:scale-95 transition-transform"
+    >
+      {icon}
+    </Link>
   );
 }
 
