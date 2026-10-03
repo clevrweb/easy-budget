@@ -4,13 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { saveBucketProjectionAction, createBucketFromProjectionAction } from "@/app/(dashboard)/savings-plan/actions";
+import { saveBucketProjectionAction } from "@/app/(dashboard)/savings-plan/actions";
 import { CalculatorForm, dividendModeFrom } from "./calculator-form";
 import { ProjectionResults } from "./projection-results";
 import { CalculatorGrowthChart } from "./calculator-growth-chart";
-import { SavingsPlanForm } from "./savings-plan-form";
+import { SavingsPlanForm, type BucketContext } from "./savings-plan-form";
 import { useDict } from "@/components/language-provider";
 import {
   projectFutureGrowth,
@@ -76,8 +74,6 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
   const router = useRouter();
   const [isSaving, startSaving] = useTransition();
   const [savedToBucket, setSavedToBucket] = useState(false);
-  const [isCreatingBucket, startCreatingBucket] = useTransition();
-  const [bucketCreateError, setBucketCreateError] = useState<string | null>(null);
 
   const bucketInput = (bucket?.projection_input ?? {}) as { ticker?: string };
 
@@ -113,9 +109,6 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
 
   const [cachedSymbol, setCachedSymbol] = useState<string | null>(null);
   const [cachedSeries, setCachedSeries] = useState<StockHistoryPoint[] | null>(null);
-
-  const [newBucketName, setNewBucketName] = useState("");
-  const [newBucketTarget, setNewBucketTarget] = useState(0);
 
   function handleTickerChange(value: string) {
     setTicker(value);
@@ -234,9 +227,6 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
       setProjectionResult(computed);
       setProjectionAssumptions(effective);
       setPlanInputs({ contributionAmount, contributionFrequency, startDate: projectStartDate, endDate: projectEndDate });
-      setNewBucketName(ticker.trim().toUpperCase());
-      setNewBucketTarget(Math.round(computed.endingValue));
-      setBucketCreateError(null);
 
       setStatus("success");
       setSavedToBucket(false);
@@ -277,18 +267,10 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
     });
   }
 
-  function handleCreateBucket() {
-    if (!projectionResult) return;
-    setBucketCreateError(null);
-    startCreatingBucket(async () => {
-      const result = await createBucketFromProjectionAction({
-        name: newBucketName.trim() || ticker.trim().toUpperCase(),
-        targetAmount: newBucketTarget,
-        currentAmount: initialInvestment,
-        targetDate: projectEndDate,
-        contributionAmount,
-        contributionFrequency,
-        projectionType: "stock",
+  const bucketContext: BucketContext | undefined = !bucket && projectionResult
+    ? {
+        initialInvestment,
+        defaultTargetAmount: Math.round(projectionResult.endingValue),
         projectionInput: {
           ticker: ticker.trim().toUpperCase(),
           priceGrowthPct,
@@ -298,13 +280,8 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
           contributionAmount,
           contributionFrequency,
         },
-        projectedValue: projectionResult.endingValue,
-        projectedDate: projectEndDate,
-      });
-      if (result?.error) setBucketCreateError(result.error);
-      else router.push("/savings-plan");
-    });
-  }
+      }
+    : undefined;
 
   return (
     <>
@@ -362,38 +339,6 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
               </Button>
             )}
 
-            {!bucket && (
-              <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4">
-                <h2 className="font-semibold text-[var(--color-foreground)]">{dict.savingsPlan.createBucketFromProjectionTitle}</h2>
-
-                {bucketCreateError && (
-                  <div className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-sm text-[var(--color-danger)]">
-                    {bucketCreateError}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="new-bucket-name">{dict.savingsPlan.nameLabel}</Label>
-                    <Input id="new-bucket-name" value={newBucketName} onChange={(e) => setNewBucketName(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="new-bucket-target">{dict.savingsPlan.targetAmountLabel}</Label>
-                    <Input
-                      id="new-bucket-target"
-                      type="number" step="0.01" min="0"
-                      value={newBucketTarget}
-                      onChange={(e) => setNewBucketTarget(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                </div>
-
-                <Button onClick={handleCreateBucket} disabled={isCreatingBucket} className="w-full">
-                  {isCreatingBucket ? dict.common.saving : dict.savingsPlan.createBucketButton}
-                </Button>
-              </div>
-            )}
-
             {planInputs && planInputs.contributionAmount > 0 && (
               <SavingsPlanForm
                 contributionAmount={planInputs.contributionAmount}
@@ -401,6 +346,7 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
                 startDate={planInputs.startDate}
                 endDate={planInputs.endDate}
                 groups={groups}
+                bucketContext={bucketContext}
               />
             )}
           </>
