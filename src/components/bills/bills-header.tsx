@@ -190,7 +190,7 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <div className="flex-1 flex items-center justify-center gap-2 h-8 rounded-lg border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-foreground)]">
+          <div className="flex-1 flex items-center justify-center gap-2 h-8 rounded-lg border border-[var(--color-border)] px-3 text-sm font-medium text-[var(--color-foreground)] bg-white">
             <Calendar className="w-3.5 h-3.5 text-[var(--color-muted-foreground)] shrink-0" />
             <span>{getLabel()}</span>
           </div>

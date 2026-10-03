@@ -97,7 +97,7 @@ export default async function DashboardPage({
     user ? supabase.from("profiles").select("full_name").eq("user_id", user.id).single() : Promise.resolve({ data: null }),
   ]);
 
-  const firstName = (profile?.full_name || user?.email || "").split(" ")[0] || "there";
+  const firstName = (profile?.full_name || "").split(" ")[0] || "there";
 
   // Bills list: filtered by view/date/status/q
   const range = getDateRange(view, date);
