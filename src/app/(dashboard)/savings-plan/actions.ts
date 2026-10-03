@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveAccountId } from "@/lib/supabase/account";
-import type { BucketProjectionType } from "@/types/database";
+import type { BucketProjectionType, BucketContributionFrequency } from "@/types/database";
 
 export async function createBucketAction(formData: FormData) {
   const supabase = await createClient();
@@ -96,6 +96,50 @@ export async function getBucketsAction() {
     .order("created_at");
 
   return data ?? [];
+}
+
+export interface CreateBucketFromProjectionInput {
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string;
+  contributionAmount: number;
+  contributionFrequency: BucketContributionFrequency;
+  projectionType: BucketProjectionType;
+  projectionInput: Record<string, unknown>;
+  projectedValue: number;
+  projectedDate: string;
+}
+
+export async function createBucketFromProjectionAction(input: CreateBucketFromProjectionInput) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  const accountId = await getActiveAccountId(supabase, user.id);
+  if (!accountId) return { error: "No account selected" };
+
+  if (!input.name.trim()) return { error: "A bucket name is required" };
+  if (input.targetAmount <= 0) return { error: "Target amount must be greater than 0" };
+
+  const { error } = await supabase.from("savings_buckets").insert({
+    account_id: accountId,
+    user_id: user.id,
+    name: input.name.trim(),
+    target_amount: input.targetAmount,
+    current_amount: input.currentAmount,
+    target_date: input.targetDate,
+    contribution_amount: input.contributionAmount || null,
+    contribution_frequency: input.contributionAmount ? input.contributionFrequency : null,
+    projection_type: input.projectionType,
+    projection_input: input.projectionInput,
+    projected_value: input.projectedValue,
+    projected_date: input.projectedDate,
+    is_active: true,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/savings-plan");
+  return { success: true };
 }
 
 export interface SaveBucketProjectionInput {

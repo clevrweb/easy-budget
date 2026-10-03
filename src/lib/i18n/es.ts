@@ -493,7 +493,8 @@ export const es: Dict = {
   },
 
   calculator: {
-    title: "Proyección Futura de Acciones",
+    titleBacktest: "Backtest de Acciones",
+    titleProjection: "Proyección Futura de Acciones",
     tickerLabel: "Símbolo de Cotización",
     tickerPlaceholder: "SPY",
     initialInvestmentLabel: "Inversión Inicial (USD)",
@@ -600,14 +601,18 @@ export const es: Dict = {
     saveToBucket: "Guardar en el Bolsillo",
     savedToBucket: "Guardado en el bolsillo.",
     backToBucket: "Volver a Plan de Ahorros",
+    createBucketFromProjectionTitle: "O crea un nuevo Bolsillo de Ahorro a partir de esta proyección",
+    createBucketButton: "Crear Bolsillo de Ahorro",
   },
 
   calculators: {
     hubTitle: "Calculadoras",
     hubDescription: "Herramientas rápidas para crecimiento, deudas, retiro y préstamos.",
     backToHub: "Volver a Calculadoras",
-    cardStockTitle: "Proyección Futura de Acciones",
-    cardStockDesc: "Proyecta el crecimiento usando el historial real de precios y dividendos de una acción o ETF.",
+    cardStockBacktestTitle: "Backtest de Acciones",
+    cardStockBacktestDesc: "Observa cómo habría crecido una inversión usando el historial real de precios de una acción.",
+    cardStockProjectionTitle: "Proyección Futura de Acciones",
+    cardStockProjectionDesc: "Proyecta el crecimiento futuro a partir de las tendencias de precio y dividendos de una acción.",
     cardCompoundTitle: "Interés Compuesto",
     cardCompoundDesc: "Proyecta el crecimiento con una tasa anual fija y contribuciones recurrentes.",
     cardDebtPayoffTitle: "Pago de Deuda",

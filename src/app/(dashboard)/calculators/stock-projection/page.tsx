@@ -1,9 +1,9 @@
-import { CalculatorPageClient } from "@/components/calculators/stock/calculator-page-client";
+import { StockProjectionClient } from "@/components/calculators/stock/stock-projection-client";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveAccountId } from "@/lib/supabase/account";
 import type { Group, SavingsBucket } from "@/types/database";
 
-export default async function StockCalculatorPage({
+export default async function StockProjectionPage({
   searchParams,
 }: {
   searchParams: Promise<{ bucketId?: string }>;
@@ -21,7 +21,7 @@ export default async function StockCalculatorPage({
   ]);
 
   return (
-    <CalculatorPageClient
+    <StockProjectionClient
       groups={(groups ?? []) as Group[]}
       bucket={(bucket ?? null) as SavingsBucket | null}
     />

@@ -89,7 +89,7 @@ export function BucketCard({ bucket, onChanged }: BucketCardProps) {
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="flex-1 text-xs" asChild>
-            <Link href={`/calculators/stock?bucketId=${bucket.id}`}>
+            <Link href={`/calculators/stock-projection?bucketId=${bucket.id}`}>
               <LineChart className="w-3.5 h-3.5" /> {t.projectWithStock}
             </Link>
           </Button>

@@ -493,7 +493,8 @@ export const en: Dict = {
   },
 
   calculator: {
-    title: "Stock Future Projection",
+    titleBacktest: "Stock Backtest",
+    titleProjection: "Stock Future Projection",
     tickerLabel: "Ticker Symbol",
     tickerPlaceholder: "SPY",
     initialInvestmentLabel: "Initial Investment (USD)",
@@ -600,14 +601,18 @@ export const en: Dict = {
     saveToBucket: "Save to Bucket",
     savedToBucket: "Saved to bucket.",
     backToBucket: "Back to Savings Plan",
+    createBucketFromProjectionTitle: "Or create a new Savings Bucket from this projection",
+    createBucketButton: "Create Savings Bucket",
   },
 
   calculators: {
     hubTitle: "Calculators",
     hubDescription: "Quick what-if tools for growth, debt, retirement, and loans.",
     backToHub: "Back to Calculators",
-    cardStockTitle: "Stock Future Projection",
-    cardStockDesc: "Project growth using a real stock or ETF's historical price and dividend data.",
+    cardStockBacktestTitle: "Stock Backtest",
+    cardStockBacktestDesc: "See how an investment would have grown using a stock's real historical prices.",
+    cardStockProjectionTitle: "Stock Future Projection",
+    cardStockProjectionDesc: "Project future growth from a stock's price and dividend trends.",
     cardCompoundTitle: "Compound Interest",
     cardCompoundDesc: "Project growth from a fixed annual rate and recurring contributions.",
     cardDebtPayoffTitle: "Debt Payoff",

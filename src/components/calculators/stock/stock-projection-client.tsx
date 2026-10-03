@@ -4,18 +4,14 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Topbar } from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
-import { saveBucketProjectionAction } from "@/app/(dashboard)/savings-plan/actions";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { saveBucketProjectionAction, createBucketFromProjectionAction } from "@/app/(dashboard)/savings-plan/actions";
 import { CalculatorForm, dividendModeFrom } from "./calculator-form";
-import { CalculatorResults } from "./calculator-results";
 import { ProjectionResults } from "./projection-results";
 import { CalculatorGrowthChart } from "./calculator-growth-chart";
 import { SavingsPlanForm } from "./savings-plan-form";
 import { useDict } from "@/components/language-provider";
-import {
-  computeCompoundGrowth,
-  CompoundCalculatorError,
-  type CompoundCalculatorResult,
-} from "@/lib/compound-calculator";
 import {
   projectFutureGrowth,
   analyzeStock,
@@ -25,7 +21,6 @@ import {
   type DividendFrequency,
   type ContributionFrequency,
 } from "@/lib/future-projection";
-import type { CalculatorMode } from "./calculator-mode-toggle";
 import type { StockHistoryError, StockHistoryPoint, StockHistoryResponse } from "@/app/api/calculator/stock-history/route";
 import type { Group, SavingsBucket } from "@/types/database";
 
@@ -37,23 +32,10 @@ function todayStr(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-function fiveYearsAgoStr(): string {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - 5);
-  return d.toISOString().split("T")[0];
-}
-
 function tenYearsFromTodayStr(): string {
   const d = new Date();
   d.setFullYear(d.getFullYear() + 10);
   return d.toISOString().split("T")[0];
-}
-
-function mapCalculatorErrorMessage(message: string): "invalid_amount" | "invalid_dates" | "no_overlap" | "upstream_error" {
-  if (message.includes("Initial investment")) return "invalid_amount";
-  if (message.includes("before end date")) return "invalid_dates";
-  if (message.includes("No overlapping")) return "no_overlap";
-  return "upstream_error";
 }
 
 function mapProjectionErrorMessage(
@@ -83,32 +65,27 @@ interface PlanInputs {
   endDate: string;
 }
 
-interface CalculatorPageClientProps {
+interface StockProjectionClientProps {
   groups: Group[];
   bucket?: SavingsBucket | null;
 }
 
-export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientProps) {
+export function StockProjectionClient({ groups, bucket }: StockProjectionClientProps) {
   const dict = useDict();
   const t = dict.calculator;
   const router = useRouter();
   const [isSaving, startSaving] = useTransition();
   const [savedToBucket, setSavedToBucket] = useState(false);
+  const [isCreatingBucket, startCreatingBucket] = useTransition();
+  const [bucketCreateError, setBucketCreateError] = useState<string | null>(null);
 
   const bucketInput = (bucket?.projection_input ?? {}) as { ticker?: string };
-
-  const [mode, setMode] = useState<CalculatorMode>(bucket ? "project" : "backtest");
 
   const [ticker, setTicker] = useState(bucketInput.ticker ?? "SPY");
   const [initialInvestment, setInitialInvestment] = useState(bucket?.current_amount ?? 10000);
   const [includeDividends, setIncludeDividends] = useState(true);
   const [drip, setDrip] = useState(true);
 
-  // backtest-only
-  const [startDate, setStartDate] = useState(fiveYearsAgoStr());
-  const [endDate, setEndDate] = useState(todayStr());
-
-  // project-only
   const [contributionAmount, setContributionAmount] = useState(bucket?.contribution_amount ?? 100);
   const [contributionFrequency, setContributionFrequency] = useState<ContributionFrequency>(
     (bucket?.contribution_frequency as ContributionFrequency) ?? "monthly"
@@ -132,11 +109,13 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
 
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [result, setResult] = useState<CompoundCalculatorResult | null>(null);
   const [projectionResult, setProjectionResult] = useState<FutureProjectionResult | null>(null);
 
   const [cachedSymbol, setCachedSymbol] = useState<string | null>(null);
   const [cachedSeries, setCachedSeries] = useState<StockHistoryPoint[] | null>(null);
+
+  const [newBucketName, setNewBucketName] = useState("");
+  const [newBucketTarget, setNewBucketTarget] = useState(0);
 
   function handleTickerChange(value: string) {
     setTicker(value);
@@ -194,33 +173,20 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
       setErrorMessage(t.errors.missing_symbol);
       return;
     }
-    if (mode === "backtest") {
-      if (initialInvestment <= 0) {
-        setStatus("error");
-        setErrorMessage(t.errors.invalid_amount);
-        return;
-      }
-      if (startDate >= endDate) {
-        setStatus("error");
-        setErrorMessage(t.errors.invalid_dates);
-        return;
-      }
-    } else {
-      if (initialInvestment < 0 || contributionAmount < 0) {
-        setStatus("error");
-        setErrorMessage(t.errors.invalid_contribution);
-        return;
-      }
-      if (initialInvestment === 0 && contributionAmount === 0) {
-        setStatus("error");
-        setErrorMessage(t.errors.no_contribution);
-        return;
-      }
-      if (projectStartDate >= projectEndDate) {
-        setStatus("error");
-        setErrorMessage(t.errors.invalid_dates);
-        return;
-      }
+    if (initialInvestment < 0 || contributionAmount < 0) {
+      setStatus("error");
+      setErrorMessage(t.errors.invalid_contribution);
+      return;
+    }
+    if (initialInvestment === 0 && contributionAmount === 0) {
+      setStatus("error");
+      setErrorMessage(t.errors.no_contribution);
+      return;
+    }
+    if (projectStartDate >= projectEndDate) {
+      setStatus("error");
+      setErrorMessage(t.errors.invalid_dates);
+      return;
     }
 
     setStatus("loading");
@@ -229,70 +195,54 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
       const symbol = ticker.trim().toUpperCase();
       const dividendMode = dividendModeFrom(includeDividends, drip);
 
-      if (mode === "backtest") {
+      let snap = snapshot;
+      let effective: ProjectionAssumptions = {
+        sharePrice, priceGrowthPct, dividendAmount, dividendFrequency, dividendGrowthPct,
+      };
+
+      if (!snap) {
         const series = await fetchSeriesForSymbol(symbol);
-        const computed = computeCompoundGrowth({
-          prices: series,
-          initialInvestment,
-          startDate,
-          endDate,
-          dividendMode,
-        });
-        setResult(computed);
-      } else {
-        let snap = snapshot;
-        let effective: ProjectionAssumptions = {
-          sharePrice, priceGrowthPct, dividendAmount, dividendFrequency, dividendGrowthPct,
+        snap = analyzeStock(series);
+        effective = {
+          sharePrice: snap.lastPrice,
+          priceGrowthPct: snap.measuredPriceGrowthPct,
+          dividendAmount: snap.lastDividendAmount,
+          dividendFrequency: snap.dividendFrequency,
+          dividendGrowthPct: snap.measuredDividendGrowthPct,
         };
-
-        if (!snap) {
-          const series = await fetchSeriesForSymbol(symbol);
-          snap = analyzeStock(series);
-          effective = {
-            sharePrice: snap.lastPrice,
-            priceGrowthPct: snap.measuredPriceGrowthPct,
-            dividendAmount: snap.lastDividendAmount,
-            dividendFrequency: snap.dividendFrequency,
-            dividendGrowthPct: snap.measuredDividendGrowthPct,
-          };
-          setSnapshot(snap);
-          setSharePrice(effective.sharePrice);
-          setPriceGrowthPct(effective.priceGrowthPct);
-          setDividendAmount(effective.dividendAmount);
-          setDividendFrequency(effective.dividendFrequency);
-          setDividendGrowthPct(effective.dividendGrowthPct);
-        }
-
-        const computed = projectFutureGrowth({
-          referencePrice: effective.sharePrice,
-          priceGrowthPct: effective.priceGrowthPct,
-          startingDividendPerShare: effective.dividendAmount,
-          dividendGrowthPct: effective.dividendGrowthPct,
-          dividendFrequency: effective.dividendFrequency,
-          initialInvestment,
-          contributionAmount,
-          contributionFrequency,
-          startDate: projectStartDate,
-          endDate: projectEndDate,
-          dividendMode,
-        });
-        setProjectionResult(computed);
-        setProjectionAssumptions(effective);
-        setPlanInputs({
-          contributionAmount,
-          contributionFrequency,
-          startDate: projectStartDate,
-          endDate: projectEndDate,
-        });
+        setSnapshot(snap);
+        setSharePrice(effective.sharePrice);
+        setPriceGrowthPct(effective.priceGrowthPct);
+        setDividendAmount(effective.dividendAmount);
+        setDividendFrequency(effective.dividendFrequency);
+        setDividendGrowthPct(effective.dividendGrowthPct);
       }
+
+      const computed = projectFutureGrowth({
+        referencePrice: effective.sharePrice,
+        priceGrowthPct: effective.priceGrowthPct,
+        startingDividendPerShare: effective.dividendAmount,
+        dividendGrowthPct: effective.dividendGrowthPct,
+        dividendFrequency: effective.dividendFrequency,
+        initialInvestment,
+        contributionAmount,
+        contributionFrequency,
+        startDate: projectStartDate,
+        endDate: projectEndDate,
+        dividendMode,
+      });
+      setProjectionResult(computed);
+      setProjectionAssumptions(effective);
+      setPlanInputs({ contributionAmount, contributionFrequency, startDate: projectStartDate, endDate: projectEndDate });
+      setNewBucketName(ticker.trim().toUpperCase());
+      setNewBucketTarget(Math.round(computed.endingValue));
+      setBucketCreateError(null);
 
       setStatus("success");
       setSavedToBucket(false);
     } catch (err) {
       setStatus("error");
-      if (err instanceof CompoundCalculatorError) {
-        setErrorMessage(t.errors[mapCalculatorErrorMessage(err.message)]);
-      } else if (err instanceof FutureProjectionError) {
+      if (err instanceof FutureProjectionError) {
         setErrorMessage(t.errors[mapProjectionErrorMessage(err.message)]);
       } else if (err instanceof StockFetchError) {
         setErrorMessage(err.message);
@@ -327,17 +277,44 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
     });
   }
 
+  function handleCreateBucket() {
+    if (!projectionResult) return;
+    setBucketCreateError(null);
+    startCreatingBucket(async () => {
+      const result = await createBucketFromProjectionAction({
+        name: newBucketName.trim() || ticker.trim().toUpperCase(),
+        targetAmount: newBucketTarget,
+        currentAmount: initialInvestment,
+        targetDate: projectEndDate,
+        contributionAmount,
+        contributionFrequency,
+        projectionType: "stock",
+        projectionInput: {
+          ticker: ticker.trim().toUpperCase(),
+          priceGrowthPct,
+          dividendAmount,
+          dividendFrequency,
+          dividendGrowthPct,
+          contributionAmount,
+          contributionFrequency,
+        },
+        projectedValue: projectionResult.endingValue,
+        projectedDate: projectEndDate,
+      });
+      if (result?.error) setBucketCreateError(result.error);
+      else router.push("/savings-plan");
+    });
+  }
+
   return (
     <>
-      <Topbar title={t.title} />
+      <Topbar title={t.titleProjection} backHref="/calculators" />
 
       <main className="flex-1 p-4 md:p-6 space-y-6">
         <CalculatorForm
-          mode={mode} onMode={setMode}
+          mode="project"
           ticker={ticker} onTicker={handleTickerChange}
           initialInvestment={initialInvestment} onInitialInvestment={setInitialInvestment}
-          startDate={startDate} onStartDate={setStartDate}
-          endDate={endDate} onEndDate={setEndDate}
           contributionAmount={contributionAmount} onContributionAmount={setContributionAmount}
           contributionFrequency={contributionFrequency} onContributionFrequency={setContributionFrequency}
           projectStartDate={projectStartDate} onProjectStartDate={setProjectStartDate}
@@ -360,29 +337,7 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
           </div>
         )}
 
-        {mode === "backtest" && result && (
-          <>
-            {result.warnings.map((warning) => {
-              const [kind, date] = warning.split(":");
-              const text = kind === "startDateClamped" ? t.startDateClampedWarning : t.endDateClampedWarning;
-              return (
-                <p key={warning} className="text-xs text-[var(--color-muted-foreground)]">
-                  {text.replace("{date}", date)}
-                </p>
-              );
-            })}
-
-            <CalculatorResults result={result} />
-
-            <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5">
-              <h2 className="font-semibold text-[var(--color-foreground)] mb-1">{t.chartTitle}</h2>
-              <p className="text-xs text-[var(--color-muted-foreground)] mb-5">{ticker}</p>
-              <CalculatorGrowthChart timeline={result.timeline} />
-            </div>
-          </>
-        )}
-
-        {mode === "project" && projectionResult && (
+        {projectionResult && (
           <>
             {projectionResult.warnings.map((warning) => {
               const [, date] = warning.split(":");
@@ -393,11 +348,7 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
               );
             })}
 
-            <ProjectionResults
-              result={projectionResult}
-              assumptions={projectionAssumptions}
-              ticker={ticker}
-            />
+            <ProjectionResults result={projectionResult} assumptions={projectionAssumptions} ticker={ticker} />
 
             <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5">
               <h2 className="font-semibold text-[var(--color-foreground)] mb-1">{t.chartTitle}</h2>
@@ -409,6 +360,38 @@ export function CalculatorPageClient({ groups, bucket }: CalculatorPageClientPro
               <Button onClick={handleSaveToBucket} disabled={isSaving} className="w-full">
                 {isSaving ? dict.common.saving : savedToBucket ? dict.savingsPlan.savedToBucket : dict.savingsPlan.saveToBucket}
               </Button>
+            )}
+
+            {!bucket && (
+              <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4">
+                <h2 className="font-semibold text-[var(--color-foreground)]">{dict.savingsPlan.createBucketFromProjectionTitle}</h2>
+
+                {bucketCreateError && (
+                  <div className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-sm text-[var(--color-danger)]">
+                    {bucketCreateError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-bucket-name">{dict.savingsPlan.nameLabel}</Label>
+                    <Input id="new-bucket-name" value={newBucketName} onChange={(e) => setNewBucketName(e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="new-bucket-target">{dict.savingsPlan.targetAmountLabel}</Label>
+                    <Input
+                      id="new-bucket-target"
+                      type="number" step="0.01" min="0"
+                      value={newBucketTarget}
+                      onChange={(e) => setNewBucketTarget(parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+
+                <Button onClick={handleCreateBucket} disabled={isCreatingBucket} className="w-full">
+                  {isCreatingBucket ? dict.common.saving : dict.savingsPlan.createBucketButton}
+                </Button>
+              </div>
             )}
 
             {planInputs && planInputs.contributionAmount > 0 && (

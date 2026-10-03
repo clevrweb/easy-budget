@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LineChart, Percent, TrendingDown, PiggyBank, Landmark } from "lucide-react";
+import { LineChart, History, Percent, TrendingDown, PiggyBank, Landmark } from "lucide-react";
 import { Topbar } from "@/components/layout/topbar";
 import { getServerDict } from "@/lib/i18n/server";
 
@@ -8,7 +8,8 @@ export default async function CalculatorsHubPage() {
   const t = dict.calculators;
 
   const cards = [
-    { href: "/calculators/stock", icon: LineChart, title: t.cardStockTitle, desc: t.cardStockDesc },
+    { href: "/calculators/stock-backtest", icon: History, title: t.cardStockBacktestTitle, desc: t.cardStockBacktestDesc },
+    { href: "/calculators/stock-projection", icon: LineChart, title: t.cardStockProjectionTitle, desc: t.cardStockProjectionDesc },
     { href: "/calculators/compound", icon: Percent, title: t.cardCompoundTitle, desc: t.cardCompoundDesc },
     { href: "/calculators/debt-payoff", icon: TrendingDown, title: t.cardDebtPayoffTitle, desc: t.cardDebtPayoffDesc },
     { href: "/calculators/retirement", icon: PiggyBank, title: t.cardRetirementTitle, desc: t.cardRetirementDesc },

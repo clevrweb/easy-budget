@@ -492,7 +492,8 @@ export interface Dict {
   };
 
   calculator: {
-    title: string;
+    titleBacktest: string;
+    titleProjection: string;
     tickerLabel: string;
     tickerPlaceholder: string;
     initialInvestmentLabel: string;
@@ -599,14 +600,18 @@ export interface Dict {
     saveToBucket: string;
     savedToBucket: string;
     backToBucket: string;
+    createBucketFromProjectionTitle: string;
+    createBucketButton: string;
   };
 
   calculators: {
     hubTitle: string;
     hubDescription: string;
     backToHub: string;
-    cardStockTitle: string;
-    cardStockDesc: string;
+    cardStockBacktestTitle: string;
+    cardStockBacktestDesc: string;
+    cardStockProjectionTitle: string;
+    cardStockProjectionDesc: string;
     cardCompoundTitle: string;
     cardCompoundDesc: string;
     cardDebtPayoffTitle: string;

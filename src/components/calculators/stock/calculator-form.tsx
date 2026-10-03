@@ -7,7 +7,8 @@ import { Download } from "lucide-react";
 import { useDict } from "@/components/language-provider";
 import type { DividendMode } from "@/lib/compound-calculator";
 import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
-import { CalculatorModeToggle, type CalculatorMode } from "./calculator-mode-toggle";
+
+export type CalculatorMode = "backtest" | "project";
 
 const selectCls = "flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-base md:text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -15,7 +16,6 @@ type LoadStatus = "idle" | "loading" | "error" | "success";
 
 interface CalculatorFormProps {
   mode: CalculatorMode;
-  onMode: (mode: CalculatorMode) => void;
 
   ticker: string;
   onTicker: (value: string) => void;
@@ -23,36 +23,36 @@ interface CalculatorFormProps {
   onInitialInvestment: (value: number) => void;
 
   // backtest-only
-  startDate: string;
-  onStartDate: (value: string) => void;
-  endDate: string;
-  onEndDate: (value: string) => void;
+  startDate?: string;
+  onStartDate?: (value: string) => void;
+  endDate?: string;
+  onEndDate?: (value: string) => void;
 
   // project-only
-  contributionAmount: number;
-  onContributionAmount: (value: number) => void;
-  contributionFrequency: ContributionFrequency;
-  onContributionFrequency: (value: ContributionFrequency) => void;
-  projectStartDate: string;
-  onProjectStartDate: (value: string) => void;
-  projectEndDate: string;
-  onProjectEndDate: (value: string) => void;
+  contributionAmount?: number;
+  onContributionAmount?: (value: number) => void;
+  contributionFrequency?: ContributionFrequency;
+  onContributionFrequency?: (value: ContributionFrequency) => void;
+  projectStartDate?: string;
+  onProjectStartDate?: (value: string) => void;
+  projectEndDate?: string;
+  onProjectEndDate?: (value: string) => void;
 
-  loadStatus: LoadStatus;
-  loadError: string | null;
-  onLoad: () => void;
-  snapshot: StockSnapshot | null;
+  loadStatus?: LoadStatus;
+  loadError?: string | null;
+  onLoad?: () => void;
+  snapshot?: StockSnapshot | null;
 
-  sharePrice: number;
-  onSharePrice: (value: number) => void;
-  priceGrowthPct: number;
-  onPriceGrowthPct: (value: number) => void;
-  dividendAmount: number;
-  onDividendAmount: (value: number) => void;
-  dividendFrequency: DividendFrequency;
-  onDividendFrequency: (value: DividendFrequency) => void;
-  dividendGrowthPct: number;
-  onDividendGrowthPct: (value: number) => void;
+  sharePrice?: number;
+  onSharePrice?: (value: number) => void;
+  priceGrowthPct?: number;
+  onPriceGrowthPct?: (value: number) => void;
+  dividendAmount?: number;
+  onDividendAmount?: (value: number) => void;
+  dividendFrequency?: DividendFrequency;
+  onDividendFrequency?: (value: DividendFrequency) => void;
+  dividendGrowthPct?: number;
+  onDividendGrowthPct?: (value: number) => void;
 
   includeDividends: boolean;
   onIncludeDividends: (value: boolean) => void;
@@ -69,21 +69,21 @@ export function dividendModeFrom(includeDividends: boolean, drip: boolean): Divi
 }
 
 export function CalculatorForm({
-  mode, onMode,
+  mode,
   ticker, onTicker,
   initialInvestment, onInitialInvestment,
-  startDate, onStartDate,
-  endDate, onEndDate,
-  contributionAmount, onContributionAmount,
-  contributionFrequency, onContributionFrequency,
-  projectStartDate, onProjectStartDate,
-  projectEndDate, onProjectEndDate,
-  loadStatus, loadError, onLoad, snapshot,
-  sharePrice, onSharePrice,
-  priceGrowthPct, onPriceGrowthPct,
-  dividendAmount, onDividendAmount,
-  dividendFrequency, onDividendFrequency,
-  dividendGrowthPct, onDividendGrowthPct,
+  startDate = "", onStartDate = () => {},
+  endDate = "", onEndDate = () => {},
+  contributionAmount = 0, onContributionAmount = () => {},
+  contributionFrequency = "monthly", onContributionFrequency = () => {},
+  projectStartDate = "", onProjectStartDate = () => {},
+  projectEndDate = "", onProjectEndDate = () => {},
+  loadStatus = "idle", loadError = null, onLoad = () => {}, snapshot = null,
+  sharePrice = 0, onSharePrice = () => {},
+  priceGrowthPct = 0, onPriceGrowthPct = () => {},
+  dividendAmount = 0, onDividendAmount = () => {},
+  dividendFrequency = "none", onDividendFrequency = () => {},
+  dividendGrowthPct = 0, onDividendGrowthPct = () => {},
   includeDividends, onIncludeDividends,
   drip, onDrip,
   loading, onSubmit,
@@ -100,8 +100,6 @@ export function CalculatorForm({
       }}
       className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4"
     >
-      <CalculatorModeToggle mode={mode} onMode={onMode} />
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="calc-ticker">{t.tickerLabel}</Label>
