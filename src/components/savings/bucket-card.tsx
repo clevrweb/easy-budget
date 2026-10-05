@@ -1,25 +1,29 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import Link from "next/link";
-import { deleteBucketAction } from "@/app/(dashboard)/savings-plan/actions";
+import { deleteBucketAction, updateBucketBalanceAction } from "@/app/(dashboard)/savings-plan/actions";
 import { BucketForm } from "./bucket-form";
 import { useDict } from "@/components/language-provider";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { SavingsBucket } from "@/types/database";
-import { Pencil, Trash2, PiggyBank, LineChart, Percent } from "lucide-react";
+import type { SavingsBucket, Group } from "@/types/database";
+import { Pencil, Trash2, PiggyBank, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
 import { useConfirmAction } from "@/lib/use-confirm-action";
 
 interface BucketCardProps {
   bucket: SavingsBucket;
+  groups?: Group[];
   onChanged?: () => void;
 }
 
-export function BucketCard({ bucket, onChanged }: BucketCardProps) {
+export function BucketCard({ bucket, groups = [], onChanged }: BucketCardProps) {
   const [isPending, startTransition] = useTransition();
   const [editOpen, setEditOpen] = useState(false);
+  const [editingBalance, setEditingBalance] = useState(false);
+  const [balanceInput, setBalanceInput] = useState(String(bucket.current_amount));
+  const [isSavingBalance, startSavingBalance] = useTransition();
   const dict = useDict();
   const t = dict.savingsPlan;
 
@@ -49,6 +53,22 @@ export function BucketCard({ bucket, onChanged }: BucketCardProps) {
 
   const pct = bucket.target_amount > 0 ? Math.min(100, (bucket.current_amount / bucket.target_amount) * 100) : 0;
 
+  function startEditingBalance() {
+    setBalanceInput(String(bucket.current_amount));
+    setEditingBalance(true);
+  }
+
+  function saveBalance() {
+    const value = parseFloat(balanceInput) || 0;
+    startSavingBalance(async () => {
+      const result = await updateBucketBalanceAction(bucket.id, value);
+      if (!result?.error) {
+        setEditingBalance(false);
+        onChanged?.();
+      }
+    });
+  }
+
   return (
     <SwipeableRow
       actions={swipeActions}
@@ -63,9 +83,31 @@ export function BucketCard({ bucket, onChanged }: BucketCardProps) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-sm text-[var(--color-foreground)] truncate">{bucket.name}</p>
-            <p className="text-xs text-[var(--color-muted-foreground)]">
-              {formatCurrency(bucket.current_amount)} / {formatCurrency(bucket.target_amount)}
-            </p>
+            {editingBalance ? (
+              <div className="flex items-center gap-1 mt-1">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  autoFocus
+                  value={balanceInput}
+                  onChange={(e) => setBalanceInput(e.target.value)}
+                  className="h-7 text-xs px-2"
+                />
+                <span className="text-xs text-[var(--color-muted-foreground)] shrink-0">/ {formatCurrency(bucket.target_amount)}</span>
+                <button type="button" onClick={saveBalance} disabled={isSavingBalance} className="shrink-0 text-[var(--color-success)]">
+                  <Check className="w-4 h-4" />
+                </button>
+                <button type="button" onClick={() => setEditingBalance(false)} className="shrink-0 text-[var(--color-muted-foreground)]">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={startEditingBalance} className="flex items-center gap-1 text-xs text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]">
+                {formatCurrency(bucket.current_amount)} / {formatCurrency(bucket.target_amount)}
+                <Pencil className="w-3 h-3" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -82,19 +124,6 @@ export function BucketCard({ bucket, onChanged }: BucketCardProps) {
           </p>
         )}
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1 text-xs" asChild>
-            <Link href={`/calculators/compound?bucketId=${bucket.id}`}>
-              <Percent className="w-3.5 h-3.5" /> {t.projectWithCompound}
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="flex-1 text-xs" asChild>
-            <Link href={`/calculators/stock-projection?bucketId=${bucket.id}`}>
-              <LineChart className="w-3.5 h-3.5" /> {t.projectWithStock}
-            </Link>
-          </Button>
-        </div>
-
         <div className="flex gap-2 mt-auto pt-1 border-t border-[var(--color-border)]">
           <Button variant="ghost" size="sm" className="flex-1 text-xs" onClick={() => setEditOpen(true)}>
             <Pencil className="w-3.5 h-3.5" /> {dict.common.edit}
@@ -104,7 +133,7 @@ export function BucketCard({ bucket, onChanged }: BucketCardProps) {
           </Button>
         </div>
       </div>
-      <BucketForm bucket={bucket} onSaved={onChanged} open={editOpen} onOpenChange={setEditOpen} />
+      <BucketForm bucket={bucket} groups={groups} onSaved={onChanged} open={editOpen} onOpenChange={setEditOpen} />
     </SwipeableRow>
   );
 }

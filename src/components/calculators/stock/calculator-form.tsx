@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download } from "lucide-react";
 import { useDict } from "@/components/language-provider";
 import type { DividendMode } from "@/lib/compound-calculator";
 import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
-import type { SymbolMatch, SymbolSearchResponse } from "@/app/api/calculator/symbol-search/route";
+import { TickerAutocompleteInput } from "./ticker-autocomplete-input";
 
 export type CalculatorMode = "backtest" | "project";
 
@@ -94,56 +92,6 @@ export function CalculatorForm({
   const t = dict.calculator;
   const projectLocked = mode === "project" && loadStatus !== "success";
 
-  const [suggestions, setSuggestions] = useState<SymbolMatch[]>([]);
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-  const tickerWrapRef = useRef<HTMLDivElement>(null);
-  // Skips the very first run -- otherwise every page load fires a search for
-  // whatever ticker is pre-filled (e.g. "SPY") before the user has typed
-  // anything, wasting a call against Alpha Vantage's scarce free-tier quota.
-  const tickerTouchedRef = useRef(false);
-
-  useEffect(() => {
-    if (!tickerTouchedRef.current) {
-      tickerTouchedRef.current = true;
-      return;
-    }
-    if (!ticker.trim()) {
-      setSuggestions([]);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      setSuggestionsLoading(true);
-      try {
-        const res = await fetch(`/api/calculator/symbol-search?q=${encodeURIComponent(ticker.trim())}`);
-        if (res.ok) {
-          const json = (await res.json()) as SymbolSearchResponse;
-          setSuggestions(json.matches);
-          setSuggestionsOpen(true);
-        }
-      } catch {
-        // Silently ignore -- autocomplete is a convenience, not required for the form to work.
-      } finally {
-        setSuggestionsLoading(false);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [ticker]);
-
-  useEffect(() => {
-    if (!suggestionsOpen) return;
-    function handler(e: MouseEvent) {
-      if (tickerWrapRef.current && !tickerWrapRef.current.contains(e.target as Node)) setSuggestionsOpen(false);
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [suggestionsOpen]);
-
-  function selectSuggestion(symbol: string) {
-    onTicker(symbol);
-    setSuggestionsOpen(false);
-  }
-
   return (
     <form
       onSubmit={(e) => {
@@ -153,64 +101,29 @@ export function CalculatorForm({
       className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5 relative" ref={tickerWrapRef}>
+        <div className="space-y-1.5">
           <Label htmlFor="calc-ticker">{t.tickerLabel}</Label>
           {mode === "project" ? (
             <>
-              <div className="flex gap-2">
-                <Input
-                  id="calc-ticker"
-                  className="flex-1"
-                  value={ticker}
-                  onChange={(e) => onTicker(e.target.value.toUpperCase())}
-                  onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
-                  placeholder={t.tickerPlaceholder}
-                  autoComplete="off"
-                  required
-                />
-                <Button
-                  type="button"
-                  onClick={onLoad}
-                  disabled={loadStatus === "loading" || !ticker.trim()}
-                >
-                  <Download className="w-4 h-4" />
-                  {loadStatus === "loading" ? t.loadingButton : t.loadButton}
-                </Button>
-              </div>
+              <TickerAutocompleteInput
+                id="calc-ticker"
+                value={ticker}
+                onChange={onTicker}
+                placeholder={t.tickerPlaceholder}
+                required
+                onLoad={onLoad}
+                loadStatus={loadStatus}
+              />
               <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{t.loadButtonHint}</p>
             </>
           ) : (
-            <Input
+            <TickerAutocompleteInput
               id="calc-ticker"
               value={ticker}
-              onChange={(e) => onTicker(e.target.value.toUpperCase())}
-              onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
+              onChange={onTicker}
               placeholder={t.tickerPlaceholder}
-              autoComplete="off"
               required
             />
-          )}
-
-          {suggestionsOpen && ticker.trim() && (
-            <div className="absolute z-20 left-0 right-0 mt-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg shadow-[var(--shadow-card)] max-h-60 overflow-y-auto">
-              {suggestionsLoading ? (
-                <p className="px-3 py-2 text-xs text-[var(--color-muted-foreground)]">{t.loadingButton}</p>
-              ) : suggestions.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-[var(--color-muted-foreground)]">{t.noMatches}</p>
-              ) : (
-                suggestions.map((m) => (
-                  <button
-                    key={m.symbol}
-                    type="button"
-                    onClick={() => selectSuggestion(m.symbol)}
-                    className="w-full text-left px-3 py-2 hover:bg-[var(--color-muted)] transition-colors"
-                  >
-                    <span className="text-sm font-semibold text-[var(--color-foreground)]">{m.symbol}</span>
-                    <span className="text-xs text-[var(--color-muted-foreground)] ml-2">{m.name}</span>
-                  </button>
-                ))
-              )}
-            </div>
           )}
         </div>
         <div className="space-y-1.5">

@@ -597,6 +597,11 @@ export interface Dict {
     projectGrowth: string;
     projectWithCompound: string;
     projectWithStock: string;
+    methodBasic: string;
+    methodCompound: string;
+    methodStock: string;
+    addAsBillsLabel: string;
+    billsNeedTargetDate: string;
     projectedSummary: string;
     saveToBucket: string;
     savedToBucket: string;
