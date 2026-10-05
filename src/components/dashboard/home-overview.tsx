@@ -52,6 +52,21 @@ export function HomeOverview({ firstName, incomeTotal, billsTotal, paidTotal, pe
           </div>
           <CircularProgress percent={committedPercent} size={52} strokeWidth={5} />
         </div>
+
+        {billsTotal > 0 && (
+          <div className="mt-3 pt-3 border-t border-white/20">
+            <div className="flex items-center justify-between text-xs font-semibold text-white/80 mb-1.5">
+              <span>{t.billsPaidLabel}</span>
+              <span className="tabular-nums text-white">{formatCurrency(paidTotal)} / {formatCurrency(billsTotal)}</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-white"
+                style={{ width: `${Math.min(100, paidPercent)}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -70,21 +85,6 @@ export function HomeOverview({ firstName, incomeTotal, billsTotal, paidTotal, pe
           <p className="text-lg font-bold text-[var(--color-foreground)] mt-1 tabular-nums">{formatCurrency(billsTotal)}</p>
         </div>
       </div>
-
-      {billsTotal > 0 && (
-        <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-4">
-          <div className="flex items-center justify-between text-xs font-semibold text-[var(--color-muted-foreground)] mb-2">
-            <span>{t.billsPaidLabel}</span>
-            <span className="tabular-nums">{formatCurrency(paidTotal)} / {formatCurrency(billsTotal)}</span>
-          </div>
-          <div className="h-2 rounded-full bg-[var(--color-muted)] overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[var(--color-success)]"
-              style={{ width: `${Math.min(100, paidPercent)}%` }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
