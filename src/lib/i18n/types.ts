@@ -496,6 +496,7 @@ export interface Dict {
     titleProjection: string;
     tickerLabel: string;
     tickerPlaceholder: string;
+    noMatches: string;
     initialInvestmentLabel: string;
     startDateLabel: string;
     endDateLabel: string;

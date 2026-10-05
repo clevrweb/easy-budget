@@ -15,9 +15,9 @@ export default function DebtPayoffCalculatorPage() {
   const dict = useDict();
   const t = dict.calculators;
 
-  const [balance, setBalance] = useState(5000);
-  const [rate, setRate] = useState(19.99);
-  const [payment, setPayment] = useState(200);
+  const [balance, setBalance] = useState("5000");
+  const [rate, setRate] = useState("19.99");
+  const [payment, setPayment] = useState("200");
 
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DebtPayoffResult | null>(null);
@@ -25,7 +25,11 @@ export default function DebtPayoffCalculatorPage() {
   function handleCalculate() {
     setError(null);
     try {
-      setResult(computeDebtPayoff({ balance, annualRatePct: rate, monthlyPayment: payment }));
+      setResult(computeDebtPayoff({
+        balance: parseFloat(balance) || 0,
+        annualRatePct: parseFloat(rate) || 0,
+        monthlyPayment: parseFloat(payment) || 0,
+      }));
     } catch (err) {
       setResult(null);
       setError(err instanceof DebtPayoffError ? err.message : "Something went wrong.");
@@ -39,16 +43,16 @@ export default function DebtPayoffCalculatorPage() {
         <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="dp-balance">{t.debtPayoff.balanceLabel}</Label>
-            <Input id="dp-balance" type="number" step="0.01" min="0" value={balance} onChange={(e) => setBalance(parseFloat(e.target.value) || 0)} />
+            <Input id="dp-balance" type="number" step="0.01" min="0" value={balance} onChange={(e) => setBalance(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="dp-rate">{t.debtPayoff.rateLabel}</Label>
-              <Input id="dp-rate" type="number" step="0.01" min="0" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} />
+              <Input id="dp-rate" type="number" step="0.01" min="0" value={rate} onChange={(e) => setRate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="dp-payment">{t.debtPayoff.paymentLabel}</Label>
-              <Input id="dp-payment" type="number" step="0.01" min="0" value={payment} onChange={(e) => setPayment(parseFloat(e.target.value) || 0)} />
+              <Input id="dp-payment" type="number" step="0.01" min="0" value={payment} onChange={(e) => setPayment(e.target.value)} />
             </div>
           </div>
           <Button onClick={handleCalculate} className="w-full">{t.calculateButton}</Button>

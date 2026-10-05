@@ -45,7 +45,7 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
   const [name, setName] = useState("");
   const [groupId, setGroupId] = useState("");
   const [planStartDate, setPlanStartDate] = useState(startDate);
-  const [targetAmount, setTargetAmount] = useState(bucketContext?.defaultTargetAmount ?? 0);
+  const [targetAmount, setTargetAmount] = useState(String(bucketContext?.defaultTargetAmount ?? 0));
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<CreatedResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
         bucketContext
           ? createBucketFromProjectionAction({
               name: planName,
-              targetAmount,
+              targetAmount: parseFloat(targetAmount) || 0,
               currentAmount: bucketContext.initialInvestment,
               targetDate: effectiveEndDate,
               contributionAmount,
@@ -183,7 +183,7 @@ export function SavingsPlanForm({ contributionAmount, contributionFrequency, sta
               id="plan-bucket-target"
               type="number" step="0.01" min="0"
               value={targetAmount}
-              onChange={(e) => setTargetAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setTargetAmount(e.target.value)}
             />
           </div>
         )}

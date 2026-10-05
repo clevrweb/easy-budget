@@ -15,10 +15,10 @@ export default function RetirementCalculatorPage() {
   const dict = useDict();
   const t = dict.calculators;
 
-  const [currentSavings, setCurrentSavings] = useState(10000);
-  const [monthlyContribution, setMonthlyContribution] = useState(500);
-  const [returnRate, setReturnRate] = useState(7);
-  const [years, setYears] = useState(25);
+  const [currentSavings, setCurrentSavings] = useState("10000");
+  const [monthlyContribution, setMonthlyContribution] = useState("500");
+  const [returnRate, setReturnRate] = useState("7");
+  const [years, setYears] = useState("25");
 
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompoundInterestResult | null>(null);
@@ -27,10 +27,10 @@ export default function RetirementCalculatorPage() {
     setError(null);
     try {
       const computed = computeCompoundInterest({
-        principal: currentSavings,
-        monthlyContribution,
-        annualRatePct: returnRate,
-        years,
+        principal: parseFloat(currentSavings) || 0,
+        monthlyContribution: parseFloat(monthlyContribution) || 0,
+        annualRatePct: parseFloat(returnRate) || 0,
+        years: parseInt(years) || 0,
         compoundingFrequency: "monthly",
       });
       setResult(computed);
@@ -48,21 +48,21 @@ export default function RetirementCalculatorPage() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="ret-savings">{t.retirement.currentSavingsLabel}</Label>
-              <Input id="ret-savings" type="number" step="0.01" min="0" value={currentSavings} onChange={(e) => setCurrentSavings(parseFloat(e.target.value) || 0)} />
+              <Input id="ret-savings" type="number" step="0.01" min="0" value={currentSavings} onChange={(e) => setCurrentSavings(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ret-contribution">{t.retirement.monthlyContributionLabel}</Label>
-              <Input id="ret-contribution" type="number" step="0.01" min="0" value={monthlyContribution} onChange={(e) => setMonthlyContribution(parseFloat(e.target.value) || 0)} />
+              <Input id="ret-contribution" type="number" step="0.01" min="0" value={monthlyContribution} onChange={(e) => setMonthlyContribution(e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="ret-rate">{t.retirement.returnRateLabel}</Label>
-              <Input id="ret-rate" type="number" step="0.01" min="0" value={returnRate} onChange={(e) => setReturnRate(parseFloat(e.target.value) || 0)} />
+              <Input id="ret-rate" type="number" step="0.01" min="0" value={returnRate} onChange={(e) => setReturnRate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ret-years">{t.retirement.yearsLabel}</Label>
-              <Input id="ret-years" type="number" step="1" min="1" value={years} onChange={(e) => setYears(parseInt(e.target.value) || 0)} />
+              <Input id="ret-years" type="number" step="1" min="1" value={years} onChange={(e) => setYears(e.target.value)} />
             </div>
           </div>
           <Button onClick={handleCalculate} className="w-full">{t.calculateButton}</Button>

@@ -495,8 +495,9 @@ export const es: Dict = {
   calculator: {
     titleBacktest: "Backtest de Acciones",
     titleProjection: "Proyección Futura de Acciones",
-    tickerLabel: "Símbolo de Cotización",
+    tickerLabel: "Buscar Símbolo de Cotización",
     tickerPlaceholder: "SPY",
+    noMatches: "No se encontraron resultados.",
     initialInvestmentLabel: "Inversión Inicial (USD)",
     startDateLabel: "Fecha de Inicio",
     endDateLabel: "Fecha de Fin",

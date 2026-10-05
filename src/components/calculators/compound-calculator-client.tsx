@@ -32,10 +32,10 @@ export function CompoundCalculatorClient({ bucket }: CompoundCalculatorClientPro
   const [isSaving, startSaving] = useTransition();
   const [saved, setSaved] = useState(false);
 
-  const [principal, setPrincipal] = useState(bucket?.current_amount ?? 1000);
-  const [monthlyContribution, setMonthlyContribution] = useState(bucket?.contribution_amount ?? 100);
-  const [annualRatePct, setAnnualRatePct] = useState(7);
-  const [years, setYears] = useState(10);
+  const [principal, setPrincipal] = useState(String(bucket?.current_amount ?? 1000));
+  const [monthlyContribution, setMonthlyContribution] = useState(String(bucket?.contribution_amount ?? 100));
+  const [annualRatePct, setAnnualRatePct] = useState("7");
+  const [years, setYears] = useState("10");
   const [compoundingFrequency, setCompoundingFrequency] = useState<CompoundingFrequency>("monthly");
 
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +45,13 @@ export function CompoundCalculatorClient({ bucket }: CompoundCalculatorClientPro
     setError(null);
     setSaved(false);
     try {
-      const computed = computeCompoundInterest({ principal, monthlyContribution, annualRatePct, years, compoundingFrequency });
+      const computed = computeCompoundInterest({
+        principal: parseFloat(principal) || 0,
+        monthlyContribution: parseFloat(monthlyContribution) || 0,
+        annualRatePct: parseFloat(annualRatePct) || 0,
+        years: parseInt(years) || 0,
+        compoundingFrequency,
+      });
       setResult(computed);
     } catch (err) {
       setResult(null);
@@ -60,7 +66,13 @@ export function CompoundCalculatorClient({ bucket }: CompoundCalculatorClientPro
       const saveResult = await saveBucketProjectionAction({
         bucketId: bucket.id,
         projectionType: "compound",
-        projectionInput: { principal, monthlyContribution, annualRatePct, years, compoundingFrequency },
+        projectionInput: {
+          principal: parseFloat(principal) || 0,
+          monthlyContribution: parseFloat(monthlyContribution) || 0,
+          annualRatePct: parseFloat(annualRatePct) || 0,
+          years: parseInt(years) || 0,
+          compoundingFrequency,
+        },
         projectedValue: result.endingValue,
         projectedDate: lastDate,
       });
@@ -79,21 +91,21 @@ export function CompoundCalculatorClient({ bucket }: CompoundCalculatorClientPro
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="ci-principal">{t.compound.principalLabel}</Label>
-              <Input id="ci-principal" type="number" step="0.01" min="0" value={principal} onChange={(e) => setPrincipal(parseFloat(e.target.value) || 0)} />
+              <Input id="ci-principal" type="number" step="0.01" min="0" value={principal} onChange={(e) => setPrincipal(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ci-contribution">{t.compound.monthlyContributionLabel}</Label>
-              <Input id="ci-contribution" type="number" step="0.01" min="0" value={monthlyContribution} onChange={(e) => setMonthlyContribution(parseFloat(e.target.value) || 0)} />
+              <Input id="ci-contribution" type="number" step="0.01" min="0" value={monthlyContribution} onChange={(e) => setMonthlyContribution(e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="ci-rate">{t.compound.annualRateLabel}</Label>
-              <Input id="ci-rate" type="number" step="0.01" min="0" value={annualRatePct} onChange={(e) => setAnnualRatePct(parseFloat(e.target.value) || 0)} />
+              <Input id="ci-rate" type="number" step="0.01" min="0" value={annualRatePct} onChange={(e) => setAnnualRatePct(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ci-years">{t.compound.yearsLabel}</Label>
-              <Input id="ci-years" type="number" step="1" min="1" value={years} onChange={(e) => setYears(parseInt(e.target.value) || 0)} />
+              <Input id="ci-years" type="number" step="1" min="1" value={years} onChange={(e) => setYears(e.target.value)} />
             </div>
           </div>
           <div className="space-y-1.5">

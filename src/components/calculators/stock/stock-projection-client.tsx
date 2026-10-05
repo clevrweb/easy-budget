@@ -78,11 +78,11 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
   const bucketInput = (bucket?.projection_input ?? {}) as { ticker?: string };
 
   const [ticker, setTicker] = useState(bucketInput.ticker ?? "SPY");
-  const [initialInvestment, setInitialInvestment] = useState(bucket?.current_amount ?? 10000);
+  const [initialInvestment, setInitialInvestment] = useState(String(bucket?.current_amount ?? 10000));
   const [includeDividends, setIncludeDividends] = useState(true);
   const [drip, setDrip] = useState(true);
 
-  const [contributionAmount, setContributionAmount] = useState(bucket?.contribution_amount ?? 100);
+  const [contributionAmount, setContributionAmount] = useState(String(bucket?.contribution_amount ?? 100));
   const [contributionFrequency, setContributionFrequency] = useState<ContributionFrequency>(
     (bucket?.contribution_frequency as ContributionFrequency) ?? "monthly"
   );
@@ -92,11 +92,11 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
   );
 
   const [snapshot, setSnapshot] = useState<StockSnapshot | null>(null);
-  const [sharePrice, setSharePrice] = useState(0);
-  const [priceGrowthPct, setPriceGrowthPct] = useState(0);
-  const [dividendAmount, setDividendAmount] = useState(0);
+  const [sharePrice, setSharePrice] = useState("0");
+  const [priceGrowthPct, setPriceGrowthPct] = useState("0");
+  const [dividendAmount, setDividendAmount] = useState("0");
   const [dividendFrequency, setDividendFrequency] = useState<DividendFrequency>("none");
-  const [dividendGrowthPct, setDividendGrowthPct] = useState(0);
+  const [dividendGrowthPct, setDividendGrowthPct] = useState("0");
 
   const [loadStatus, setLoadStatus] = useState<Status>("idle");
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -144,11 +144,11 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
       const series = await fetchSeriesForSymbol(symbol);
       const snap = analyzeStock(series);
       setSnapshot(snap);
-      setSharePrice(snap.lastPrice);
-      setPriceGrowthPct(snap.measuredPriceGrowthPct);
-      setDividendAmount(snap.lastDividendAmount);
+      setSharePrice(String(snap.lastPrice));
+      setPriceGrowthPct(String(snap.measuredPriceGrowthPct));
+      setDividendAmount(String(snap.lastDividendAmount));
       setDividendFrequency(snap.dividendFrequency);
-      setDividendGrowthPct(snap.measuredDividendGrowthPct);
+      setDividendGrowthPct(String(snap.measuredDividendGrowthPct));
       setLoadStatus("success");
     } catch (err) {
       setLoadStatus("error");
@@ -166,12 +166,15 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
       setErrorMessage(t.errors.missing_symbol);
       return;
     }
-    if (initialInvestment < 0 || contributionAmount < 0) {
+    const initialInvestmentNum = parseFloat(initialInvestment) || 0;
+    const contributionAmountNum = parseFloat(contributionAmount) || 0;
+
+    if (initialInvestmentNum < 0 || contributionAmountNum < 0) {
       setStatus("error");
       setErrorMessage(t.errors.invalid_contribution);
       return;
     }
-    if (initialInvestment === 0 && contributionAmount === 0) {
+    if (initialInvestmentNum === 0 && contributionAmountNum === 0) {
       setStatus("error");
       setErrorMessage(t.errors.no_contribution);
       return;
@@ -190,7 +193,11 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
 
       let snap = snapshot;
       let effective: ProjectionAssumptions = {
-        sharePrice, priceGrowthPct, dividendAmount, dividendFrequency, dividendGrowthPct,
+        sharePrice: parseFloat(sharePrice) || 0,
+        priceGrowthPct: parseFloat(priceGrowthPct) || 0,
+        dividendAmount: parseFloat(dividendAmount) || 0,
+        dividendFrequency,
+        dividendGrowthPct: parseFloat(dividendGrowthPct) || 0,
       };
 
       if (!snap) {
@@ -204,11 +211,11 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
           dividendGrowthPct: snap.measuredDividendGrowthPct,
         };
         setSnapshot(snap);
-        setSharePrice(effective.sharePrice);
-        setPriceGrowthPct(effective.priceGrowthPct);
-        setDividendAmount(effective.dividendAmount);
+        setSharePrice(String(effective.sharePrice));
+        setPriceGrowthPct(String(effective.priceGrowthPct));
+        setDividendAmount(String(effective.dividendAmount));
         setDividendFrequency(effective.dividendFrequency);
-        setDividendGrowthPct(effective.dividendGrowthPct);
+        setDividendGrowthPct(String(effective.dividendGrowthPct));
       }
 
       const computed = projectFutureGrowth({
@@ -217,8 +224,8 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
         startingDividendPerShare: effective.dividendAmount,
         dividendGrowthPct: effective.dividendGrowthPct,
         dividendFrequency: effective.dividendFrequency,
-        initialInvestment,
-        contributionAmount,
+        initialInvestment: initialInvestmentNum,
+        contributionAmount: contributionAmountNum,
         contributionFrequency,
         startDate: projectStartDate,
         endDate: projectEndDate,
@@ -226,7 +233,7 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
       });
       setProjectionResult(computed);
       setProjectionAssumptions(effective);
-      setPlanInputs({ contributionAmount, contributionFrequency, startDate: projectStartDate, endDate: projectEndDate });
+      setPlanInputs({ contributionAmount: contributionAmountNum, contributionFrequency, startDate: projectStartDate, endDate: projectEndDate });
 
       setStatus("success");
       setSavedToBucket(false);
@@ -250,11 +257,11 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
         projectionType: "stock",
         projectionInput: {
           ticker: ticker.trim().toUpperCase(),
-          priceGrowthPct,
-          dividendAmount,
+          priceGrowthPct: parseFloat(priceGrowthPct) || 0,
+          dividendAmount: parseFloat(dividendAmount) || 0,
           dividendFrequency,
-          dividendGrowthPct,
-          contributionAmount,
+          dividendGrowthPct: parseFloat(dividendGrowthPct) || 0,
+          contributionAmount: parseFloat(contributionAmount) || 0,
           contributionFrequency,
         },
         projectedValue: projectionResult.endingValue,
@@ -269,15 +276,15 @@ export function StockProjectionClient({ groups, bucket }: StockProjectionClientP
 
   const bucketContext: BucketContext | undefined = !bucket && projectionResult
     ? {
-        initialInvestment,
+        initialInvestment: parseFloat(initialInvestment) || 0,
         defaultTargetAmount: Math.round(projectionResult.endingValue),
         projectionInput: {
           ticker: ticker.trim().toUpperCase(),
-          priceGrowthPct,
-          dividendAmount,
+          priceGrowthPct: parseFloat(priceGrowthPct) || 0,
+          dividendAmount: parseFloat(dividendAmount) || 0,
           dividendFrequency,
-          dividendGrowthPct,
-          contributionAmount,
+          dividendGrowthPct: parseFloat(dividendGrowthPct) || 0,
+          contributionAmount: parseFloat(contributionAmount) || 0,
           contributionFrequency,
         },
       }

@@ -39,7 +39,7 @@ export function StockBacktestClient() {
   const t = dict.calculator;
 
   const [ticker, setTicker] = useState("SPY");
-  const [initialInvestment, setInitialInvestment] = useState(10000);
+  const [initialInvestment, setInitialInvestment] = useState("10000");
   const [includeDividends, setIncludeDividends] = useState(true);
   const [drip, setDrip] = useState(true);
   const [startDate, setStartDate] = useState(fiveYearsAgoStr());
@@ -67,7 +67,8 @@ export function StockBacktestClient() {
       setErrorMessage(t.errors.missing_symbol);
       return;
     }
-    if (initialInvestment <= 0) {
+    const initialInvestmentNum = parseFloat(initialInvestment) || 0;
+    if (initialInvestmentNum <= 0) {
       setStatus("error");
       setErrorMessage(t.errors.invalid_amount);
       return;
@@ -84,7 +85,7 @@ export function StockBacktestClient() {
       const series = await fetchSeriesForSymbol(ticker.trim().toUpperCase());
       const computed = computeCompoundGrowth({
         prices: series,
-        initialInvestment,
+        initialInvestment: initialInvestmentNum,
         startDate,
         endDate,
         dividendMode: dividendModeFrom(includeDividends, drip),

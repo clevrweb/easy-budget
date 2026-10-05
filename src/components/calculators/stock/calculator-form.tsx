@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +8,7 @@ import { Download } from "lucide-react";
 import { useDict } from "@/components/language-provider";
 import type { DividendMode } from "@/lib/compound-calculator";
 import type { ContributionFrequency, DividendFrequency, StockSnapshot } from "@/lib/future-projection";
+import type { SymbolMatch, SymbolSearchResponse } from "@/app/api/calculator/symbol-search/route";
 
 export type CalculatorMode = "backtest" | "project";
 
@@ -19,8 +21,8 @@ interface CalculatorFormProps {
 
   ticker: string;
   onTicker: (value: string) => void;
-  initialInvestment: number;
-  onInitialInvestment: (value: number) => void;
+  initialInvestment: string;
+  onInitialInvestment: (value: string) => void;
 
   // backtest-only
   startDate?: string;
@@ -29,8 +31,8 @@ interface CalculatorFormProps {
   onEndDate?: (value: string) => void;
 
   // project-only
-  contributionAmount?: number;
-  onContributionAmount?: (value: number) => void;
+  contributionAmount?: string;
+  onContributionAmount?: (value: string) => void;
   contributionFrequency?: ContributionFrequency;
   onContributionFrequency?: (value: ContributionFrequency) => void;
   projectStartDate?: string;
@@ -43,16 +45,16 @@ interface CalculatorFormProps {
   onLoad?: () => void;
   snapshot?: StockSnapshot | null;
 
-  sharePrice?: number;
-  onSharePrice?: (value: number) => void;
-  priceGrowthPct?: number;
-  onPriceGrowthPct?: (value: number) => void;
-  dividendAmount?: number;
-  onDividendAmount?: (value: number) => void;
+  sharePrice?: string;
+  onSharePrice?: (value: string) => void;
+  priceGrowthPct?: string;
+  onPriceGrowthPct?: (value: string) => void;
+  dividendAmount?: string;
+  onDividendAmount?: (value: string) => void;
   dividendFrequency?: DividendFrequency;
   onDividendFrequency?: (value: DividendFrequency) => void;
-  dividendGrowthPct?: number;
-  onDividendGrowthPct?: (value: number) => void;
+  dividendGrowthPct?: string;
+  onDividendGrowthPct?: (value: string) => void;
 
   includeDividends: boolean;
   onIncludeDividends: (value: boolean) => void;
@@ -74,16 +76,16 @@ export function CalculatorForm({
   initialInvestment, onInitialInvestment,
   startDate = "", onStartDate = () => {},
   endDate = "", onEndDate = () => {},
-  contributionAmount = 0, onContributionAmount = () => {},
+  contributionAmount = "0", onContributionAmount = () => {},
   contributionFrequency = "monthly", onContributionFrequency = () => {},
   projectStartDate = "", onProjectStartDate = () => {},
   projectEndDate = "", onProjectEndDate = () => {},
   loadStatus = "idle", loadError = null, onLoad = () => {}, snapshot = null,
-  sharePrice = 0, onSharePrice = () => {},
-  priceGrowthPct = 0, onPriceGrowthPct = () => {},
-  dividendAmount = 0, onDividendAmount = () => {},
+  sharePrice = "0", onSharePrice = () => {},
+  priceGrowthPct = "0", onPriceGrowthPct = () => {},
+  dividendAmount = "0", onDividendAmount = () => {},
   dividendFrequency = "none", onDividendFrequency = () => {},
-  dividendGrowthPct = 0, onDividendGrowthPct = () => {},
+  dividendGrowthPct = "0", onDividendGrowthPct = () => {},
   includeDividends, onIncludeDividends,
   drip, onDrip,
   loading, onSubmit,
@@ -91,6 +93,56 @@ export function CalculatorForm({
   const dict = useDict();
   const t = dict.calculator;
   const projectLocked = mode === "project" && loadStatus !== "success";
+
+  const [suggestions, setSuggestions] = useState<SymbolMatch[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const tickerWrapRef = useRef<HTMLDivElement>(null);
+  // Skips the very first run -- otherwise every page load fires a search for
+  // whatever ticker is pre-filled (e.g. "SPY") before the user has typed
+  // anything, wasting a call against Alpha Vantage's scarce free-tier quota.
+  const tickerTouchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!tickerTouchedRef.current) {
+      tickerTouchedRef.current = true;
+      return;
+    }
+    if (!ticker.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSuggestionsLoading(true);
+      try {
+        const res = await fetch(`/api/calculator/symbol-search?q=${encodeURIComponent(ticker.trim())}`);
+        if (res.ok) {
+          const json = (await res.json()) as SymbolSearchResponse;
+          setSuggestions(json.matches);
+          setSuggestionsOpen(true);
+        }
+      } catch {
+        // Silently ignore -- autocomplete is a convenience, not required for the form to work.
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [ticker]);
+
+  useEffect(() => {
+    if (!suggestionsOpen) return;
+    function handler(e: MouseEvent) {
+      if (tickerWrapRef.current && !tickerWrapRef.current.contains(e.target as Node)) setSuggestionsOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [suggestionsOpen]);
+
+  function selectSuggestion(symbol: string) {
+    onTicker(symbol);
+    setSuggestionsOpen(false);
+  }
 
   return (
     <form
@@ -101,7 +153,7 @@ export function CalculatorForm({
       className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 relative" ref={tickerWrapRef}>
           <Label htmlFor="calc-ticker">{t.tickerLabel}</Label>
           {mode === "project" ? (
             <>
@@ -111,7 +163,9 @@ export function CalculatorForm({
                   className="flex-1"
                   value={ticker}
                   onChange={(e) => onTicker(e.target.value.toUpperCase())}
+                  onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
                   placeholder={t.tickerPlaceholder}
+                  autoComplete="off"
                   required
                 />
                 <Button
@@ -130,9 +184,33 @@ export function CalculatorForm({
               id="calc-ticker"
               value={ticker}
               onChange={(e) => onTicker(e.target.value.toUpperCase())}
+              onFocus={() => suggestions.length > 0 && setSuggestionsOpen(true)}
               placeholder={t.tickerPlaceholder}
+              autoComplete="off"
               required
             />
+          )}
+
+          {suggestionsOpen && ticker.trim() && (
+            <div className="absolute z-20 left-0 right-0 mt-1 bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg shadow-[var(--shadow-card)] max-h-60 overflow-y-auto">
+              {suggestionsLoading ? (
+                <p className="px-3 py-2 text-xs text-[var(--color-muted-foreground)]">{t.loadingButton}</p>
+              ) : suggestions.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-[var(--color-muted-foreground)]">{t.noMatches}</p>
+              ) : (
+                suggestions.map((m) => (
+                  <button
+                    key={m.symbol}
+                    type="button"
+                    onClick={() => selectSuggestion(m.symbol)}
+                    className="w-full text-left px-3 py-2 hover:bg-[var(--color-muted)] transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-[var(--color-foreground)]">{m.symbol}</span>
+                    <span className="text-xs text-[var(--color-muted-foreground)] ml-2">{m.name}</span>
+                  </button>
+                ))
+              )}
+            </div>
           )}
         </div>
         <div className="space-y-1.5">
@@ -143,7 +221,7 @@ export function CalculatorForm({
             min="0"
             step="0.01"
             value={initialInvestment}
-            onChange={(e) => onInitialInvestment(Number(e.target.value))}
+            onChange={(e) => onInitialInvestment(e.target.value)}
             disabled={projectLocked}
           />
         </div>
@@ -236,7 +314,7 @@ export function CalculatorForm({
                 min="0"
                 step="0.01"
                 value={contributionAmount}
-                onChange={(e) => onContributionAmount(Number(e.target.value))}
+                onChange={(e) => onContributionAmount(e.target.value)}
                 disabled={projectLocked}
               />
             </div>
@@ -267,7 +345,7 @@ export function CalculatorForm({
                 min="0"
                 step="any"
                 value={sharePrice}
-                onChange={(e) => onSharePrice(Number(e.target.value))}
+                onChange={(e) => onSharePrice(e.target.value)}
                 disabled={projectLocked}
               />
             </div>
@@ -278,7 +356,7 @@ export function CalculatorForm({
                 type="number"
                 step="any"
                 value={priceGrowthPct}
-                onChange={(e) => onPriceGrowthPct(Number(e.target.value))}
+                onChange={(e) => onPriceGrowthPct(e.target.value)}
                 disabled={projectLocked}
               />
             </div>
@@ -293,7 +371,7 @@ export function CalculatorForm({
                 min="0"
                 step="any"
                 value={dividendAmount}
-                onChange={(e) => onDividendAmount(Number(e.target.value))}
+                onChange={(e) => onDividendAmount(e.target.value)}
                 disabled={projectLocked || dividendFrequency === "none"}
               />
             </div>
@@ -320,7 +398,7 @@ export function CalculatorForm({
                 type="number"
                 step="any"
                 value={dividendGrowthPct}
-                onChange={(e) => onDividendGrowthPct(Number(e.target.value))}
+                onChange={(e) => onDividendGrowthPct(e.target.value)}
                 disabled={projectLocked || dividendFrequency === "none"}
               />
             </div>

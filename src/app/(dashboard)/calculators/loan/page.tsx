@@ -15,9 +15,9 @@ export default function LoanCalculatorPage() {
   const dict = useDict();
   const t = dict.calculators;
 
-  const [amount, setAmount] = useState(25000);
-  const [rate, setRate] = useState(6.5);
-  const [termYears, setTermYears] = useState(5);
+  const [amount, setAmount] = useState("25000");
+  const [rate, setRate] = useState("6.5");
+  const [termYears, setTermYears] = useState("5");
 
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LoanResult | null>(null);
@@ -25,7 +25,11 @@ export default function LoanCalculatorPage() {
   function handleCalculate() {
     setError(null);
     try {
-      setResult(computeLoanPayment({ amount, annualRatePct: rate, termYears }));
+      setResult(computeLoanPayment({
+        amount: parseFloat(amount) || 0,
+        annualRatePct: parseFloat(rate) || 0,
+        termYears: parseInt(termYears) || 0,
+      }));
     } catch (err) {
       setResult(null);
       setError(err instanceof LoanCalculatorError ? err.message : "Something went wrong.");
@@ -39,16 +43,16 @@ export default function LoanCalculatorPage() {
         <div className="bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] p-5 space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="ln-amount">{t.loan.loanAmountLabel}</Label>
-            <Input id="ln-amount" type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} />
+            <Input id="ln-amount" type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="ln-rate">{t.loan.rateLabel}</Label>
-              <Input id="ln-rate" type="number" step="0.01" min="0" value={rate} onChange={(e) => setRate(parseFloat(e.target.value) || 0)} />
+              <Input id="ln-rate" type="number" step="0.01" min="0" value={rate} onChange={(e) => setRate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ln-term">{t.loan.termYearsLabel}</Label>
-              <Input id="ln-term" type="number" step="1" min="1" value={termYears} onChange={(e) => setTermYears(parseInt(e.target.value) || 0)} />
+              <Input id="ln-term" type="number" step="1" min="1" value={termYears} onChange={(e) => setTermYears(e.target.value)} />
             </div>
           </div>
           <Button onClick={handleCalculate} className="w-full">{t.calculateButton}</Button>
