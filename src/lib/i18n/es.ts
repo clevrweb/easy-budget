@@ -603,6 +603,7 @@ export const es: Dict = {
     backToBucket: "Volver a Plan de Ahorros",
     createBucketFromProjectionTitle: "O crea un nuevo Bolsillo de Ahorro a partir de esta proyección",
     createBucketButton: "Crear Bolsillo de Ahorro",
+    createBucketCardDesc: "Comienza con un nombre, monto objetivo y fecha que tú defines.",
   },
 
   calculators: {

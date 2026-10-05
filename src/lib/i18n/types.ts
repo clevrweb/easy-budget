@@ -602,6 +602,7 @@ export interface Dict {
     backToBucket: string;
     createBucketFromProjectionTitle: string;
     createBucketButton: string;
+    createBucketCardDesc: string;
   };
 
   calculators: {

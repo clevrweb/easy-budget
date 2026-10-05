@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import Link from "next/link";
+import { PiggyBank, LineChart, Percent } from "lucide-react";
 import { getBucketsAction } from "@/app/(dashboard)/savings-plan/actions";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { BucketForm } from "./bucket-form";
 import { BucketCard } from "./bucket-card";
 import { useDict } from "@/components/language-provider";
@@ -14,8 +14,11 @@ interface SavingsPlanPageClientProps {
   initialBuckets: SavingsBucket[];
 }
 
+const cardClassName = "bg-[var(--color-card)] rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 p-5 flex flex-col gap-3 text-left";
+
 export function SavingsPlanPageClient({ initialBuckets }: SavingsPlanPageClientProps) {
   const [buckets, setBuckets] = useState(initialBuckets);
+  const [addOpen, setAddOpen] = useState(false);
   const dict = useDict();
   const t = dict.savingsPlan;
 
@@ -26,16 +29,44 @@ export function SavingsPlanPageClient({ initialBuckets }: SavingsPlanPageClientP
 
   return (
     <>
-      <Topbar title={t.title}>
-        <BucketForm onSaved={refresh} />
-      </Topbar>
-
-      <MobileFab>
-        <BucketForm onSaved={refresh} trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.addBucket} />} />
-      </MobileFab>
+      <Topbar title={t.title} />
 
       <main className="flex-1 p-4 md:p-6 space-y-5">
         <p className="text-sm text-[var(--color-muted-foreground)] max-w-2xl">{t.description}</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <button type="button" onClick={() => setAddOpen(true)} className={cardClassName}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[#0d3b66]/10 border-2 border-[#0d3b66]">
+              <PiggyBank className="w-4 h-4 text-[#0d3b66]" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-[var(--color-foreground)]">{t.addBucket}</p>
+              <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{t.createBucketCardDesc}</p>
+            </div>
+          </button>
+
+          <Link href="/calculators/stock-projection" className={cardClassName}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[var(--color-primary)]/10 border-2 border-[var(--color-primary)]">
+              <LineChart className="w-4 h-4 text-[var(--color-primary)]" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-[var(--color-foreground)]">{t.projectWithStock}</p>
+              <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{dict.calculators.cardStockProjectionDesc}</p>
+            </div>
+          </Link>
+
+          <Link href="/calculators/compound" className={cardClassName}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[var(--color-primary)]/10 border-2 border-[var(--color-primary)]">
+              <Percent className="w-4 h-4 text-[var(--color-primary)]" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-[var(--color-foreground)]">{t.projectWithCompound}</p>
+              <p className="text-xs text-[var(--color-muted-foreground)] mt-1">{dict.calculators.cardCompoundDesc}</p>
+            </div>
+          </Link>
+        </div>
+
+        <BucketForm open={addOpen} onOpenChange={setAddOpen} onSaved={refresh} />
 
         {buckets.length === 0 ? (
           <div className="mt-8 text-center">

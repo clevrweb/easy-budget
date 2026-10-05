@@ -603,6 +603,7 @@ export const en: Dict = {
     backToBucket: "Back to Savings Plan",
     createBucketFromProjectionTitle: "Or create a new Savings Bucket from this projection",
     createBucketButton: "Create Savings Bucket",
+    createBucketCardDesc: "Start with a name, target amount, and date you set yourself.",
   },
 
   calculators: {
