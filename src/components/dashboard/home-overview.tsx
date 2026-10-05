@@ -43,7 +43,7 @@ export function HomeOverview({ firstName, incomeTotal, billsTotal, paidTotal, pe
         <p className="text-sm text-[var(--color-muted-foreground)] capitalize">{dateStr}</p>
       </div>
 
-      <div className="rounded-2xl p-4 text-white shadow-[var(--shadow-card)]" style={{ backgroundColor: "var(--color-primary)" }}>
+      <div className="rounded-xl p-4 text-white shadow-[var(--shadow-card)]" style={{ backgroundColor: "var(--color-primary)" }}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wide text-white/80">{t.leftToSpendTitle}</p>
