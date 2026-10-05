@@ -57,7 +57,7 @@ export const en: Dict = {
     more: "More",
     switchBudget: "Switch Budget",
     debts: "Snowball Plan",
-    savingsPlan: "Savings Plan",
+    savingsPlan: "Savings Buckets",
     calculators: "Calculators",
   },
 
@@ -580,7 +580,7 @@ export const en: Dict = {
   },
 
   savingsPlan: {
-    title: "Savings Plan",
+    title: "Savings Buckets",
     description: "Create a bucket for each goal — Travel, a new car, remodeling — and track how close you are.",
     addBucket: "Add Bucket",
     editBucket: "Edit Bucket",
@@ -601,7 +601,7 @@ export const en: Dict = {
     projectedSummary: "Projected ~{amount} by {date}",
     saveToBucket: "Save to Bucket",
     savedToBucket: "Saved to bucket.",
-    backToBucket: "Back to Savings Plan",
+    backToBucket: "Back to Savings Buckets",
     createBucketFromProjectionTitle: "Or create a new Savings Bucket from this projection",
     createBucketButton: "Create Savings Bucket",
     createBucketCardDesc: "Start with a name, target amount, and date you set yourself.",

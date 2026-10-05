@@ -57,7 +57,7 @@ export const es: Dict = {
     more: "Más",
     switchBudget: "Cambiar Presupuesto",
     debts: "Plan Bola de Nieve",
-    savingsPlan: "Plan de Ahorros",
+    savingsPlan: "Bolsillos de Ahorro",
     calculators: "Calculadoras",
   },
 
@@ -580,7 +580,7 @@ export const es: Dict = {
   },
 
   savingsPlan: {
-    title: "Plan de Ahorros",
+    title: "Bolsillos de Ahorro",
     description: "Crea un bolsillo para cada meta — Viajes, un auto nuevo, remodelación — y sigue tu progreso.",
     addBucket: "Agregar Bolsillo",
     editBucket: "Editar Bolsillo",
@@ -601,7 +601,7 @@ export const es: Dict = {
     projectedSummary: "Proyectado ~{amount} para {date}",
     saveToBucket: "Guardar en el Bolsillo",
     savedToBucket: "Guardado en el bolsillo.",
-    backToBucket: "Volver a Plan de Ahorros",
+    backToBucket: "Volver a Bolsillos de Ahorro",
     createBucketFromProjectionTitle: "O crea un nuevo Bolsillo de Ahorro a partir de esta proyección",
     createBucketButton: "Crear Bolsillo de Ahorro",
     createBucketCardDesc: "Comienza con un nombre, monto objetivo y fecha que tú defines.",
