@@ -58,5 +58,5 @@ FabLink.displayName = "FabLink";
 
 /** Fixed bottom-right position for a mobile-only FAB, clear of the bottom nav. */
 export function MobileFab({ children }: { children: React.ReactNode }) {
-  return <div className="fixed bottom-20 right-4 z-30 md:hidden">{children}</div>;
+  return <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-30 md:hidden">{children}</div>;
 }
