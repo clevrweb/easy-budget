@@ -282,7 +282,7 @@ export function BucketStockFields({ initialInvestment, initialContribution, onRe
 
       {status === "success" && timeline && (
         <>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <StatCard label={dict.calculators.compound.endingValueLabel} value={formatCurrency(endingValue)} colorClass="text-[var(--color-primary)]" />
             <StatCard label={dict.calculators.compound.totalContributedLabel} value={formatCurrency(totalContributedResult)} />
             <StatCard label={dict.calculators.compound.totalGrowthLabel} value={formatCurrency(totalGrowthResult)} colorClass="text-emerald-600 dark:text-emerald-400" />

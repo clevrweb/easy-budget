@@ -134,7 +134,7 @@ export function BucketCompoundFields({ initialPrincipal, initialContribution, on
 
       {calculated && timeline && (
         <>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <StatCard label={t.compound.endingValueLabel} value={formatCurrency(endingValue)} colorClass="text-[var(--color-primary)]" />
             <StatCard label={t.compound.totalContributedLabel} value={formatCurrency(totalContributed)} />
             <StatCard label={t.compound.totalGrowthLabel} value={formatCurrency(totalGrowth)} colorClass="text-emerald-600 dark:text-emerald-400" />
