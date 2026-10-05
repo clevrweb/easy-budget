@@ -24,11 +24,11 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
 
   const navItems = [
     { href: "/dashboard", label: dict.nav.home,    icon: LayoutDashboard },
+    { href: "/income",    label: dict.nav.income,  icon: TrendingUp },
     { href: "/reports",   label: dict.nav.reports, icon: BarChart2 },
   ];
 
   const moreItems = [
-    { href: "/income",     label: dict.nav.income,     icon: TrendingUp },
     { href: "/categories", label: dict.nav.categories, icon: Tag },
     { href: "/groups",    label: dict.nav.groups,    icon: Users },
     { href: "/recurring", label: dict.nav.recurring, icon: Repeat },
