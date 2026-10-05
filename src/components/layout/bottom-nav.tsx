@@ -66,7 +66,7 @@ export function BottomNav({ hasMultipleAccounts }: BottomNavProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-primary)] shadow-[0_-2px_10px_rgba(0,0,0,0.15)] flex items-center md:hidden safe-area-inset-bottom">
       <div className="flex items-center justify-center px-3 shrink-0">
-        <AppLogo size={40} className="w-7 h-7 rounded-md" />
+        <AppLogo size={48} className="w-9 h-9 rounded-md" />
       </div>
 
       {navItems.map(({ href, label, icon: Icon }) => {

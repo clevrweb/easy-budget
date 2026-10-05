@@ -143,7 +143,7 @@ export default async function DashboardPage({
         href="/bills/new"
         icon={<Plus className="w-5 h-5" />}
         label={dict.bills.addBill}
-        className="bg-[#0d3b66] text-white"
+        className="bg-[#eec553] text-[#0d3b66] border-2 border-[#0d3b66]"
         storageKey="home-add-bill-fab-pos"
       />
 
