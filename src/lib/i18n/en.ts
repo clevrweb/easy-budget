@@ -43,8 +43,8 @@ export const en: Dict = {
   },
 
   nav: {
-    dashboard: "Home",
-    home: "Home",
+    dashboard: "Overview",
+    home: "Overview",
     bills: "Bills",
     categories: "Categories",
     groups: "Groups",
@@ -62,7 +62,7 @@ export const en: Dict = {
   },
 
   dashboard: {
-    title: "Home",
+    title: "Overview",
     summary: "Summary",
     today: "Today",
     dueToday: "Due Today",
