@@ -289,6 +289,10 @@ export interface Dict {
     language: string;
     languageDesc: string;
     languageUpdated: string;
+    displayName: string;
+    displayNameDesc: string;
+    displayNamePlaceholder: string;
+    displayNameUpdated: string;
     defaultViewLabel: string;
     defaultViewDesc: string;
     defaultViewUpdated: string;
@@ -365,6 +369,7 @@ export interface Dict {
     edit: string;
     delete: string;
     cancel: string;
+    save: string;
     saving: string;
     confirmAgain: string;
   };

@@ -62,6 +62,26 @@ export async function updateLanguageAction(lang: string) {
   return { success: true };
 }
 
+export async function getDisplayNameAction() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return "";
+
+  const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+  return data?.full_name ?? "";
+}
+
+export async function updateDisplayNameAction(name: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  await supabase.from("profiles").upsert({ user_id: user.id, full_name: name.trim() }, { onConflict: "user_id" });
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 export async function getSharedAccessDataAction() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -8,6 +8,7 @@ import { ExportDataSection } from "@/components/settings/export-data-section";
 import { DefaultViewSwitcher } from "@/components/settings/default-view-switcher";
 import { NotificationChannelSettings } from "@/components/settings/notification-channel-settings";
 import { HeaderColorsForm } from "@/components/settings/header-colors-form";
+import { DisplayNameForm } from "@/components/settings/display-name-form";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -16,18 +17,20 @@ import {
   getDefaultViewAction,
   getNotificationPrefsAction,
   getHeaderColorsAction,
+  getDisplayNameAction,
 } from "./actions";
 import { getServerDict } from "@/lib/i18n/server";
 import { LanguageSwitcher } from "@/components/settings/language-switcher";
 
 export default async function SettingsPage() {
-  const [{ enabled }, dict, sharedAccess, defaultView, notificationPrefs, headerColors] = await Promise.all([
+  const [{ enabled }, dict, sharedAccess, defaultView, notificationPrefs, headerColors, displayName] = await Promise.all([
     getNotificationStatusAction(),
     getServerDict(),
     getSharedAccessDataAction(),
     getDefaultViewAction(),
     getNotificationPrefsAction(),
     getHeaderColorsAction(),
+    getDisplayNameAction(),
   ]);
   const t = dict.settings;
   const ta = dict.account;
@@ -48,6 +51,13 @@ export default async function SettingsPage() {
           </TabsList>
 
           <TabsContent value="general">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
+                {t.displayName}
+              </h2>
+              <DisplayNameForm initialName={displayName} />
+            </div>
+
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)] mb-3">
                 {t.notifications}

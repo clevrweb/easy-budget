@@ -4,6 +4,7 @@ import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 import { CircularProgress } from "./circular-progress";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 interface HomeOverviewProps {
   firstName: string;
@@ -36,11 +37,14 @@ export function HomeOverview({ firstName, incomeTotal, billsTotal, paidTotal, pe
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-[var(--color-foreground)] capitalize">
-          {greeting}, {firstName}
-        </h1>
-        <p className="text-sm text-[var(--color-muted-foreground)] capitalize">{dateStr}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-bold text-[var(--color-foreground)] capitalize">
+            {greeting}, {firstName}
+          </h1>
+          <p className="text-sm text-[var(--color-muted-foreground)] capitalize">{dateStr}</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="rounded-xl p-4 text-white shadow-[var(--shadow-card)]" style={{ backgroundColor: "var(--color-primary)" }}>
