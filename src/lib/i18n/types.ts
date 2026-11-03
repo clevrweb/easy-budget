@@ -463,6 +463,22 @@ export interface Dict {
     testSmsButton: string;
     testSmsSending: string;
     testSmsSuccess: string;
+    usersSectionTitle: string;
+    usersSectionDesc: string;
+    searchPlaceholder: string;
+    colJoined: string;
+    colAccounts: string;
+    superadminBadge: string;
+    noResults: string;
+    deleteButton: string;
+    deleteWarning: string;
+    deleteConfirmLabel: string;
+    deleteConfirmButton: string;
+    deleting: string;
+    deleteErrorMismatch: string;
+    deleteErrorSelf: string;
+    deleteErrorSuperadmin: string;
+    deleteErrorGeneric: string;
   };
 
   debts: {
