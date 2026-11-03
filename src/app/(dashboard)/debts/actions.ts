@@ -141,6 +141,41 @@ export async function createRecurringBillForDebtAction(debtId: string, dueDay: n
     .single();
 
   if (error) return { error: error.message };
+
+  // Generate the next 6 months of bills up front, same as createRecurringBillAction
+  // does for the normal Add Bill flow -- otherwise the template exists but no bill
+  // ever shows up anywhere, since generation is otherwise only triggered by the
+  // manual "Generate" button on /recurring.
+  const today = new Date();
+  const startsThisMonth = today.getDate() <= dueDay;
+  const firstMonth = new Date(today.getFullYear(), today.getMonth() + (startsThisMonth ? 0 : 1), 1);
+
+  const bills = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + i, 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const day = Math.min(dueDay, lastDay);
+    const due_date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return {
+      account_id: accountId,
+      user_id: user.id,
+      recurring_template_id: template.id,
+      category_id: null,
+      group_id: null,
+      name: debt.name,
+      biller: null,
+      amount: debt.minimum_payment,
+      due_date,
+      status: "pending" as const,
+      payment_method: null,
+      is_autopay: false,
+      is_recurring: true,
+      notes: null,
+    };
+  });
+
+  const { error: billsError } = await supabase.from("bills").insert(bills);
+  if (billsError) return { error: billsError.message };
+
   revalidatePath("/recurring");
   revalidatePath("/dashboard");
   revalidatePath("/debts");
