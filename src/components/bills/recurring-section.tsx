@@ -168,7 +168,7 @@ export function RecurringSection({
                 value={endDate}
                 onChange={(e) => onEndDate(e.target.value)}
                 disabled={endsType !== "date"}
-                className="h-8 flex-1 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                className="h-8 flex-1 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-base md:text-sm text-[var(--color-foreground)] disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
               />
             </label>
 
@@ -182,7 +182,7 @@ export function RecurringSection({
                 value={endCount}
                 onChange={(e) => onEndCount(Math.max(1, parseInt(e.target.value) || 1))}
                 disabled={endsType !== "count"}
-                className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-base md:text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
               />
               <span className="text-sm text-[var(--color-foreground)]">{r.occurrences}</span>
             </label>

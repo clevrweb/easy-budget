@@ -92,7 +92,7 @@ export function BucketCard({ bucket, groups = [], onChanged }: BucketCardProps) 
                   autoFocus
                   value={balanceInput}
                   onChange={(e) => setBalanceInput(e.target.value)}
-                  className="h-7 text-xs px-2"
+                  className="h-7 text-base md:text-xs px-2"
                 />
                 <span className="text-xs text-[var(--color-muted-foreground)] shrink-0">/ {formatCurrency(bucket.target_amount)}</span>
                 <button type="button" onClick={saveBalance} disabled={isSavingBalance} className="shrink-0 text-[var(--color-success)]">

@@ -337,7 +337,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                       type="date" name="end_date" value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       disabled={endsType !== "date"}
-                      className="h-8 flex-1 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                      className="h-8 flex-1 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-base md:text-sm text-[var(--color-foreground)] disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
                     />
                   </label>
                   <label className="flex items-center gap-2.5 cursor-pointer">
@@ -351,7 +351,7 @@ export function RecurringSeriesForm({ bill, categories, groups, open, onOpenChan
                       type="number" name="end_count" min={1} value={endCount}
                       onChange={(e) => setEndCount(Math.max(1, parseInt(e.target.value) || 1))}
                       disabled={endsType !== "count"}
-                      className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
+                      className="w-16 h-8 rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-2 text-base md:text-sm text-[var(--color-foreground)] text-center disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)]"
                     />
                     <span className="text-sm text-[var(--color-foreground)]">{t.occurrences}</span>
                   </label>
