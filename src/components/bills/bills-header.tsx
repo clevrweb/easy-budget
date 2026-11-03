@@ -179,9 +179,9 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
         </div>
       </div>
 
-      {/* Row 2: date navigator */}
+      {/* Row 2: date navigator + groupBy toggle */}
       {view !== "all" && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={goToPrev}
             disabled={isPending}
@@ -195,30 +195,29 @@ export function BillsHeader({ view, date, status, search, groupBy = "group", bas
             <span>{getLabel()}</span>
           </div>
 
+          {view === "week" && (
+            <div className="flex items-center rounded-lg border border-[var(--color-border)] overflow-hidden text-xs font-medium shrink-0">
+              <button
+                onClick={() => push({ groupBy: "group" })}
+                className={`px-3 py-1.5 transition-colors ${groupBy !== "day" ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"}`}
+              >
+                {dict.bills.byGroup}
+              </button>
+              <button
+                onClick={() => push({ groupBy: "day" })}
+                className={`px-3 py-1.5 transition-colors ${groupBy === "day" ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"}`}
+              >
+                {dict.bills.byDay}
+              </button>
+            </div>
+          )}
+
           <button
             onClick={goToNext}
             disabled={isPending}
             className="w-8 h-8 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-muted)] transition-colors shrink-0 disabled:opacity-50"
           >
             <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Week groupBy toggle */}
-      {view === "week" && (
-        <div className="flex items-center rounded-lg border border-[var(--color-border)] overflow-hidden text-xs font-medium w-fit">
-          <button
-            onClick={() => push({ groupBy: "group" })}
-            className={`px-3 py-1.5 transition-colors ${groupBy !== "day" ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"}`}
-          >
-            {dict.bills.byGroup}
-          </button>
-          <button
-            onClick={() => push({ groupBy: "day" })}
-            className={`px-3 py-1.5 transition-colors ${groupBy === "day" ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"}`}
-          >
-            {dict.bills.byDay}
           </button>
         </div>
       )}
