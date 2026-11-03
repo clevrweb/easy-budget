@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { createPortal } from "react-dom";
-import { Pencil, Trash2, CircleDollarSign } from "lucide-react";
+import { Pencil, Trash2, CircleDollarSign, MoreVertical } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteBillAction, deleteRecurringSeriesAction, markBillPaidAction, markBillPendingAction, payBillAction } from "@/app/(dashboard)/bills/actions";
 import { BillForm } from "./bill-form";
@@ -10,10 +10,10 @@ import { RecurringSeriesForm } from "./recurring-series-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useDict } from "@/components/language-provider";
 import type { Bill, Category, Group } from "@/types/database";
 import { CATEGORY_COLOR_PRESETS as AVATAR_COLORS } from "@/lib/colors";
-import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
 import { useConfirmAction } from "@/lib/use-confirm-action";
 
 function avatarColor(name: string) {
@@ -68,7 +68,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         overdue: { label: statusLabel.overdue, bg: "var(--badge-overdue-bg)", color: "var(--badge-overdue-fg)" },
       }[effectiveStatus] ?? { label: bill.status, bg: "#94a3b822", color: "#475569" };
 
-  function handleSwipeDelete() {
+  function handleDeleteRequest() {
     if (bill.recurring_template_id) {
       setDeleteChoiceOpen(true);
       return;
@@ -76,7 +76,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
     startTransition(async () => { await deleteBillAction(bill.id); });
   }
 
-  const deleteConfirm = useConfirmAction(handleSwipeDelete);
+  const deleteConfirm = useConfirmAction(handleDeleteRequest);
 
   function handleDeleteThis() {
     setDeleteChoiceOpen(false);
@@ -107,37 +107,7 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
   const avatarSource = bill.biller || bill.name;
   const color = avatarColor(avatarSource);
 
-  const swipeActions: SwipeAction[] = [
-    {
-      key: "edit",
-      label: dict.common.edit,
-      icon: <Pencil className="w-4 h-4" />,
-      onActivate: () => {
-        if (bill.recurring_template_id) setChoiceOpen(true);
-        else setEditOpen(true);
-      },
-      className: "bg-blue-500",
-    },
-    ...(!isPaid ? [{
-      key: "record-payment",
-      label: dict.bills.recordPayment,
-      icon: <CircleDollarSign className="w-4 h-4" />,
-      onActivate: openPayDialog,
-      className: "bg-teal-600",
-    }] : []),
-    {
-      key: "delete",
-      label: bill.recurring_template_id
-        ? dict.common.delete
-        : (deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete),
-      icon: <Trash2 className="w-4 h-4" />,
-      onActivate: bill.recurring_template_id ? handleSwipeDelete : deleteConfirm.trigger,
-      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
-    },
-  ];
-
   return (
-    <SwipeableRow actions={swipeActions} actionWidth={64} disabled={isPending} onClose={deleteConfirm.reset}>
     <div
       className={`flex items-center gap-2.5 px-3 sm:px-4 py-3
         ${isPending ? "opacity-50 pointer-events-none" : ""}
@@ -235,6 +205,39 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         )}
       </div>
 
+      {/* Actions menu */}
+      <DropdownMenu onOpenChange={(open) => { if (!open) deleteConfirm.reset(); }}>
+        <DropdownMenuTrigger
+          disabled={isPending}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors shrink-0 disabled:opacity-40"
+        >
+          <MoreVertical className="w-4 h-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onSelect={() => { if (bill.recurring_template_id) setChoiceOpen(true); else setEditOpen(true); }}>
+            <Pencil className="w-4 h-4 text-[var(--color-muted-foreground)]" />
+            {dict.common.edit}
+          </DropdownMenuItem>
+          {!isPaid && (
+            <DropdownMenuItem onSelect={openPayDialog}>
+              <CircleDollarSign className="w-4 h-4 text-[var(--color-muted-foreground)]" />
+              {dict.bills.recordPayment}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem
+            onSelect={(e) => {
+              if (!bill.recurring_template_id && !deleteConfirm.armed) e.preventDefault();
+              if (bill.recurring_template_id) handleDeleteRequest();
+              else deleteConfirm.trigger();
+            }}
+            className="text-[var(--color-danger)]"
+          >
+            <Trash2 className="w-4 h-4" />
+            {!bill.recurring_template_id && deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       {/* Edit dialog */}
       <BillForm bill={bill} categories={categories} groups={groups} open={editOpen} onOpenChange={setEditOpen} />
 
@@ -321,6 +324,5 @@ export function BillRow({ bill, categories, groups }: BillRowProps) {
         <RecurringSeriesForm bill={bill} categories={categories} groups={groups} open={seriesEditOpen} onOpenChange={setSeriesEditOpen} />
       )}
     </div>
-    </SwipeableRow>
   );
 }

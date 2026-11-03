@@ -9,7 +9,6 @@ import type { SavingsBucket, Group } from "@/types/database";
 import { Pencil, Trash2, PiggyBank, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
 import { useConfirmAction } from "@/lib/use-confirm-action";
 
 interface BucketCardProps {
@@ -34,23 +33,6 @@ export function BucketCard({ bucket, groups = [], onChanged }: BucketCardProps) 
     });
   });
 
-  const swipeActions: SwipeAction[] = [
-    {
-      key: "edit",
-      label: dict.common.edit,
-      icon: <Pencil className="w-4 h-4" />,
-      onActivate: () => setEditOpen(true),
-      className: "bg-slate-500",
-    },
-    {
-      key: "delete",
-      label: deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete,
-      icon: <Trash2 className="w-4 h-4" />,
-      onActivate: deleteConfirm.trigger,
-      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
-    },
-  ];
-
   const pct = bucket.target_amount > 0 ? Math.min(100, (bucket.current_amount / bucket.target_amount) * 100) : 0;
 
   function startEditingBalance() {
@@ -70,13 +52,8 @@ export function BucketCard({ bucket, groups = [], onChanged }: BucketCardProps) 
   }
 
   return (
-    <SwipeableRow
-      actions={swipeActions}
-      disabled={isPending}
-      onClose={deleteConfirm.reset}
-      className="rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-200"
-    >
-      <div className={`bg-[var(--color-card)] p-5 flex flex-col gap-4 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+    <>
+      <div className={`rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 bg-[var(--color-card)] p-5 flex flex-col gap-4 ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-[#0d3b66]/10 border-2 border-[#0d3b66]">
             <PiggyBank className="w-4 h-4 text-[#0d3b66]" />
@@ -134,6 +111,6 @@ export function BucketCard({ bucket, groups = [], onChanged }: BucketCardProps) 
         </div>
       </div>
       <BucketForm bucket={bucket} groups={groups} onSaved={onChanged} open={editOpen} onOpenChange={setEditOpen} />
-    </SwipeableRow>
+    </>
   );
 }

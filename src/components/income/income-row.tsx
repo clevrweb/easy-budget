@@ -2,14 +2,12 @@
 
 import { useTransition, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Pencil, Trash2, TrendingUp } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { deleteIncomeSourceAction, toggleIncomeSourceActiveAction } from "@/app/(dashboard)/income/actions";
 import { IncomeForm } from "./income-form";
 import { useDict } from "@/components/language-provider";
 import type { IncomeSource } from "@/types/database";
-import { SwipeableRow, type SwipeAction } from "@/components/ui/swipeable-row";
-import { useConfirmAction } from "@/lib/use-confirm-action";
 
 const frequencyLabel: Record<string, string> = {
   weekly: "Weekly",
@@ -65,29 +63,7 @@ export function IncomeRow({ source }: IncomeRowProps) {
     startTransition(async () => { await deleteIncomeSourceAction(source.id); });
   }
 
-  const deleteConfirm = useConfirmAction(() => {
-    startTransition(async () => { await deleteIncomeSourceAction(source.id); });
-  });
-
-  const swipeActions: SwipeAction[] = [
-    {
-      key: "edit",
-      label: dict.common.edit,
-      icon: <Pencil className="w-4 h-4" />,
-      onActivate: () => setEditOpen(true),
-      className: "bg-slate-500",
-    },
-    {
-      key: "delete",
-      label: deleteConfirm.armed ? dict.common.confirmAgain : dict.common.delete,
-      icon: <Trash2 className="w-4 h-4" />,
-      onActivate: deleteConfirm.trigger,
-      className: deleteConfirm.armed ? "bg-red-700" : "bg-[var(--color-danger)]",
-    },
-  ];
-
   return (
-    <SwipeableRow actions={swipeActions} disabled={isPending} onClose={deleteConfirm.reset}>
     <div className={`flex items-center gap-4 px-5 py-4 hover:bg-[var(--color-muted)] transition-colors ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
       {/* Active toggle */}
       <button
@@ -138,7 +114,7 @@ export function IncomeRow({ source }: IncomeRowProps) {
         onClick={toggleMenu}
         className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors shrink-0"
       >
-        <MoreHorizontal className="w-4 h-4" />
+        <MoreVertical className="w-4 h-4" />
       </button>
 
       {/* Portal dropdown */}
@@ -197,6 +173,5 @@ export function IncomeRow({ source }: IncomeRowProps) {
         document.body
       )}
     </div>
-    </SwipeableRow>
   );
 }
