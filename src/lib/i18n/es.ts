@@ -506,6 +506,7 @@ export const es: Dict = {
     timelineTitle: "Orden de Pago",
     addAsBillTitle: "¿Agregar {name} como factura recurrente?",
     addAsBillDesc: "Crea una factura recurrente mensual por el pago mínimo para que aparezca junto a tus otras facturas.",
+    startMonthLabel: "Mes de Inicio",
     dueDayLabel: "Día de Vencimiento del Mes",
     addBillButton: "Agregar como Factura",
     skipButton: "Omitir por ahora",

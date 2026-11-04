@@ -506,6 +506,7 @@ export const en: Dict = {
     timelineTitle: "Payoff Order",
     addAsBillTitle: "Add {name} as a recurring bill?",
     addAsBillDesc: "Creates a monthly recurring bill for the minimum payment so it shows up alongside your other bills.",
+    startMonthLabel: "Start Month",
     dueDayLabel: "Due Day of Month",
     addBillButton: "Add as Bill",
     skipButton: "Skip for now",

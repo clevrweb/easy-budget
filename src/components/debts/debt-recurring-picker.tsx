@@ -19,6 +19,7 @@ export function DebtRecurringPicker({ debtId, debtName, minimumPayment, onDone }
   const dict = useDict();
   const t = dict.debts;
   const [dueDay, setDueDay] = useState("1");
+  const [startMonth, setStartMonth] = useState(new Date().toISOString().slice(0, 7));
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -26,7 +27,7 @@ export function DebtRecurringPicker({ debtId, debtName, minimumPayment, onDone }
     setError(null);
     const day = parseInt(dueDay, 10);
     startTransition(async () => {
-      const result = await createRecurringBillForDebtAction(debtId, day);
+      const result = await createRecurringBillForDebtAction(debtId, day, startMonth);
       if (result?.error) { setError(result.error); return; }
       onDone();
     });
@@ -44,6 +45,17 @@ export function DebtRecurringPicker({ debtId, debtName, minimumPayment, onDone }
       <p className="text-sm text-[var(--color-foreground)]">
         {formatCurrency(minimumPayment)} <span className="text-[var(--color-muted-foreground)]">/ month</span>
       </p>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="debt-start-month">{t.startMonthLabel}</Label>
+        <input
+          id="debt-start-month"
+          type="month"
+          value={startMonth}
+          onChange={(e) => setStartMonth(e.target.value)}
+          className="flex h-10 w-full rounded-lg border border-[var(--color-input)] bg-[var(--color-card)] px-3 py-2 text-base md:text-sm text-[var(--color-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-ring)] focus:border-transparent"
+        />
+      </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="debt-due-day">{t.dueDayLabel}</Label>

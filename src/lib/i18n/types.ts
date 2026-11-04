@@ -505,6 +505,7 @@ export interface Dict {
     timelineTitle: string;
     addAsBillTitle: string;
     addAsBillDesc: string;
+    startMonthLabel: string;
     dueDayLabel: string;
     addBillButton: string;
     skipButton: string;

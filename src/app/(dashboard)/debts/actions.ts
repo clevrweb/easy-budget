@@ -106,7 +106,7 @@ export async function saveExtraPaymentAction(formData: FormData) {
   return { success: true };
 }
 
-export async function createRecurringBillForDebtAction(debtId: string, dueDay: number) {
+export async function createRecurringBillForDebtAction(debtId: string, dueDay: number, startMonth: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
@@ -146,9 +146,8 @@ export async function createRecurringBillForDebtAction(debtId: string, dueDay: n
   // does for the normal Add Bill flow -- otherwise the template exists but no bill
   // ever shows up anywhere, since generation is otherwise only triggered by the
   // manual "Generate" button on /recurring.
-  const today = new Date();
-  const startsThisMonth = today.getDate() <= dueDay;
-  const firstMonth = new Date(today.getFullYear(), today.getMonth() + (startsThisMonth ? 0 : 1), 1);
+  const [startYear, startMon] = startMonth.split("-").map(Number);
+  const firstMonth = new Date(startYear, startMon - 1, 1);
 
   const bills = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + i, 1);
