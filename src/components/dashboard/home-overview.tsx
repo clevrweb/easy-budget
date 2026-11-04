@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useDict } from "@/components/language-provider";
 import { CircularProgress } from "./circular-progress";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { AddEntryMenu } from "./add-entry-menu";
 
 interface HomeOverviewProps {
   firstName: string;
@@ -44,7 +45,12 @@ export function HomeOverview({ firstName, incomeTotal, billsTotal, paidTotal, pe
           </h1>
           <p className="text-sm text-[var(--color-muted-foreground)] capitalize">{dateStr}</p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="md:hidden">
+            <AddEntryMenu />
+          </div>
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="rounded-xl p-4 text-white shadow-[var(--shadow-card)]" style={{ backgroundColor: "var(--color-primary)" }}>

@@ -1,7 +1,5 @@
-import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { TemplateForm } from "@/components/recurring/template-form";
 import { TemplateRow } from "@/components/recurring/template-row";
 import { GenerateButton } from "@/components/recurring/generate-button";
@@ -53,15 +51,14 @@ export default async function RecurringPage({
         />
       </Topbar>
 
-      <MobileFab>
-        <TemplateForm
-          categories={categories as Category[] ?? []}
-          groups={groups as Group[] ?? []}
-          trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.title} />}
-        />
-      </MobileFab>
-
       <main className="flex-1 p-4 md:p-6 space-y-5">
+        <div className="md:hidden">
+          <TemplateForm
+            categories={categories as Category[] ?? []}
+            groups={groups as Group[] ?? []}
+          />
+        </div>
+
         {/* Month picker + generate */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <MonthPicker value={selectedMonth} label={monthLabel} />

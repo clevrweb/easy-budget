@@ -1,7 +1,5 @@
-import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { CategoryForm } from "@/components/categories/category-form";
 import { CategoryCard } from "@/components/categories/category-card";
 import { seedDefaultCategoriesAction } from "./actions";
@@ -41,11 +39,11 @@ export default async function CategoriesPage() {
         <CategoryForm />
       </Topbar>
 
-      <MobileFab>
-        <CategoryForm trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.addCategory} />} />
-      </MobileFab>
-
       <main className="flex-1 p-4 md:p-6">
+        <div className="md:hidden mb-4">
+          <CategoryForm />
+        </div>
+
         {allCategories.length === 0 ? (
           <div className="mt-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-[var(--color-muted)] flex items-center justify-center mx-auto mb-4">

@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { getDebtsWithPlanAction } from "@/app/(dashboard)/debts/actions";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { DebtForm } from "./debt-form";
 import { DebtCard } from "./debt-card";
 import { DebtPlanOverview } from "./debt-plan-overview";
@@ -43,12 +41,13 @@ export function DebtsPageClient({ initialDebts, initialExtraPayment, initialPlan
         <DebtForm onSaved={refresh} />
       </Topbar>
 
-      <MobileFab>
-        <DebtForm onSaved={refresh} trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.title} />} />
-      </MobileFab>
-
       <main className="flex-1 p-4 md:p-6 space-y-5">
-        <p className="text-sm text-[var(--color-muted-foreground)] max-w-2xl">{t.description}</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-[var(--color-muted-foreground)] max-w-2xl">{t.description}</p>
+          <div className="md:hidden shrink-0">
+            <DebtForm onSaved={refresh} />
+          </div>
+        </div>
 
         <DebtPlanOverview plan={plan} extraMonthlyPayment={extraPayment} onExtraSaved={refresh} />
 

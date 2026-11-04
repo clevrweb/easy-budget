@@ -1,7 +1,5 @@
-import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { GroupForm } from "@/components/groups/group-form";
 import { GroupCard } from "@/components/groups/group-card";
 import type { Group } from "@/types/database";
@@ -32,11 +30,11 @@ export default async function GroupsPage() {
         <GroupForm />
       </Topbar>
 
-      <MobileFab>
-        <GroupForm trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.title} />} />
-      </MobileFab>
-
       <main className="flex-1 p-4 md:p-6">
+        <div className="md:hidden mb-4">
+          <GroupForm />
+        </div>
+
         {allGroups.length === 0 ? (
           <div className="mt-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-[var(--color-muted)] flex items-center justify-center mx-auto mb-4">

@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { getBucketsAction } from "@/app/(dashboard)/savings-plan/actions";
 import { Topbar } from "@/components/layout/topbar";
-import { MobileFab, FabTrigger } from "@/components/layout/fab";
 import { BucketForm } from "./bucket-form";
 import { BucketCard } from "./bucket-card";
 import { useDict } from "@/components/language-provider";
@@ -31,12 +29,13 @@ export function SavingsPlanPageClient({ initialBuckets, groups }: SavingsPlanPag
         <BucketForm groups={groups} onSaved={refresh} />
       </Topbar>
 
-      <MobileFab>
-        <BucketForm groups={groups} onSaved={refresh} trigger={<FabTrigger icon={<Plus className="w-6 h-6" />} label={t.addBucket} />} />
-      </MobileFab>
-
       <main className="flex-1 p-4 md:p-6 space-y-5">
-        <p className="text-sm text-[var(--color-muted-foreground)] max-w-2xl">{t.description}</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-[var(--color-muted-foreground)] max-w-2xl">{t.description}</p>
+          <div className="md:hidden shrink-0">
+            <BucketForm groups={groups} onSaved={refresh} />
+          </div>
+        </div>
 
         {buckets.length === 0 ? (
           <div className="mt-8 text-center">
