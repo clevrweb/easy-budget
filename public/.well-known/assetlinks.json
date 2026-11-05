@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.clevrweb.budgetwhisperer",
+      "sha256_cert_fingerprints": [
+        "E9:9E:44:45:4B:A9:2C:BD:63:C9:19:34:E6:9B:08:82:BB:BD:CD:BA:55:6E:63:0C:C9:02:AC:A7:16:64:FB:37"
+      ]
+    }
+  }
+]
